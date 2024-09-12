@@ -1,0 +1,30 @@
+<apex:component controller="ComponentQuoteLineScaleController" access="global">
+    
+    <apex:attribute name="Qid" type="Id" description="Id of the quoteline" assignTo="{!quotelineId}"/>
+    <!--<apex:attribute name="showTable" type="Boolean" description="use for rendering table" assignTo="{!hasScale}" access="global"/>-->
+
+    <apex:outputPanel rendered="{!hasScale}">
+            <table  border = "1" cellspacing = "0">
+                <tr>
+                    <td>MIN VOLUME</td>
+                    <td>SCALE UOM</td>
+                    <td>PER</td>
+                    <td>UNIT PRICE</td>   
+                    <td>PRIOR PRICE</td>  
+                    
+                </tr>
+                <apex:repeat value="{!quotelines}" var="ql">
+                    <tr>
+                        <td>{!ql.Min_Volume__c}</td>
+                        <td>{!ql.Scale_UOM__c}</td>
+                        <td>{!ql.Per_Quantity_Email_Display__c}</td>
+                        <td>{!ql.CurrencyIsoCode} {!ql.Price_Email_Display__c} {!ql.Adder_Type__c}</td>
+                        <td>{!ql.CurrencyIsoCode} {!ql.Previous_Price_Value__c}</td>
+                        
+                    </tr>       
+                </apex:repeat>      
+                
+            </table> 
+    </apex:outputPanel>
+    
+</apex:component>

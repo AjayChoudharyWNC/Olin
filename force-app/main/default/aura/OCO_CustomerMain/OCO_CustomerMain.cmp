@@ -1,0 +1,65 @@
+<aura:component implements="flexipage:availableForAllPageTypes,forceCommunity:availableForAllPageTypes" access="global" controller="OCO_CustomerController">
+    <aura:attribute name="appUserEmail" type="String"/>
+    <aura:attribute name="appUserRecord" type="Application_User__C"/>
+    <aura:attribute name="sapId" type="String"/>
+    <aura:attribute name="languageOptions" type="List" default="[]"/>
+    <aura:attribute name="pageLanguage" type="String" default="English"/>
+    <aura:attribute name="languageFileAsString" type="String"/>
+    <aura:attribute name="languageTextMap" type="Object"/>
+    <aura:attribute name="englishLanguageTextMap" type="Object"/>
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    <aura:method name="openLeftPanel" action="{!c.openLeftPanel}"/>
+    <aura:attribute name="isLanguageLoaded" type="boolean"/>
+    <aura:attribute name="languageData" type="Object"/>
+    <aura:registerEvent name="languageChangeEvent" type="c:OCO_HandleLanguageChange_CA"/>
+    <ltng:require scripts="{!$Resource.PapaParse}" ></ltng:require>
+    <aura:html tag="style">
+        html, body{height:100% !important;width:100% !important;background:#f5f6f8;}
+    </aura:html>
+    <!--div class="mobileContent">
+        <div id="panelButton" style="position: absolute;padding:58px;">
+            <a onclick="{!c.openLeftPanel}" style="text-decoration:none;color:black;"><lightning:buttonIcon iconName="utility:rows" size="large" variant="bare"/><b style="font-size: 1rem!important;"> &nbsp; MENU</b></a>
+        </div>
+    </div-->
+    <aura:if isTrue="{!v.isLanguageLoaded}">
+        <div class="slds-grid slds-wrap">
+            <aura:if isTrue="{!or(v.appUserEmail != '', v.sapId != '')}">
+                <div class="mobileContent">
+                    <div id="mySidenav" class="sidenav">
+                        <div style="text-align:right;padding-right:25px;border-bottom: 2px solid #f5f6f8;">
+                            <a href="javascript:void(0)" class="closebtn" onclick="{!c.closeLeftPanel}">&times;</a>
+                        </div>
+                        <div>
+                            <c:OCO_CustomerLeft email="{!v.appUserEmail}" sapId="{!v.sapId}" languageLabelMap="{!v.languageTextMap}" aura:id="OCO_LeftCmp"/>
+                        </div>
+                    </div>
+                    <div class="slds-col slds-large-size_12-of-12 slds-medium-size_6-of-6 slds-small-size_6-of-6" id="mobileRightPanel">
+                        <div style="text-align:right;padding-top:10px;margin-right: 4vh;">
+                            <ui:inputSelect aura:id="lang" label="Language:  " change="{!c.handleLanguage}" value="{!v.pageLanguage}" class="slds-select">
+                                <aura:iteration items="{!v.languageOptions}" var="lang" indexVar="indx">
+                                    <ui:inputSelectOption text="{!lang}"/>
+                                </aura:iteration>
+                            </ui:inputSelect>
+                        </div>
+                        <c:OCO_CustomerRight email="{!v.appUserEmail}" parent="{!this}" languageLabelMap="{!v.languageTextMap}" englishLanguageLabelMap="{!v.englishLanguageTextMap}" languageFileData="{!v.languageData}" selectedPageLanguage="{!v.pageLanguage}"/>
+                    </div>
+                </div>
+                <div class="pcContent">
+                    <div class="slds-col slds-large-size_2-of-8 slds-medium-size_2-of-6 slds-small-size_3-of-6">
+                        <c:OCO_CustomerLeft email="{!v.appUserEmail}" sapId="{!v.sapId}" languageLabelMap="{!v.languageTextMap}" aura:id="OCO_LeftCmp"/>
+                    </div>
+                    <div class="slds-col slds-large-size_6-of-8 slds-medium-size_4-of-6 slds-small-size_3-of-6">
+                        <div style="text-align:right;padding-top:10px;margin-right: 4vh">
+                            <ui:inputSelect aura:id="lang" label="Language:  " change="{!c.handleLanguage}" value="{!v.pageLanguage}" class="slds-select">
+                                <aura:iteration items="{!v.languageOptions}" var="lang" indexVar="indx" >
+                                    <ui:inputSelectOption text="{!lang}"/>
+                                </aura:iteration>
+                            </ui:inputSelect>
+                        </div>
+                        <c:OCO_CustomerRight email="{!v.appUserEmail}" languageLabelMap="{!v.languageTextMap}" englishLanguageLabelMap="{!v.englishLanguageTextMap}" languageFileData="{!v.languageData}" selectedPageLanguage="{!v.pageLanguage}"/>
+                    </div>
+                </div>
+            </aura:if>
+        </div>
+    </aura:if>
+</aura:component>

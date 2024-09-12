@@ -1,0 +1,33 @@
+.THIS .slds-button_netural.iconButton {
+    padding-left: 10px;
+    padding-right: 0;
+}
+.THIS .detailView {
+    display: flex;
+}
+.THIS .flexer {
+    flex: 1;
+}
+.THIS .addButtonContainer {
+    width: 100%;
+    padding: 10px 0;
+}
+.THIS .addButtonContainer button {
+    width: 100%;
+}
+.THIS .rRow td:first-child {
+    width: 40%;
+    overflow: hidden;
+    white-space: pre-wrap;
+}
+.THIS .width20 {
+    width: 20%;
+}
+.THIS .width5 {
+    width: 5%;
+}
+/*
+.THIS .rRow.error {
+    background-color: rgb(250,150,150); 
+}
+*/

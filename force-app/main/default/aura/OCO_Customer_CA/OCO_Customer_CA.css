@@ -1,0 +1,111 @@
+.THIS .slds-file-selector__button{background:rgb(0,139,149) !important;color:white !important;}
+.THIS .slds-file-selector__button:hover{border:1px solid rgb(0,139,149) !important;background:white !important;color:rgb(0,139,149) !important;}
+.THIS ul {list-style: square !important;margin-left: 15px !important;}
+.THIS .copyBtn{background-color:rgb(0,139,149) !important;}
+.THIS .copyBtn:hover{background-color:white !important;border:1px solid rgb(0,139,149) !important;color:rgb(0,139,149) !important;}
+.THIS .copyBtnIcon .slds-icon-text-default {fill: rgb(255,255,255);}
+.THIS .copyBtn:hover .copyBtnIcon .slds-icon-text-default {fill: rgb(0,139,149) !important;}
+.THIS .copyBtn[disabled], .THIS .copyBtn[disabled]:hover {
+    background-color: lightgrey !important;
+    color: white !important;
+}
+.THIS label.slds-form-element__label.slds-m-right_xxx-small {
+    display: none;
+}
+.THIS .slds-file-selector__input[disabled]~.slds-file-selector__body>.slds-file-selector__button{
+    background-color: lightgrey !important;
+}
+.THIS .addTaxButton{
+    background:rgb(0,139,149) !important;color:white !important;
+    height : 25px !important;
+}
+.THIS .addTaxButton[disabled], .THIS .addTaxButton[disabled]:hover {
+    background-color: lightgrey !important;
+    color: white !important;
+}
+.THIS.toastClass{
+    visibility: hidden;
+    max-width: max-content;
+    width : max-content;
+    /*margin-left: -125px;*/
+    margin: auto;
+    color: #fff;
+    text-align: center;
+    border-radius: 5px;
+    height:60px;
+    position: fixed;
+    z-index: 9001;
+    left: 0;right:0;
+    bottom: 30px;
+    font-size: 17px;
+    white-space: nowrap;
+}
+.THIS .img{
+	width: 50px;
+    float: left;
+    padding-top: 16px;
+    padding-bottom: 16px;
+    border-radius: 5px;
+    box-sizing: border-box;
+
+}
+.THIS .desc{
+    color: #fff;
+    padding: 16px;
+    overflow: hidden;
+	white-space: nowrap;
+}
+
+.THIS#toast.show {
+    visibility: visible;
+    -webkit-animation: fadein 0.5s, fadeout 0.5s 2.5s;
+    animation: fadein 0.5s,  fadeout 0.5s 4.5s;
+}
+
+@-webkit-keyframes fadein {
+    from {bottom: 0; opacity: 0;} 
+    to {bottom: 30px; opacity: 1;}
+}
+
+@keyframes fadein {
+    from {bottom: 0; opacity: 0;}
+    to {bottom: 30px; opacity: 1;}
+}
+
+@-webkit-keyframes expand {
+    from {min-width: 50px} 
+    to {min-width: 350px}
+}
+
+@keyframes expand {
+    from {min-width: 50px}
+    to {min-width: 350px}
+}
+@-webkit-keyframes stay {
+    from {min-width: 350px} 
+    to {min-width: 350px}
+}
+
+@keyframes stay {
+    from {min-width: 350px}
+    to {min-width: 350px}
+}
+@-webkit-keyframes shrink {
+    from {min-width: 350px;} 
+    to {min-width: 50px;}
+}
+
+@keyframes shrink {
+    from {min-width: 350px;} 
+    to {min-width: 50px;}
+}
+
+@-webkit-keyframes fadeout {
+    from {bottom: 30px; opacity: 1;} 
+    to {bottom: 60px; opacity: 0;}
+}
+
+@keyframes fadeout {
+    from {bottom: 30px; opacity: 1;}
+    to {bottom: 60px; opacity: 0;}
+}

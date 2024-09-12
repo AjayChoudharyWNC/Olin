@@ -1,0 +1,72 @@
+.THIS {
+    position: absolute;
+    left: calc(50% - 375px);
+    top: 100px;
+    width: 1000px;
+    box-shadow: 0 0 5px 0 rgba(0,0,0,0.75);
+    z-index: 900;
+    background: #fafafa;
+    border-radius: 5px;
+}
+.THIS.opacity_1 {
+    opacity: 1;
+}
+.THIS.opacity_2 {
+    opacity: .8;
+}
+.THIS.opacity_3 {
+    opacity: .6;
+}
+.THIS.opacity_4 {
+    opacity: .4;
+}
+.THIS .header {
+    background-color: #1b5297; 
+    color: white; 
+    cursor: move;    
+    padding: 3px 5px;
+    border-radius: 5px 5px 0 0;
+}
+.THIS .header div:first-child {
+    flex: 1;
+}
+.THIS .body {
+    padding: 3px;
+    overflow-x: scroll;
+    overflow-y: scroll;
+    height: 500px;
+    border: 2px solid #1b5297;
+}
+.THIS .data {
+    font-size: 8pt;
+    display: flex;
+}
+
+.THIS .slds-table .slds-text-title_caps {
+    font-size: 7pt;
+    padding: 3px 2px;
+}
+.THIS .slds-table td {
+    padding: 3px 2px;
+    font-size: 8pt;
+}
+
+
+.THIS .body::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+    opacity: .5;
+}
+.THIS .body::-webkit-scrollbar-track {
+    background: rgba(241,241,241,.5); 
+}
+.THIS .body::-webkit-scrollbar-thumb {
+    background: rgba(85,85,85,.5);
+    border-radius: 100px;
+}
+.THIS .body::-webkit-scrollbar-thumb:hover {
+    background: rgba(0,0,0,.5);
+}
+.THIS td span.currency {
+    margin-right: .3em;
+}

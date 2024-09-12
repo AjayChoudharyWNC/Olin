@@ -1,0 +1,683 @@
+<aura:component controller="ForecastingGridController" implements="flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:appHostable,force:lightningQuickActionWithoutHeader" access="global" >
+    
+    <aura:attribute name="recordId" 			    type="String"/>
+    <aura:attribute name="sObjectName" 			    type="String"       default="Forecast__c"/>
+    <aura:attribute name="fieldSets" 		        type="String"/>
+    <aura:attribute name="fieldSetValues" 		    type="List"/>
+    <aura:attribute name="sortingOrderResult"       type="String"/>
+    <aura:attribute name="filteringOrderResult"     type="String"/>
+    <aura:attribute name="parentFieldName" 		    type="String"       default="SBQQ__Quote__c"/>
+    <aura:attribute name="parentRecordId" 		    type="String" />
+    <aura:attribute name="tableRecords" 		    type="List"/>
+    <aura:attribute name="tableRecordsUpdated" 	    type="List" default = "[]"/>
+    <aura:attribute name="quoteId"			        type="String"/>
+    <aura:attribute name="colDragElement"           type="Object"/>
+    <aura:attribute name="mouseIsDragging"          type="Boolean"      default="false"/>
+    <aura:attribute name="mouseIsDraggingFullTable" type="Boolean"      default="false"/>
+    <aura:attribute name="hasPendingMassChange"     type="Boolean"      default="false"/>
+    <aura:attribute name="isLoadingList"            type="Boolean"      default="false"/>
+    <aura:attribute name="checkedIndex"             type="Decimal[]"    default="[]"/>
+    <aura:attribute name="allItemsChecked"          type="Boolean"      default="false"/>
+    <aura:attribute name="checkRepaint"             type="Boolean"      default="true"/>
+    <aura:attribute name="mainListSource"           type="String"       default="GridForecasting"/>
+    <aura:attribute name="disableControls"          type="Boolean"      default="false"/>
+    <aura:attribute name="fieldSetValues1"          type="List"/>
+    <aura:attribute name="fieldSetValues2" 	        type="List"/>
+    <aura:attribute name="noOfColumns"   	        type="Integer"/>
+    <aura:attribute name="forecastColumns"   	    type="List"     />
+    <aura:attribute name="selectedYear"   	        type="Integer"      default="2019"/> <!--TODO-->
+    <aura:attribute name="selectedDate" 	        type="List"         />
+    <aura:attribute name="selectedMonth" 	        type="List"         default="[
+                                                                                 {'label': '1', 'value': '1'},
+                                                                                 {'label': '2', 'value': '2'},
+                                                                                 {'label': '3', 'value': '3'},
+                                                                                 {'label': '4', 'value': '4'},
+                                                                                 {'label': '5', 'value': '5'},
+                                                                                 {'label': '6', 'value': '6'},
+                                                                                 {'label': '7', 'value': '7'},
+                                                                                 {'label': '8', 'value': '8'},
+                                                                                 {'label': '9', 'value': '9'},
+                                                                                 {'label': '10', 'value': '10'},
+                                                                                 {'label': '11', 'value': '11'},
+                                                                                 {'label': '12', 'value': '12'},]"/>
+    
+    <aura:attribute name="activeDateMonth" type="Integer" />
+    <aura:attribute name="activeDateYear" type="Integer" />
+    <aura:attribute name="activeDisplaySize" type="Integer" />
+    <aura:attribute name="displayPrior" type="Boolean" default="true"/>
+    <aura:attribute name="displayAve" type="Boolean" default="true"/>
+    <aura:attribute name="displayAlloc" type="Boolean" default="false"/> <!--Added By Ajay Choudhary on 17th August 2021-->
+    <aura:attribute name="activeView"  type="String" default="rep_mgr" />
+    <aura:attribute name="selectedView" 	        type="List"         default="[
+                                                                                 {'label': 'Sales', 'value': 'rep'},
+                                                                                 {'label': 'Mktg', 'value': 'mgr'},
+                                                                                 {'label': 'Sales and Mktg', 'value': 'rep_mgr'},
+                                                                                 ]"/>    
+    <aura:attribute name="userRole" 	        type="String"  default="viewer"/>   
+    <aura:attribute name="editMode" 	        type="String"  default="true"/>
+    <aura:attribute name="forecastKeyForHistory" type="String" />
+    <aura:attribute name="callerRect" type="Object" />
+    <aura:attribute name="initialtop" type="Integer" default="0" />
+    <aura:attribute name="initialLeft" type="Integer" default="0" />
+    <aura:attribute name="page"       type="Integer" default="1"/>
+    <aura:attribute name="pageMax"       type="Integer" default="1"/>
+    <aura:attribute name="isBeyond"       type="Boolean" default="false"/>
+    
+    <aura:attribute name="recordSalesTotal" type="Object"/> <!--Added By Ajay Choudhary-->
+    <aura:attribute name="recordAveTotal" type="Object"/> <!--Added By Ajay Choudhary On 3 June 2021-->
+    <aura:attribute name="recordPriorYearTotal" type="Object"/> <!--Added By Ajay Choudhary-->
+    <aura:attribute name="recordAllocTotal" type="Object"/> <!--Added By Ajay Choudhary on 17th August 2021-->
+     <!-- 12 july --> 
+    <!--  <aura:attribute name="recordPriorMonthTotal" type="Object"/> -->
+    <aura:attribute name="recordMktgTotal" type="Object"/> <!--Added By Ajay Choudhary-->
+    <aura:attribute name="total_totalSales" type="Decimal" default="0.00"/><!--Added By Gaurish on 21st May 2021 -->
+    <aura:attribute name="total_totalMktg" type="Decimal" default="0.00"/><!--Added By Gaurish on 21st May 2021 -->
+    <aura:attribute name="total_totalPrior" type="Decimal" default="0.00"/><!--Added By Gaurish on 21st May 2021 -->
+    <aura:attribute name="total_totalPriorMonth" type="Decimal" default="0.00"/><!--Added By Gaurish on 21st May 2021 -->
+    <aura:attribute name="allRecordsForTotal" type="List"/><!--Added By Ajay Choudhary On 7th June 2021-->
+    <aura:attribute name="recordSalesAllTotal" type="Object"/><!--Added By Ajay Choudhary On 7th June 2021-->
+    <aura:attribute name="recordAveAllTotal" type="Object"/> <!--Added By Ajay Choudhary On 7th June 2021-->
+    <aura:attribute name="recordPriorYearAllTotal" type="Object"/> <!--Added By Ajay Choudhary On 7th June 2021-->
+    <!-- 12 july-->
+   <!-- <aura:attribute name="recordPriorMonthAllTotal" type="Object"/> -->  <!--Added By Ajay Choudhary On 7th June 2021--> 
+    <aura:attribute name="recordMktgAllTotal" type="Object"/> <!--Added By Ajay Choudhary-->
+    <aura:attribute name="recordAllocAllTotal" type="Object"/>
+    <aura:attribute name="total_AlltotalSales" type="Decimal" default="0.00"/><!--Added By Ajay Choudhary On 7th June 2021-->
+    <aura:attribute name="total_AlltotalMktg" type="Decimal" default="0.00"/><!--Added By Ajay Choudhary On 7th June 2021-->
+    <aura:attribute name="total_AlltotalPrior" type="Decimal" default="0.00"/><!--Added By Ajay Choudhary On 7th June 2021-->
+      <!-- 12 july-->
+   <!--   <aura:attribute name="total_AlltotalPriorMonth" type="Decimal" default="0.00"/>--><!--Added By Ajay Choudhary On 7th June 2021--> 
+    <aura:attribute name="showAllTotals" type="boolean"/><!--Added By Ajay Choudhary On 7th June 2021-->
+    <aura:attribute name="showTotals" type="boolean" default="true"/>
+                    
+    <aura:handler name="init" 	value="{!this}" action="{!c.doInit}"/>
+    <aura:handler event="c:SimplusGrid_GridControlFieldPushChanges" action="{!c.catchMassChange}"/>
+    <aura:registerEvent name="columnToggleEdit" type="c:SimplusGrid_ColumnToggleEdit"/>
+    <aura:registerEvent name="pushUpdates" type="c:SimplusGrid_PushUp"/>
+    <aura:method name="doGridRepaint" description="" action="{!c.doGridRepaint}" />
+    <aura:method name="hideAllTotals" description="" action="{!c.hideAllTotals}" /><!--Added By Ajay Choudhary On 7th June 2021-->
+    
+    <!-- Added by Gaurish on 13th Apr 2021 START-->
+    <aura:attribute name="startTimer1" type="String"/>
+    <aura:attribute name="endTimer1" type="String"/>
+    <aura:attribute name="startTimer2" type="String" default="XXXX"/>
+    <aura:attribute name="endTimer2" type="String" default="XXXX"/>
+    <!-- Added by Gaurish on 13th Apr 2021 END-->
+    
+    <aura:attribute name="selectedSView" type="String"/>
+    <aura:attribute name="selectedSMonth" type="String"/>
+    <aura:attribute name="selectedSDate" type="String"/>
+    
+    <div>
+        <aura:if isTrue="{!v.forecastKeyForHistory}">
+            <c:SimplusForecastingHistoricalActuals pushClose="{!c.closeHistoryWindow}" initialtop="{!v.initialtop}" initialLeft="{!v.initialLeft}" activeDateMonth="{!v.activeDateMonth}" activeDateYear="{!v.activeDateYear}" forecastKeyForHistory="{!v.forecastKeyForHistory}" />
+        </aura:if>
+        
+        <aura:if isTrue="{!not(v.disableControls)}">
+            <div style="display: flex; margin-left: -.75rem; margin-right: calc(-.75rem - 10px);">
+                <div class="slds-col slds-size_3-of-12" style="width:60px;">
+                    <!-- lightning:input type="number" value="{!v.noOfColumns}" onchange="{!c.fieldChange}" label="Lock" / -->
+                    <ui:inputNumber class="lockRowsInput" value="{!v.noOfColumns}" change="{!c.fieldChange}" label="Lock"/>
+                </div>
+                <!--div class="slds-col" style="flex:1;" /-->
+                <div class="slds-col slds-size_2-of-12 topControlItem">
+                    <lightning:select name="startDate" label="Start Date" aura:id="startDate" value="{!v.selectedSDate}">
+                        <option value=""> Choose Start Date </option>
+                        <aura:iteration items="{!v.selectedDate}" var="sort">
+                            <option value="{!sort}">{!sort}</option>
+                        </aura:iteration>
+                    </lightning:select>
+                </div>
+                
+                <div class="slds-col slds-size_2-of-12 topControlItem">
+                    <lightning:select name="months" label="Months to Display" aura:id="months" value="{!v.selectedSMonth}">
+                        <option value=""> Choose Months to Display </option>
+                        <aura:iteration items="{!v.selectedMonth}" var="sort">
+                            <option value="{!sort.value}">{!sort.label}</option>
+                        </aura:iteration>
+                    </lightning:select>
+                </div>
+                
+                <div class="slds-col slds-size_2-of-12 topControlItem">
+                    <lightning:select name="views" label="View" aura:id="views" value="{!v.selectedSView}">
+                        <option value=""> Choose View </option>
+                        <aura:iteration items="{!v.selectedView}" var="sort">
+                            <option value="{!sort.value}">{!sort.label}</option>
+                        </aura:iteration>
+                    </lightning:select>
+                </div>
+                <div class="slds-col topControlItem" style="flex: 1; max-width: 150px;margin-top: 20px;padding-left: 10px;">
+                    <!--lightning:input type="checkbox" name="ProofDisclaimer" label="Show Prior" class="slds-p-vertical_small" checked="{!v.displayPrior}" onclick="{!c.doGridRepaint}" / -->
+                    <lightning:input type="toggle" label="Show Prior Year" name="ProofDisclaimer" checked="{!v.displayPrior}" onclick="{!c.doGridRepaint}"/>
+                </div>
+                <div class="slds-col topControlItem" style="flex: 1; max-width: 150px;margin-top: 20px;padding-left: 10px;">
+                    <!-- lightning:input type="checkbox" name="ProofDisclaimer" label="Show Average" class="slds-p-vertical_small" checked="{!v.displayAve}" onclick="{!c.doGridRepaint}" / -->
+                    <lightning:input type="toggle" label="Show Average" name="ProofDisclaimer" checked="{!v.displayAve}" onclick="{!c.doGridRepaint}"/>
+                </div>
+				<div class="slds-col topControlItem" style="flex: 1; max-width: 150px;margin-top: 20px;padding-left: 10px;">
+                    <!-- lightning:input type="checkbox" name="ProofDisclaimer" label="Show Average" class="slds-p-vertical_small" checked="{!v.displayAve}" onclick="{!c.doGridRepaint}" / -->
+                    <lightning:input type="toggle" label="Show Allocation" name="ProofDisclaimer" checked="{!v.displayAlloc}" onclick="{!c.doGridRepaint}"/>
+                </div>
+
+                <div class="slds-col" style="display: flex; margin-bottom: 10px; flex: 0;">
+                    <div class="button">&nbsp;
+                        <lightning:button label="Apply View" onclick="{!c.handleApply}" variant="brand" class="button-fixed"/>
+                        <!--lightning:button label="Save" onclick="{!c.handleSave}" variant="brand" class="button-fixed" /-->
+                        <lightning:button label="Total All" onclick="{!c.handleTotalAll}" variant="brand" class="button-fixed" title="It may take few minutes to calculate the totals for all pages"/><!--   ADDED BY Gaurish on 7th June 2021 -->
+                        <lightning:button label="Export" onclick="{!c.handleExport}" variant="brand" class="button-fixed" title="Can only export up to 300 lines"/>
+                    </div>
+                </div>
+            </div>
+            
+            <!--<c:SimplusForecasting_GridControlFields mainListSource="{!v.mainListSource}" fieldSets="{!v.fieldSets}" pushCancel="{!c.catchCancel}" pushSave="{!c.catchSave}" pushClone="{!c.catchClone}" />-->
+        </aura:if>
+    </div>
+    
+    
+    <div class="paginationController" style="display: flex; margin: 10px 0;">
+        <aura:if isTrue="{!v.isBeyond}">
+            <div style="font-size: 8pt; color: #a7a7a7;">The selected filters returned too many records, only the first 20 pages will be shown...</div>
+        </aura:if>
+        <div style="flex: 1;" />
+        <div style="display: flex;">
+            <div style="margin: 0 5px; font-size: 12pt;">Showing {!v.tableRecordsUpdated.length > 40 ? 40 : v.tableRecordsUpdated.length} records of {!v.pageMax == 1 ? v.tableRecordsUpdated.length :(v.pageMax)*40}</div> <!--Added By Ajay Choudhary On 8th May 2021 -->
+            <lightning:buttonIcon disabled="{!v.page eq 1}" iconName="utility:back" size="small" onclick="{! c.firstPage }" alternativeText="First Page" />
+            <lightning:buttonIcon disabled="{!v.page eq 1}" iconName="utility:chevronleft" size="small" onclick="{! c.prevPage }" alternativeText="Previous Page" />
+            <div style="margin: 0 5px; font-size: 12pt;">Page {!v.page} of {!v.pageMax}</div>
+            <lightning:buttonIcon disabled="{!v.page == v.pageMax}" iconName="utility:chevronright" size="small" onclick="{! c.nextPage }" alternativeText="Next Page" />
+            <lightning:buttonIcon disabled="{!v.page == v.pageMax}" iconName="utility:forward" size="small" onclick="{! c.lastPage }" alternativeText="Last Page" />
+        </div>
+    </div>
+    <div id="floatersContainers" style="position: fixed; z-index: 31; display: flex;">
+        <div id="floatersPositioner" style="display: flex;width: 100%; position: relative;">
+            <table id="fixedColumnsTableFloating" class="slds-table slds-table--bordered slds-no-row-hover">
+                <thead>
+                    <tr>
+                        <!--th class="leftThFloat">
+                            <lightning:helptext iconName="utility:date_input" content="Show Actuals data for the last 6 months" />
+                        </th--> <!-- Commented By Ajay Choudhary -->   
+                        <aura:iteration items="{!v.fieldSetValues1}" var="field" indexVar="idx">
+                            <aura:if isTrue="{!field.showFieldColumn}"> <!--Added By Ajay Choudhary on 30th Jan 2023 for columns show/hide functionality -->
+                                <th class="slds-text-title_caps " data-column-header="true" style="text-align:left; height: 41px; min-width:70px;">
+                                    <div class="leftThFloat" style="display: flex;">
+                                        <span style="flex: 1;" class="{!'colNameSpan ' + (field.fieldEditable ? 'hasedt' : '')}">{!field.fieldLabel}</span>
+                                    </div>
+                                </th>
+                            </aura:if>
+                        </aura:iteration>
+                    </tr>
+                </thead>
+            </table>
+            <div class="borderAdjust" style="min-width: 3px;background: gainsboro;" />
+            <div id="rightTableFloatContainer" style="overflow: hidden;">
+                <table id="rightTableFloat" class="slds-table slds-table--bordered slds-no-row-hover" style="position: relative;">
+                    <thead>
+                        <tr>                 
+                            <aura:iteration items="{!v.fieldSetValues2}" var="field" indexVar="idx">
+                                <aura:if isTrue="{!field.showFieldColumn}"> <!--Added By Ajay Choudhary on 30th Jan 2023 for columns show/hide functionality -->
+                                    <th class="rightColumnDoubleFloat slds-text-title_caps" data-column-header="true" style="text-align:left; " rowspan="2">
+                                        <div style="display: flex;">
+                                            <span style="flex: 1;" class="{!'colNameSpan ' + (field.fieldEditable ? 'hasedt' : '')}">{!field.fieldLabel}</span>
+                                        </div>
+                                    </th>
+                                </aura:if>
+                            </aura:iteration>
+                            <aura:iteration items="{!v.forecastColumns}" var="col">
+                                <aura:iteration items="{!col.monthList}" var="itm">
+                                    <th colspan="{!(v.displayPrior ? 1 : 0) + (v.displayAve ? 1 : 0) + (v.displayAlloc ? 1 : 0) + 2}">{!itm}&nbsp;{!col.year}</th>
+                                </aura:iteration>
+                            </aura:iteration>
+                            <th colspan="4" class="slds-text-title_caps" style="width:302px;">
+                                <div style="display: flex;">
+                                    <span style="flex: 1;" class="colNameSpan">Total</span>
+                                </div>
+                            </th>
+                        </tr>
+                        <tr>
+                            <aura:iteration items="{!v.forecastColumns}" var="col">
+                                <aura:iteration items="{!col.list}" var="itm">
+                                    <aura:if isTrue="{!v.displayPrior}">
+                                        <th class="lowerColumnHeaderFloat" colspan="1" style="font-size: 7pt; padding: 0px 4px;min-width:70px;">Prior Yr</th>
+                                    <!--     <th class="lowerColumnHeaderFloat" colspan="1" style="font-size: 7pt; padding: 0px 4px;min-width:70px;">Prior Mn</th> --><!-- 12th July'21 -->
+                                    </aura:if>
+                                    <aura:if isTrue="{!v.displayAve}">
+                                        <th class="lowerColumnHeaderFloat" colspan="1" style="font-size: 7pt; padding: 0px 4px;min-width:70px;">Average</th>
+                                    </aura:if>
+                                    <th colspan="{!v.activeView eq 'rep' ? 2 : 1}" class="{!'lowerColumnHeaderFloat ' + (v.activeView eq 'mgr' ? 'hidden' : '')}" style="min-width:70px;">Sales</th>
+                                    <th colspan="{!v.activeView eq 'mgr' ? 2 : 1}" class="{!'lowerColumnHeaderFloat ' + (v.activeView eq 'rep' ? 'hidden' : '')}" style="min-width:70px;">Mktg</th>
+                                    <aura:if isTrue="{!v.displayAlloc}">
+                                        <th class="lowerColumnHeaderFloat" colspan="1" style="min-width:70px;">Allocation</th>
+                                    </aura:if>
+                                </aura:iteration>
+                            </aura:iteration>
+                            <!--//////////////////////Added By Gaurish////21st May 2021///////START////////////////////-->
+                            <th class="lowerColumnHeaderFloat" colspan="1" style="font-size: 7pt; padding: 0px 4px;min-width:70px;">Prior Yr</th>
+                            <th class="lowerColumnHeaderFloat" colspan="1" style="font-size: 7pt; padding: 0px 4px;min-width:70px;">Sales</th>
+                            <th class="lowerColumnHeaderFloat" colspan="1" style="font-size: 7pt; padding: 0px 4px;min-width:70px;">Mktg</th>
+                            <!--//////////////////////Added By Gaurish////21st May 2021///////END////////////////////-->
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+            <div class="scrollAdjust" style="min-width: 10px; background: white;border: 1px solid rgb(221, 219, 218);" />
+        </div>
+    </div>
+    
+    <div class="slds slds-grid slds-wrap fullTableContainer" id="fullTableContainer" style="height:400px; overflow-y: scroll;" onmousemove="{!c.colMouseDrag}" onmouseup="{!c.colMouseUp}" onscroll="{!c.handleScroll}">  
+        <div class="slds-grid slds-gutters"> 
+            <div id="fixedColumns" class="slds-col" >
+                <table id="fixedColumnsTable" class="slds-table slds-table--bordered slds-no-row-hover"> <!--style="height:500px; width:100%;" -->
+                    <thead>
+                        <tr>
+                            <!--th class="leftTh">
+                                <lightning:helptext iconName="utility:date_input" content="Show Actuals data for the last 6 months" />
+                            </th-->   <!-- Commented By Ajay Choudhary -->  
+                            <aura:iteration items="{!v.fieldSetValues1}" var="field" indexVar="idx">
+                                <aura:if isTrue="{!field.showFieldColumn}"> <!--Added By Ajay Choudhary on 30th Jan 2023 for columns show/hide functionality -->
+                                    <th class="slds-text-title_caps leftTh" data-column-header="true" style="text-align:left; height: 41px;min-width: 70px;">
+                                        <div style="display: flex;">
+                                            <span style="flex: 1;" class="{!'colNameSpan ' + (field.fieldEditable ? 'hasedt' : '')}">{!field.fieldLabel}</span>
+                                            <aura:if isTrue="{!and(field.fieldEditable, !v.hasPendingMassChange)}">
+                                                <lightning:button name="{!field.fieldName}" iconName="utility:edit" class="columnControlButton slds-button slds-button_icon slds-button_icon-container" onclick="{!c.toggleAllEditMode}" />
+                                            </aura:if>
+                                            <aura:if isTrue="{!(idx + 1) lt (v.fieldSetValues1.length)}">
+                                                <!-- div class="colDragger" onmousedown="{!c.colMouseDown}" / -->
+                                            </aura:if>
+                                        </div>
+                                    </th>
+                                </aura:if>
+                            </aura:iteration>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <aura:iteration items="{!v.tableRecordsUpdated}" var="row" indexVar="r">
+                            <tr class="{!v.hasPendingMassChange ? (row.util.hasChange ? 'editRow' : 'disableRow') : ''}" style="height:100%">
+                                <!--td>
+                                    <lightning:buttonIcon iconName="utility:drag_and_drop" name="{!row.key}" variant="bare" onclick="{! c.historicalDataView }" alternativeText="Settings" title="View last 6 months actuals"/>
+                                </td--><!-- Commented By Ajay Choudhary -->  
+                                <aura:iteration items="{!v.fieldSetValues1}" var="field">
+                                    <aura:if isTrue="{!field.showFieldColumn}"> <!--Added By Ajay Choudhary on 30th Jan 2023 for columns show/hide functionality -->
+                                        <td>
+                                            <aura:if isTrue="{!v.checkRepaint}">
+                                                <c:SimplusForecastingFields record="{!row}" field="{!field}" isLineSelected="{!row.util.isSelected}" hasPendingMassChange="{!v.hasPendingMassChange}" />
+                                            </aura:if>
+                                        </td>
+                                    </aura:if>
+                                </aura:iteration>
+                            </tr>
+                        </aura:iteration>
+                        <!--//////////////////////Added By Ajay Choudhary////////////Start////////////////-->
+                        <aura:if isTrue="{!v.noOfColumns > 0}">
+                            <tr class="{!v.hasPendingMassChange ? (row.util.hasChange ? 'editRow' : 'disableRow') : ''}" style="height:100%">
+                                <td>
+                                    <aura:if isTrue="{!v.checkRepaint}">
+                                        <span>TOTALS</span>
+                                    </aura:if>
+                                </td>
+                            </tr>
+                            <!--Added By Ajay Choudhary On 7th June 2021-->
+                            <aura:if isTrue="{!v.showAllTotals}">
+                                <tr class="{!v.hasPendingMassChange ? (row.util.hasChange ? 'editRow' : 'disableRow') : ''}" style="height:100%">
+                                    <td>
+                                        <aura:if isTrue="{!v.checkRepaint}">
+                                            <span>ALL TOTALS</span>
+                                        </aura:if>
+                                    </td>
+                                </tr>
+                            </aura:if>
+                        </aura:if>
+                        <!--//////////////////////Added By Ajay Choudhary////////////Start////////////////-->
+                    </tbody>
+                </table>
+                <div id="fullTableDragger" style="height: inherit; width: 3px; background: gainsboro;;" /> <!-- onmousedown="{!c.colMouseDownTable}" / -->
+            </div>
+            
+            <div id="scrollableColumns" class="slds-col">
+                <table id="rightTable" class="slds-table slds-table--bordered slds-no-row-hover">
+                    <thead>
+                        <tr>
+                            <aura:if isTrue="{!not(v.disableControls)}">
+                                <!-- th style="height:41px"/ -->
+                            </aura:if>
+                            <aura:iteration items="{!v.fieldSetValues2}" var="field" indexVar="idx">
+                                <aura:if isTrue="{!field.showFieldColumn}"> <!--Added By Ajay Choudhary on 30th Jan 2023 for columns show/hide functionality -->
+                                    <th class="slds-text-title_caps rightColumnDouble" data-column-header="true" style="text-align:left;" rowspan="2">
+                                        <div style="display: flex;">
+                                            <span style="flex: 1;" class="{!'colNameSpan ' + (field.fieldEditable ? 'hasedt' : '')}">{!field.fieldLabel}</span>
+                                            <aura:if isTrue="{!and(field.fieldEditable, !v.hasPendingMassChange)}">
+                                                <lightning:button name="{!field.fieldName}" iconName="utility:edit" class="columnControlButton slds-button slds-button_icon slds-button_icon-container" onclick="{!c.toggleAllEditMode}" />
+                                            </aura:if>
+                                            <aura:if isTrue="{!(idx + 1) lt (v.fieldSetValues2.length)}">
+                                                <!-- div class="colDragger" onmousedown="{!c.colMouseDown}" / -->
+                                            </aura:if>
+                                        </div>
+                                    </th>
+                                </aura:if>
+                            </aura:iteration>
+                            <aura:iteration items="{!v.forecastColumns}" var="col">
+                                <aura:iteration items="{!col.monthList}" var="itm">
+                                    <th class="upperColumnHeader" colspan="{!(v.displayPrior ? 1 : 0) + (v.displayAve ? 1 : 0) + (v.displayAlloc ? 1 : 0) + 2}">{!itm}&nbsp;{!col.year}</th>
+                                </aura:iteration>
+                            </aura:iteration>
+                        </tr>
+                        <tr>
+                            <aura:iteration items="{!v.forecastColumns}" var="col">
+                                <aura:iteration items="{!col.list}" var="itm">
+                                    <aura:if isTrue="{!v.displayPrior}">
+                                        <th class="lowerColumnHeader" colspan="1" style="font-size: 7pt; padding: 0px 5px; min-width:70px;">Prior Yr</th>
+                                    <!--     <th class="lowerColumnHeader" colspan="1" style="font-size: 7pt; padding: 0px 5px; min-width:70px;">Prior Mn</th> --> <!-- 12th July'21 -->
+                                    </aura:if>
+                                    <aura:if isTrue="{!v.displayAve}">
+                                        <th class="lowerColumnHeader" colspan="1" style="font-size: 7pt; padding: 0px 5px; min-width:70px;">Average</th>
+                                    </aura:if>
+                                    <th colspan="{!v.activeView eq 'rep' ? 2 : 1}" class="{!'lowerColumnHeader ' + (v.activeView eq 'mgr' ? 'hidden' : '')}">Rep</th>
+                                    <th colspan="{!v.activeView eq 'mgr' ? 2 : 1}" class="{!'lowerColumnHeader ' + (v.activeView eq 'rep' ? 'hidden' : '')}">Mgr</th>
+                                    <aura:if isTrue="{!v.displayAlloc}">
+                                        <th class="lowerColumnHeader" colspan="1" style="font-size: 7pt; padding: 0px 4px;min-width:70px;">Allocation</th>
+                                    </aura:if>
+                                </aura:iteration>
+                            </aura:iteration>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <aura:iteration items="{!v.tableRecordsUpdated}" var="row" indexVar="r">
+                            <tr class="{! (v.hasPendingMassChange ? (row.util.hasChange ? 'editRow' : 'disableRow') : '') + ' lowerTdRight'}" style="height:100%">
+                                <aura:if isTrue="{!not(v.disableControls)}">
+                                    <!-- td style="height:48px"/ -->
+                                </aura:if>
+                                <aura:iteration items="{!v.fieldSetValues2}" var="field">
+                                    <aura:if isTrue="{!field.showFieldColumn}"> <!--Added By Ajay Choudhary on 30th Jan 2023 for columns show/hide functionality -->
+                                        <td>
+                                            <aura:if isTrue="{!v.checkRepaint}">
+                                                <c:SimplusForecastingFields record="{!row}" field="{!field}" isLineSelected="{!row.util.isSelected}" hasPendingMassChange="{!v.hasPendingMassChange}" />
+                                            </aura:if>
+                                        </td>
+                                    </aura:if>
+                                </aura:iteration>
+                                <aura:iteration items="{!row.colList}" var="col" indexVar="cIdx">
+                                    <aura:if isTrue="{!v.displayPrior}">
+                                        <td>
+                                            <ui:outputNumber value="{!col.priorMonth}" format="#,###.##"/>
+                                        </td>
+                                      <!--   <td>
+                                            <ui:outputNumber value="{!col.priorMonthAct}" format="#,###.##"/>
+                                        </td> --> <!-- 12th July'21 -->
+                                    </aura:if>
+                                    <aura:if isTrue="{!v.displayAve}">
+                                        <td>                                            
+                                            <ui:outputNumber value="{!col.aveMonth}" format="#,###.##"/>
+                                        </td>
+                                    </aura:if>
+                                    <!-- aura:if isTrue="{!col.rep != null}" -->
+                                    <aura:if isTrue="{!v.activeView != 'mgr'}"> <!-- Changed By Ajay Choudhary (previous version = v.activeView != 'rep')-->
+                                        <!--Changed By Ajay Choudhary (previous value = colspan="{!(v.activeView == 'rep' || v.activeView == 'rep_mgr' ? 1 : 2}") -->
+                                        <td colspan="{!v.activeView == 'rep' ? 2 : 1}" class="{!col.repIsChanged ? '' : 'isYellow'}">  <!--style="background: rgba(100, 152, 197, 0.99); color: white; text-align: center; border-color:rgba(100, 152, 197, 0.99);" -->
+                                            <aura:if isTrue="{!and(or(v.userRole eq 'rep', v.userRole eq 'rep_mgr'), v.editMode)}">
+                                                <!--<lightning:input type="number" value="{!col.rep}"/>-->
+                                                <input id="{!row.fieldSetValues.Id + col.fieldNameRep}" data-saveid="{!col.identifier + '/rep'}" data-role="rep" data-rowIndex="{!r}" data-colIndex="{!cIdx}" class="{!'slds-input forecastInput ' + (col.repIsChanged ? ' isChanged' : '')}" type="number" value="{!col.rep}" onchange="{!c.inputChange}" />
+                                                <aura:set attribute="else"><span style="margin: 0 3px;">{!col.rep}</span></aura:set>
+                                            </aura:if>
+                                        </td>
+                                    </aura:if>
+                                    <aura:if isTrue="{!v.activeView != 'rep'}"> <!-- Changed By Ajay Choudhary (previous version = v.activeView != 'mgr')-->
+                                        <!-- aura:if isTrue="{!col.mgr != null}" -->
+                                        <!--Changed By Ajay Choudhary (previous value = colspan="{!(v.activeView == 'mgr' || v.activeView == 'rep_mgr' ? 1 : 2}") -->
+                                        <td colspan="{!v.activeView == 'mgr' ? 2 : 1}" class="{!col.mgrIsChanged ? '' : 'isYellow'}"> <!-- style="background: rgb(221, 219, 218);text-align:center;" -->
+                                            <aura:if isTrue="{!and(or(v.userRole eq 'mgr', v.userRole eq 'rep_mgr'), v.editMode)}">
+                                                <!--<lightning:input type="number" value="{!col.mgr}"/>-->
+                                                <input id="{!row.fieldSetValues.Id + col.fieldNameMgr}" data-saveid="{!col.identifier + '/mgr'}" data-role="mgr" data-rowIndex="{!r}" data-colIndex="{!cIdx}" class="{!'slds-input forecastInput ' + (col.mgrIsChanged ? ' isChanged' : '')}" type="number" value="{!col.mgr}" onchange="{!c.inputChange}" />
+                                                <aura:set attribute="else"><span style="margin: 0 10px;">{!col.mgr}</span></aura:set>
+                                            </aura:if>
+                                        </td>
+                                    </aura:if>
+                                    <aura:if isTrue="{!v.displayAlloc}">
+                                    	<td class="{!col.allocIsChanged ? '' : 'isYellow'}"> <!-- style="background: rgb(221, 219, 218);text-align:center;" -->
+                                            <aura:if isTrue="{!and(or(v.userRole eq 'mgr', v.userRole eq 'rep_mgr'), v.editMode)}">
+                                                <!--<lightning:input type="number" value="{!col.mgr}"/>-->
+                                                <input id="{!row.fieldSetValues.Id + col.fieldNameAlloc}" data-saveid="{!col.identifier + '/alloc'}" data-role="alloc" data-rowIndex="{!r}" data-colIndex="{!cIdx}" class="{!'slds-input forecastInput ' + (col.allocIsChanged ? ' isChanged' : '')}" type="number" value="{!col.alloc}" onchange="{!c.inputChange}" />
+                                                <aura:set attribute="else"><span style="margin: 0 10px;">{!col.alloc}</span></aura:set>
+                                            </aura:if>
+                                        </td>
+                                    </aura:if>
+                                   
+                                </aura:iteration>
+                                <td style="min-width:100px;"><span><lightning:formattedNumber value="{!row.priorYearTotal}" maximumFractionDigits="0"/></span></td> <!--Added By Ajay Choudhary-->
+                              <!--  <td style="min-width:100px;"><span><lightning:formattedNumber value="{!row.priorMonthTotal}" maximumFractionDigits="0"/></span></td> --><!-- 12th July'21 -->
+                                <td style="min-width:100px;"><span><lightning:formattedNumber value="{!row.repMonthTotal}" maximumFractionDigits="0"/></span></td> <!--Added By Ajay Choudhary-->
+                                <td style="min-width:100px;"><span><lightning:formattedNumber value="{!row.mgrMonthTotal}" maximumFractionDigits="0"/></span></td> <!--Added By Ajay Choudhary-->
+                            </tr>
+                        </aura:iteration>
+                        <!--//////////////////////Added By Ajay Choudhary////////////Start////////////////-->
+                        <aura:if isTrue="{!v.noOfColumns == 0}">
+                            <tr class="{! (v.hasPendingMassChange ? (row.util.hasChange ? 'editRow' : 'disableRow') : '') + ' lowerTdRight'}" style="height:100%;background:#eaeaea;">
+                                <td rowspan="2">
+                                    <aura:if isTrue="{!v.checkRepaint}">
+                                        <span>TOTALS</span>
+                                    </aura:if>
+                                </td>
+                            </tr>
+                        </aura:if>
+                        <tr class="lowerTdRight" style="background-color:#eaeaea;">
+                            <aura:iteration items="{!v.fieldSetValues2}" var="field" indexVar="fIdx">
+                                <aura:if isTrue="{!field.showFieldColumn}"> <!--Added By Ajay Choudhary on 30th Jan 2023 for columns show/hide functionality -->
+                                    <aura:if isTrue="{!v.noOfColumns == 0}">
+                                        <aura:if isTrue="{!lessthan(fIdx, v.fieldSetValues2.length-1)}">
+                                            <td></td>
+                                        </aura:if>
+                                    </aura:if>
+                                    <aura:if isTrue="{!v.noOfColumns > 0}">
+                                        <td></td>
+                                    </aura:if>
+                                </aura:if>
+                            </aura:iteration>
+                            <!--aura:iteration items="{!v.recordPriorYearTotal}" var="p" indexVar="pIdx">
+                                <aura:if isTrue="{!v.displayPrior}">
+                                    <td>
+                                        <lightning:formattedNumber value="{!p}" maximumFractionDigits="0"/>
+                                    </td>
+                                </aura:if>
+                                <aura:if isTrue="{!v.displayAve}">
+                                    <aura:iteration items="{!v.recordAveTotal}" var="a" indexVar="aIdx">
+                                        <aura:if isTrue="{!(pIdx == aIdx)}">
+                                            <td>  
+                                                <lightning:formattedNumber value="{!a}" maximumFractionDigits="0"/>
+                                            </td>
+                                        </aura:if>
+                                    </aura:iteration>
+                                </aura:if>
+                                <aura:if isTrue="{!v.activeView != 'mgr'}">
+                                    <aura:iteration items="{!v.recordSalesTotal}" var="s" indexVar="sIdx">
+                                        <aura:if isTrue="{!(pIdx == sIdx)}">
+                                            <td colspan="{!v.activeView == 'rep' ? 2 : 1}">
+                                                <lightning:formattedNumber value="{!s}" maximumFractionDigits="0"/>
+                                            </td>
+                                        </aura:if>
+                                    </aura:iteration>
+                                </aura:if>
+                                <aura:if isTrue="{!v.activeView != 'rep'}">
+                                    <aura:iteration items="{!v.recordMktgTotal}" var="m" indexVar="mIdx">
+                                        <aura:if isTrue="{!(pIdx == mIdx)}">
+                                            <td colspan="{!v.activeView == 'mgr' ? 2 : 1}">
+                                                <lightning:formattedNumber value="{!m}" maximumFractionDigits="0"/>
+                                            </td>
+                                        </aura:if>
+                                    </aura:iteration>
+                                </aura:if>
+                            </aura:iteration=-->
+                            <aura:if isTrue="{!v.showTotals}">
+                                <aura:iteration items="{!v.recordSalesTotal}" var="s" indexVar="sIdx">
+                                    <aura:if isTrue="{!v.displayPrior}">
+                                        <aura:iteration items="{!v.recordPriorYearTotal}" var="p" indexVar="pIdx">
+                                            <aura:if isTrue="{!pIdx == sIdx}">
+                                                <td>
+                                                    <lightning:formattedNumber value="{!p}" maximumFractionDigits="0"/>
+                                                </td>
+                                            </aura:if>
+                                        </aura:iteration>
+                                        <!-- 12th July'21 START -->  <!--   <aura:iteration items="{!v.recordPriorMonthTotal}" var="p" indexVar="pIdx">
+                                            <aura:if isTrue="{!(sIdx == pIdx)}">
+                                                <td>
+                                                    <lightning:formattedNumber value="{!p}" maximumFractionDigits="0"/>
+                                                </td>
+                                            </aura:if>
+                                        </aura:iteration> --><!-- 12th July'21 END -->
+                                    </aura:if>
+                                    <aura:if isTrue="{!v.displayAve}">
+                                        <aura:iteration items="{!v.recordAveTotal}" var="a" indexVar="aIdx">
+                                            <aura:if isTrue="{!(sIdx == aIdx)}">
+                                                <td>  
+                                                    <lightning:formattedNumber value="{!a}" maximumFractionDigits="0"/>
+                                                </td>
+                                            </aura:if>
+                                        </aura:iteration>
+                                    </aura:if>
+                                    <aura:if isTrue="{!v.activeView != 'mgr'}">
+                                        <td colspan="{!v.activeView == 'rep' ? 2 : 1}">
+                                            <lightning:formattedNumber value="{!s}" maximumFractionDigits="0"/>
+                                        </td>
+                                    </aura:if>
+                                    <aura:if isTrue="{!v.activeView != 'rep'}">
+                                        <aura:iteration items="{!v.recordMktgTotal}" var="m" indexVar="mIdx">
+                                            <aura:if isTrue="{!(sIdx == mIdx)}">
+                                                <td colspan="{!v.activeView == 'mgr' ? 2 : 1}">
+                                                    <lightning:formattedNumber value="{!m}" maximumFractionDigits="0"/>
+                                                </td>
+                                            </aura:if>  
+                                        </aura:iteration>
+                                    </aura:if>
+                                    <aura:if isTrue="{!v.displayAlloc}">
+                                        <aura:iteration items="{!v.recordAllocTotal}" var="al" indexVar="aLIdx">
+                                            <aura:if isTrue="{!(sIdx == aLIdx)}">
+                                                <td>  
+                                                    <lightning:formattedNumber value="{!al}" maximumFractionDigits="0"/>
+                                                </td>
+                                            </aura:if>
+                                        </aura:iteration>
+                                    </aura:if>
+                                </aura:iteration>
+                                
+                                <td id="g"><lightning:formattedNumber value="{!v.total_totalPrior}" maximumFractionDigits="0"/></td>
+                                <!--  <td><lightning:formattedNumber value="{!v.total_totalPriorMonth}" maximumFractionDigits="0"/> </td> --><!-- 12th July'21 -->
+                                <td id="h"> <lightning:formattedNumber value="{!v.total_totalSales}" maximumFractionDigits="0"/></td>
+                                <td id="i"><lightning:formattedNumber value="{!v.total_totalMktg}" maximumFractionDigits="0"/></td>
+                            </aura:if>
+                        </tr>
+                        <!--Added By Ajay Choudhary On 7th June 2021-->
+                        <aura:if isTrue="{!v.noOfColumns == 0}">
+                            <aura:if isTrue="{!v.showAllTotals}">
+                                <tr class="{! (v.hasPendingMassChange ? (row.util.hasChange ? 'editRow' : 'disableRow') : '') + ' lowerTdRight'}" style="height:100%;background:#eaeaea;">
+                                    <td rowspan="2">
+                                        <aura:if isTrue="{!v.checkRepaint}">
+                                            <span>ALL TOTALS</span>
+                                        </aura:if>
+                                    </td>
+                                </tr>
+                            </aura:if>
+                        </aura:if>
+                        <aura:if isTrue="{!v.showAllTotals}">
+                            <tr class="lowerTdRight" style="background-color:#eaeaea;">
+                                <aura:iteration items="{!v.fieldSetValues2}" var="field" indexVar="fIdx">
+                                    <aura:if isTrue="{!field.showFieldColumn}"> <!--Added By Ajay Choudhary on 30th Jan 2023 for columns show/hide functionality -->
+                                        <aura:if isTrue="{!v.noOfColumns == 0}">
+                                            <aura:if isTrue="{!lessthan(fIdx, v.fieldSetValues2.length-1)}">
+                                                <td></td>
+                                            </aura:if>
+                                        </aura:if>
+                                        <aura:if isTrue="{!v.noOfColumns > 0}">
+                                            <td></td>
+                                        </aura:if>
+                                    </aura:if>
+                                </aura:iteration>
+                                <aura:iteration items="{!v.recordSalesAllTotal}" var="s" indexVar="sIdx">
+                                    <aura:if isTrue="{!v.displayPrior}">
+                                        <aura:iteration items="{!v.recordPriorYearAllTotal}" var="p" indexVar="pIdx">
+                                            <aura:if isTrue="{!(sIdx == pIdx)}">
+                                                <td>
+                                                    <lightning:formattedNumber value="{!p}" maximumFractionDigits="0"/>
+                                                </td>
+                                            </aura:if>
+                                        </aura:iteration>
+                                <!-- 12th July'21 START -->     <!--    <aura:iteration items="{!v.recordPriorMonthAllTotal}" var="p" indexVar="pIdx">
+                                            <aura:if isTrue="{!(sIdx == pIdx)}">
+                                                <td>
+                                                    <lightning:formattedNumber value="{!p}" maximumFractionDigits="0"/>
+                                                </td>
+                                            </aura:if>
+                                        </aura:iteration> --><!-- 12th July'21 END -->
+                                    </aura:if>
+                                    <aura:if isTrue="{!v.displayAve}">
+                                        <aura:iteration items="{!v.recordAveAllTotal}" var="a" indexVar="aIdx">
+                                            <aura:if isTrue="{!(sIdx == aIdx)}">
+                                                <td>  
+                                                    <lightning:formattedNumber value="{!a}" maximumFractionDigits="0"/>
+                                                </td>
+                                            </aura:if>
+                                        </aura:iteration>
+                                    </aura:if>
+                                    <aura:if isTrue="{!v.activeView != 'mgr'}">
+                                        <td colspan="{!v.activeView == 'rep' ? 2 : 1}">
+                                            <lightning:formattedNumber value="{!s}" maximumFractionDigits="0"/>
+                                        </td>
+                                    </aura:if>
+                                    <aura:iteration items="{!v.recordMktgAllTotal}" var="m" indexVar="mIdx">
+                                        <aura:if isTrue="{!(sIdx == mIdx)}">
+                                            <aura:if isTrue="{!v.activeView != 'rep'}">
+                                                <td colspan="{!v.activeView == 'mgr' ? 2 : 1}">
+                                                    <lightning:formattedNumber value="{!m}" maximumFractionDigits="0"/>
+                                                </td>
+                                            </aura:if>
+                                        </aura:if>                                  
+                                    </aura:iteration>
+                                    <aura:if isTrue="{!v.displayAlloc}">
+                                        <aura:iteration items="{!v.recordAllocAllTotal}" var="al" indexVar="aLIdx">
+                                            <aura:if isTrue="{!(sIdx == aLIdx)}">
+                                                <td>
+                                                    <lightning:formattedNumber value="{!al}" maximumFractionDigits="0"/>
+                                                </td>
+                                            </aura:if>                                  
+                                        </aura:iteration>
+                                    </aura:if>
+                                </aura:iteration>
+                                <td><lightning:formattedNumber value="{!v.total_AlltotalPrior}" maximumFractionDigits="0"/></td>
+                               <!--  <td><lightning:formattedNumber value="{!v.total_AlltotalPriorMonth}" maximumFractionDigits="0"/></td> --> <!-- 12th July'21 -->
+                                <td><lightning:formattedNumber value="{!v.total_AlltotalSales}" maximumFractionDigits="0"/></td>
+                                <td><lightning:formattedNumber value="{!v.total_AlltotalMktg}" maximumFractionDigits="0"/></td>
+                            </tr>
+                        </aura:if>
+                        <!--Added By Ajay Choudhary On 7th June 2021-->
+                        <!--//////////////////////Added By Ajay Choudhary////////////End////////////////-->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <aura:if isTrue="{!v.isLoadingList}">
+            <div class="loaderBackdrop">
+                <div class="demo-only" style="height: 6rem;">
+                    <div role="status" class="slds-spinner slds-spinner_large slds-spinner_brand">
+                        <span class="slds-assistive-text">Loading</span>
+                        <div class="slds-spinner__dot-a"></div>
+                        <div class="slds-spinner__dot-b"></div>
+                    </div>
+                </div>
+            </div>
+        </aura:if>
+    </div>
+    <div class="paginationController" style="display: flex; margin: 10px 0;">
+        <!--aura:if isTrue="{!v.isBeyond}"--> <!--Commented By Ajay Choudhary on 25th May 2021-->
+            <div style="font-size: 8pt; color: #a7a7a7;">
+                <!-- Added by Gaurish on 13th Apr 2021 -->
+                PAGE LOAD: Started at {!v.startTimer1} Ended at {!v.endTimer1}<!--, SCREEN BUILD: Started at {!v.startTimer2} Ended at {!v.endTimer2}-->
+            </div>
+        <!--/aura:if--> <!--Commented By Ajay Choudhary on 25th May 2021-->
+        <div style="flex: 1;" />
+        <div style="display: flex;">
+            <lightning:buttonIcon disabled="{!v.page eq 1}" iconName="utility:back" size="small" onclick="{! c.firstPage }" alternativeText="First Page" />
+            <lightning:buttonIcon disabled="{!v.page eq 1}" iconName="utility:chevronleft" size="small" onclick="{! c.prevPage }" alternativeText="Previous Page" />
+            <div style="margin: 0 5px; font-size: 12pt;">Page {!v.page} of {!v.pageMax}</div>
+            <lightning:buttonIcon disabled="{!v.page == v.pageMax}" iconName="utility:chevronright" size="small" onclick="{! c.nextPage }" alternativeText="Next Page" />
+            <lightning:buttonIcon disabled="{!v.page == v.pageMax}" iconName="utility:forward" size="small" onclick="{! c.lastPage }" alternativeText="Last Page" />
+        </div>
+    </div>
+    
+</aura:component>

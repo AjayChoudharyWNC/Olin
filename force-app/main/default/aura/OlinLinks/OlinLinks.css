@@ -1,0 +1,21 @@
+.THIS .flex-col{
+    display: flex;
+    flex-direction: column;
+}
+
+.THIS .flex-row{
+    display: flex;
+    flex-direction: row;
+}
+
+.THIS .links-header{
+    flex: 1;
+}
+
+.THIS .slds-card__header {
+    margin-bottom:1.5rem;
+}
+
+.THIS .slds-card__body{
+    margin: 0px 18px 0px 18px;
+}

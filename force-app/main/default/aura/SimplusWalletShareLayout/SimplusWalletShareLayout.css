@@ -1,0 +1,93 @@
+.THIS {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    align-items: stretch;
+    align-content: stretch;
+    background: rgb(255, 255, 255);
+    padding: .5rem .75rem;
+    box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.10);
+    border: 1px solid rgb(221, 219, 218);
+    border-radius: .25rem;
+}
+.THIS .uneditableField input.slds-input[disabled]{
+    background-color: transparent;
+    border-color: transparent;
+    padding: 0px;
+    cursor: text;
+    font-weight: bold;
+}
+.THIS .slds-text-title_caps {
+    font-weight: bold;
+}
+.THIS .uneditableField.hasError input.slds-input[disabled] {
+    color: red;
+    font-weight: 800;
+}
+.THIS .uneditableField.final input.slds-input[disabled] {
+    color: green;
+    font-weight: 800;
+}
+.THIS .noBorderInput input {
+    width: 100px;
+    background-color: white;
+    border-color: white;
+    text-align: center;
+    line-height: 1;
+}
+.THIS .noBorderInput label {
+    width: 100%;
+    display: block;
+    text-align: center;
+}
+.THIS .yearControlButton {
+    margin-top: 7px;
+}
+.THIS .utility label {
+    display: none;
+}
+
+
+.THIS .productData input {
+    background-color: white;
+    border-color: white;
+    text-align: left;
+    line-height: 1;
+    padding-left: 0;
+    cursor: text;
+}
+.THIS .productData label {
+    width: 100%;
+    display: block;
+    text-align: left;
+}
+.THIS .productData {
+    border-bottom: 1px solid rgb(221, 219, 218);
+    margin-bottom: 5px;
+}
+.THIS .backdrop {
+    z-index: 100;
+    position: fixed;
+    top: 0;
+    left: 0;
+    background-color: rgba(0,0,0,.5);
+    padding-top: 200px;
+    width: 100%;
+    height: 100%;
+}
+.THIS .backdrop .cancelConfirm {
+    background-color: white;
+    padding: 20px;
+    text-align: center;
+    width: 300px;
+    margin: auto;
+}
+.THIS .exampleHolder{
+    position: relative;
+    display: inline-block;
+    margin-left: 15px;
+    width: 55px;
+    vertical-align: middle;
+    white-space: nowrap;
+}

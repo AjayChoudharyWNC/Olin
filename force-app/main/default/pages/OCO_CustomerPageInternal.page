@@ -1,0 +1,32 @@
+<apex:page showheader="false" sidebar="false" docType="html-5.0" id="homePage" cache="false" standardController="SAP_Onboarding__c">
+    <apex:includeLightning />
+    <script>
+    window.onload  = function(){
+        var sapId = '{!SAP_Onboarding__c.Id}';
+        if(sapId){
+            var spinner = document.getElementById('spinner');
+            spinner.style.display = 'block';
+            $Lightning.use("c:OCO_CustomerApp",function() {
+                $Lightning.createComponent("c:OCO_CustomerMain",
+                                           { 
+                                               "sapId" : sapId
+                                           },
+                                           "lightning", function(cmp) {
+                                               spinner.style.display = 'none';
+                                               console.log('Component created, do something cool here');
+                                           });
+            });
+            
+        }
+    }
+    </script>
+    <body>
+        <div id="lightning"/>
+        <div style="position:fixed;display:none;text-align:center;width: 100%; height: 100%;top: 50%;" id="spinner">
+            <apex:outputPanel >
+                <img src="/img/loading32.gif" width="25" height="25" />
+                <apex:outputLabel value="Loading..."/>
+            </apex:outputPanel>    
+        </div>
+    </body>
+</apex:page>

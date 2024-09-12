@@ -1,0 +1,61 @@
+<apex:component controller="approvalRequestQuotelineItemsclass" access="global">
+    <apex:attribute name="Qid" type="Id" description="Id of the account" assignTo="{!quotelineId}"/>
+    <table border = "1" cellspacing = "0">
+        <tr>
+            <td>Product Name</td>
+<td>Ship To City, State, Country</td>
+<td>Ship From Source</td>
+<td>Shipping Condition</td>
+<td>Inco Term</td>
+<td>Agreement Volume</td>
+<td>Proposed Volume</td>
+<td>Price Change Frequency</td>
+<td>Validity Period</td>
+<td>Currency</td>
+<td>UOM</td>
+<td>Prior Price</td>
+<td>New Price</td> 
+<td>Price Change (Delta)</td>
+<td>Minimum Price</td>
+<td>Price Change (Min Price Delta)</td>
+<td>Freight Charges</td>
+<td>Freight Override</td>  
+<td>Plant Net</td>
+<td>Netback</td>
+<td>Distributor Discount</td>
+<td>Discount Amount</td>
+        </tr>
+        <apex:repeat value="{!quotelines}" var="ql">
+            <tr>
+            <td>{!ql.ProductName_Concatenated__c}</td>
+<td>{!ql.Destination_City_State_Country_Ship_To__c}</td>
+<td>{!ql.Ship_From_Plant_List__r.Name}</td>
+<td>{!ql.Shipping_Condition__c}</td>
+<td>{!ql.Incoterm__c}</td>
+<td>{!ql.Agreement_Volume_UOM_Concatenated__c}</td>
+<td>{!ql.Avg_Annualize_Volume_Display__c}</td>
+<td>{!ql.Price_Change_Frequency__c}</td>
+<td>{!ql.Validity_Period__c}</td>
+<td>{!ql.CurrencyIsoCode}</td>
+<td>{!ql.UOM__c}</td>
+<td>{!ql.Quote_Document_Currency__c}<apex:outputText value="{!IF(ql.Per_Quantity__c == '1','{0, number,###,###,###,##0.00}', '{0, number,###,###,###,##0.0000}')}"><apex:param value="{!ql.Prior_Price_with_Multiplier_Conversion__c}"/></apex:outputText> </td>
+<td>{!ql.Quote_Document_Currency__c}<apex:outputText value="{!IF(ql.Per_Quantity__c == '1','{0, number,###,###,###,##0.00}', '{0, number,###,###,###,##0.0000}')}"><apex:param value="{!ql.New_Price_with_Multiplier_Conversion__c}"/></apex:outputText> </td>
+<td>{!ql.Quote_Document_Currency__c}<apex:outputText value="{!IF(ql.Per_Quantity__c == '1','{0, number,###,###,###,##0.00}', '{0, number,###,###,###,##0.0000}')}"><apex:param value="{!ql.Price_Change_Delta__c}"/></apex:outputText> </td>
+<td>{!ql.Quote_Document_Currency__c}<apex:outputText value="{!IF(ql.Per_Quantity__c == '1','{0, number,###,###,###,##0.00}', '{0, number,###,###,###,##0.0000}')}"><apex:param value="{!ql.Minimum_Price_EMEIA__c}"/></apex:outputText> </td>
+<td>{!ql.Quote_Document_Currency__c}<apex:outputText value="{!IF(ql.Per_Quantity__c == '1','{0, number,###,###,###,##0.00}', '{0, number,###,###,###,##0.0000}')}"><apex:param value="{!ql.Price_Change_Min_Price_Delta__c}"/></apex:outputText> </td>
+<td>{!ql.Quote_Document_Currency__c}<apex:outputText value="{!IF(ql.Per_Quantity__c == '1','{0, number,###,###,###,##0.00}', '{0, number,###,###,###,##0.0000}')}"><apex:param value="{!ql.Freight_Charges_with_Multiplier_Conversi__c}"/></apex:outputText> </td>
+<td>{!ql.Quote_Document_Currency__c}<apex:outputText value="{!IF(ql.Per_Quantity__c == '1','{0, number,###,###,###,##0.00}', '{0, number,###,###,###,##0.0000}')}"><apex:param value="{!ql.Freight_Component_with_Multiplier_Conver__c}"/></apex:outputText> </td>
+<td>{!ql.Quote_Document_Currency__c}<apex:outputText value="{!ql.SBQQ__NetPrice__c/VALUE(ql.Per_Quantity__c)}"/></td>
+<td>{!ql.Quote_Document_Currency__c}<apex:outputText value="{!ql.Net_Back__c/VALUE(ql.Per_Quantity__c)}"/></td>
+<td>{!percentDiscount}</td>
+<td>{!flatDiscount}</td>            
+          
+            </tr>       
+        </apex:repeat>      
+             
+    </table>
+    
+
+    
+    
+</apex:component>

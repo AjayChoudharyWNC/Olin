@@ -1,0 +1,614 @@
+<aura:component controller="OCO_CustomerController">
+    <aura:attribute name="sapId" type="String"/>
+    <aura:attribute name="sapRecord" type="SAP_Onboarding__c"/>
+    <aura:attribute name="taxFileList" type="List" default="[]"/>
+    <aura:attribute name="bankReferenceFileList" type="List" default="[]"/>
+    <aura:attribute name="tradeReferenceFileList" type="List" default="[]"/>
+    <aura:attribute name="financialFileList" type="List" default="[]"/>
+    <aura:attribute name="vatList" type="List"/>
+    <aura:attribute name="languageLabelMap" type="Object"/>
+    <aura:attribute name="englishLanguageLabelMap" type="Object"/>
+    <aura:attribute name="showTradeRefFields" type="boolean" default="true"/>
+    <aura:attribute name="showBankRefFields" type="boolean" default="true"/>
+    <aura:attribute name="spinner" type="boolean"/>
+    <aura:attribute name="showCreditInfo" type="boolean" default="true"/>
+    <aura:attribute name="appUserId" type="String"/>
+    <aura:attribute name="screenName" type="String"/>
+    <aura:attribute name="sapNo" type="String" default=""/>
+    <aura:attribute name="showConfirmDialog" type="boolean"/>
+    <aura:attribute name="confirmMessage" type="String" default=""/>
+    <aura:attribute name="confirmCancelLabel" type="String" default=""/>
+    <aura:attribute name="confirmSubmitLabel" type="String" default=""/>
+    <aura:attribute name="toDeleteFileId" type="String"/>
+    <aura:attribute name="fileType" type="String" default=""/>
+    <aura:attribute name="confirmEventName" type="String" default=""/>
+    <aura:attribute name="parent" type="aura.component" />
+    <aura:attribute name="isFormSubmitManual" type="boolean"/>
+    <aura:registerEvent name="refreshSapRecordEvent" type="c:OCO_Customer_RefreshSapRecord"/>
+    <aura:attribute name="isDisabledForProfile" type="boolean"/>
+    <aura:attribute name="taxTypeDependentMap" type="Object"/>
+    <aura:attribute name="taxTypeDependentIdMap" type="Map"/>
+    <aura:attribute name="uploadFileText" type="String" default="Upload File"/>
+    <aura:attribute name="languageFileData" type="Object"/>
+    <aura:attribute name="isTaxTypeLoaded" type="boolean"/>
+    <aura:attribute name="creditType" type="String" default="Full"/>
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    <aura:method name="callDoInit" action="{!c.doInit}"/>
+    <!--aura:handler event="c:OCO_HandleLanguageChange_CA" action="{!c.handleTaxOptions}"/-->
+    
+    <aura:html tag="style">
+        :root {
+        --fileContent: {!v.uploadFileText};
+        }
+    </aura:html>
+    
+    <aura:if isTrue="{!v.spinner}">
+        <div aura:id="spinnerId" style="position:fixed;" class="slds-spinner_container">
+            <div class="slds-spinner--brand  slds-spinner slds-spinner--large slds-is-relative" role="alert">
+                <span class="slds-assistive-text">{!v.languageLabelMap.PS_45}...</span>
+                <div class="slds-spinner__dot-a"></div>
+                <div class="slds-spinner__dot-b"></div>
+            </div>
+        </div>
+    </aura:if>
+    <aura:if isTrue="{!v.showConfirmDialog}">
+        <div role="dialog" class="slds-modal slds-fade-in-open ">
+            <div class="slds-modal__container">
+                <header class="slds-modal__header">
+                    <h1 class="slds-text-heading--medium">{!v.languageLabelMap.HP_30}</h1>
+                </header>
+                <div class="slds-modal__content slds-p-around--medium">
+                    <center><b>{!v.confirmMessage}</b></center>
+                </div>
+                <footer class="slds-modal__footer">
+                    <lightning:button name='No' label='{!v.confirmCancelLabel}' onclick='{!c.handleConfirmDialog}'/>
+                    <aura:if isTrue="{!v.confirmEventName != 'fileSize'}"><lightning:button variant="brand" name='{!v.confirmEventName}' label='{!v.confirmSubmitLabel}' onclick='{!c.handleConfirmDialog}'/></aura:if>
+                </footer>
+            </div>
+        </div>
+        <div class="slds-backdrop slds-backdrop--open"></div>            
+    </aura:if>
+    
+    <lightning:recordEditForm objectApiName="SAP_Onboarding__c" recordId="{!v.sapId}" aura:id="CAForm" onsuccess="{!c.handleFormSuccess}" onsubmit="{!c.handleFormSubmit}" onerror="{!c.handleError}">
+        <div class="slds-grid slds-wrap" style="min-width:100%;">
+                <div class="slds-col slds-large-size_3-of-8 slds-medium-size_8-of-8 slds-small-size_8-of-8 slds-m-bottom_medium">
+                    <b><span style="color:#767676;font-size:18px;">{!v.languageLabelMap.CI_1} : {!v.sapNo}</span><br/><span style="color:#a1a1a1;font-size:16px;">{!v.screenName == 'Customer Information' ? v.languageLabelMap.CI_2 : v.screenName == 'Document Delivery' ? v.languageLabelMap.DD_7 : v.screenName == 'Product Stewardship' ? v.languageLabelMap.CA_83 : v.screenName == 'Credit Application' ? v.languageLabelMap.HP_6 : v.screenName}</span></b>
+                </div>
+                <div class="slds-col slds-large-size_5-of-8 slds-medium-size_8-of-8 slds-small-size_8-of-8 slds-grid slds-wrap slds-text-align_right slds-m-top_small">
+                    <div class="slds-col slds-large-size_1-of-1 slds-medium-size_1-of-1 slds-small-size_1-of-1">
+                        <button class="slds-button slds-button_neutral btn" onclick="{!c.handleSaveProgress}"  type="button" disabled="{!or(and(v.sapRecord.Credit_Application_Status__c != 'Sent To Customer', v.sapRecord.Credit_Application_Status__c != 'Customer In Progress'),v.isDisabledForProfile)}">
+                            <lightning:icon iconName="utility:save" size="x-small" class="shareIcon" style="margin-right:5px;"/>{!v.languageLabelMap.CI_3}
+                        </button>
+                        <button class="slds-button slds-button_neutral btn" type="button" onclick="{!c.handleShareWithColleague}" disabled="{!or(and(v.sapRecord.Credit_Application_Status__c != 'Sent To Customer', v.sapRecord.Credit_Application_Status__c != 'Customer In Progress'),v.isDisabledForProfile)}">
+                            <lightning:icon iconName="utility:socialshare" size="x-small" class="shareIcon" style="margin-right:5px;"/>{!v.languageLabelMap.CI_4}
+                        </button>
+                        <aura:if isTrue="{!v.creditType == 'Full'}">
+                            <button class="slds-button slds-button_neutral btn" type="submit" disabled="{!or(and(v.sapRecord.Credit_Application_Status__c != 'Sent To Customer', v.sapRecord.Credit_Application_Status__c != 'Customer In Progress'),v.isDisabledForProfile)}">
+                                <lightning:icon iconName="utility:success" size="x-small" class="shareIcon" style="margin-right:5px;"/>{!v.languageLabelMap.CI_5}
+                            </button>
+                            <aura:set attribute="else">
+                                <button class="slds-button slds-button_neutral btn" onclick="{!c.handleSubmitPartialCredit}" disabled="{!or(and(v.sapRecord.Credit_Application_Status__c != 'Sent To Customer', v.sapRecord.Credit_Application_Status__c != 'Customer In Progress'),v.isDisabledForProfile)}">
+                                    <lightning:icon iconName="utility:success" size="x-small" class="shareIcon" style="margin-right:5px;"/>{!v.languageLabelMap.CI_5}
+                                </button>
+                            </aura:set>
+                        </aura:if>
+                    </div>
+                </div>
+            <aura:if isTrue="{!v.creditType == 'Full'}">
+                <div class="slds-col slds-size_1-of-1" style="border-bottom:2px solid #767676;color:#767676;font-size: 14px;font-weight:bold;">{!v.languageLabelMap.CA_1}</div>
+                <lightning:messages />
+                <div class="slds-col slds-large-size_1-of-4 slds-medium-size_2-of-4 slds-small-size_4-of-4">
+                    <label  class="slds-form-element__label slds-no-flex"><abbr lightning-input_input="" title="required" class="slds-required">*</abbr>{!v.languageLabelMap.CA_2}</label>
+                    <lightning:inputField disabled="{!or(and(v.sapRecord.Credit_Application_Status__c != 'Sent To Customer', v.sapRecord.Credit_Application_Status__c != 'Customer In Progress'), v.sapRecord.On_boarding_Request_Type__c != 'New Sold-To w/ Ship-to &amp; Product')}"  fieldName="Full_Legal_Name__c" variant="label-hidden" value="{!v.sapRecord.Full_Legal_Name__c}" required="true"/>
+                </div>
+                <div class="slds-col slds-large-size_1-of-4 slds-medium-size_2-of-4 slds-small-size_4-of-4">
+                    <label  class="slds-form-element__label slds-no-flex"><aura:if isTrue="{!v.sapRecord.On_boarding_Request_Type__c == 'New Sold-To w/ Ship-to &amp; Product'}"><abbr lightning-input_input="" title="required" class="slds-required">*</abbr></aura:if> {!v.languageLabelMap.CA_3}</label>
+                    <lightning:inputField disabled="{!or(and(v.sapRecord.Credit_Application_Status__c != 'Sent To Customer', v.sapRecord.Credit_Application_Status__c != 'Customer In Progress'), v.sapRecord.On_boarding_Request_Type__c != 'New Sold-To w/ Ship-to &amp; Product')}" fieldName="DUNS_No__c" variant="label-hidden" value="{!v.sapRecord.DUNS_No__c}" required="{!v.sapRecord.On_boarding_Request_Type__c == 'New Sold-To w/ Ship-to &amp; Product'}"/>
+                </div>
+                <div class="slds-col slds-large-size_1-of-4 slds-medium-size_2-of-4 slds-small-size_4-of-4">
+                    <label  class="slds-form-element__label slds-no-flex"><aura:if isTrue="{!v.sapRecord.On_boarding_Request_Type__c == 'New Sold-To w/ Ship-to &amp; Product'}"><abbr lightning-input_input="" title="required" class="slds-required">*</abbr></aura:if> {!v.languageLabelMap.CA_4}</label>
+                    <lightning:select variant="label-hidden" value="{!v.sapRecord.Is_Customer_a_Publically_Traded_Company__c}" disabled="{!or(and(v.sapRecord.Credit_Application_Status__c != 'Sent To Customer', v.sapRecord.Credit_Application_Status__c != 'Customer In Progress'), v.sapRecord.On_boarding_Request_Type__c != 'New Sold-To w/ Ship-to &amp; Product')}" required="{!v.sapRecord.On_boarding_Request_Type__c == 'New Sold-To w/ Ship-to &amp; Product'}">
+                        <option value="">--{!v.languageLabelMap.HP_45}--</option>
+                        <option value="Yes">{!v.languageLabelMap.HP_31}</option>
+                        <option value="No">{!v.languageLabelMap.HP_32}</option>
+                    </lightning:select>
+                    <!--lightning:inputField disabled="{!and(v.sapRecord.Credit_Application_Status__c != 'Sent To Customer', v.sapRecord.Credit_Application_Status__c != 'Customer In Progress')}" fieldName="Is_Customer_a_Publically_Traded_Company__c" variant="label-hidden" required="true" value="{!v.sapRecord.Is_Customer_a_Publically_Traded_Company__c}" /-->
+                </div>
+                <div class="slds-col slds-large-size_1-of-4 slds-medium-size_2-of-4 slds-small-size_4-of-4">
+                    <label  class="slds-form-element__label slds-no-flex"><aura:if isTrue="{!v.sapRecord.Is_Customer_a_Publically_Traded_Company__c == 'Yes'}"><abbr lightning-input_input="" title="required" class="slds-required">*</abbr></aura:if> {!v.languageLabelMap.CA_5}</label>
+                    <lightning:inputField disabled="{!or(and(v.sapRecord.Credit_Application_Status__c != 'Sent To Customer', v.sapRecord.Credit_Application_Status__c != 'Customer In Progress'), v.sapRecord.On_boarding_Request_Type__c != 'New Sold-To w/ Ship-to &amp; Product')}" fieldName="Stock_Ticker_Symbol__c" variant="label-hidden" value="{!v.sapRecord.Stock_Ticker_Symbol__c}" required="{!v.sapRecord.Is_Customer_a_Publically_Traded_Company__c == 'Yes'}"/>
+                </div>
+                <div class="slds-col slds-large-size_1-of-4 slds-medium-size_2-of-4 slds-small-size_4-of-4">
+                    <label  class="slds-form-element__label slds-no-flex"><abbr lightning-input_input="" title="required" class="slds-required">*</abbr> {!v.languageLabelMap.CA_6}</label>
+                    <lightning:inputField disabled="{!or(and(v.sapRecord.Credit_Application_Status__c != 'Sent To Customer', v.sapRecord.Credit_Application_Status__c != 'Customer In Progress'), v.sapRecord.On_boarding_Request_Type__c != 'New Sold-To w/ Ship-to &amp; Product')}" fieldName="Sold_To_Company_Name__c" variant="label-hidden" value="{!v.sapRecord.Sold_To_Company_Name__c}" required="true"/>
+                </div>
+                <div class="slds-col slds-large-size_1-of-4 slds-medium-size_2-of-4 slds-small-size_4-of-4">
+                    <label  class="slds-form-element__label slds-no-flex"><abbr lightning-input_input="" title="required" class="slds-required">*</abbr> {!v.languageLabelMap.CA_7}</label>
+                    <lightning:inputField disabled="{!or(and(v.sapRecord.Credit_Application_Status__c != 'Sent To Customer', v.sapRecord.Credit_Application_Status__c != 'Customer In Progress'), v.sapRecord.On_boarding_Request_Type__c != 'New Sold-To w/ Ship-to &amp; Product')}" fieldName="Sold_To_Street__c" variant="label-hidden" value="{!v.sapRecord.Sold_To_Street__c}" required="true"/>
+                </div>
+                <div class="slds-col slds-large-size_1-of-4 slds-medium-size_2-of-4 slds-small-size_4-of-4">
+                    <label  class="slds-form-element__label slds-no-flex"> {!v.languageLabelMap.CA_8}</label>
+                    <lightning:inputField disabled="{!or(and(v.sapRecord.Credit_Application_Status__c != 'Sent To Customer', v.sapRecord.Credit_Application_Status__c != 'Customer In Progress'), v.sapRecord.On_boarding_Request_Type__c != 'New Sold-To w/ Ship-to &amp; Product')}" fieldName="Sold_To_Street_2__c" variant="label-hidden" value="{!v.sapRecord.Sold_To_Street_2__c}"/>
+                </div>
+                <div class="slds-col slds-large-size_1-of-4 slds-medium-size_2-of-4 slds-small-size_4-of-4">
+                    <label  class="slds-form-element__label slds-no-flex"><abbr lightning-input_input="" title="required" class="slds-required">*</abbr> {!v.languageLabelMap.CA_9}</label>
+                    <lightning:inputField disabled="{!or(and(v.sapRecord.Credit_Application_Status__c != 'Sent To Customer', v.sapRecord.Credit_Application_Status__c != 'Customer In Progress'), v.sapRecord.On_boarding_Request_Type__c != 'New Sold-To w/ Ship-to &amp; Product')}" fieldName="Sold_To_City__c" variant="label-hidden" value="{!v.sapRecord.Sold_To_City__c}" required="true"/>
+                </div>
+                <div class="slds-col slds-large-size_1-of-4 slds-medium-size_2-of-4 slds-small-size_4-of-4">
+                    <label  class="slds-form-element__label slds-no-flex"><abbr lightning-input_input="" title="required" class="slds-required">*</abbr> {!v.languageLabelMap.CA_10}</label>
+                    <lightning:inputField disabled="{!or(and(v.sapRecord.Credit_Application_Status__c != 'Sent To Customer', v.sapRecord.Credit_Application_Status__c != 'Customer In Progress'), v.sapRecord.On_boarding_Request_Type__c != 'New Sold-To w/ Ship-to &amp; Product')}" fieldName="Sold_To_State_Province__c" variant="label-hidden" value="{!v.sapRecord.Sold_To_State_Province__c}" required="{!or(v.sapRecord.Sold_To_Country__c == 'United States', v.sapRecord.Sold_To_Country__c == 'Canada')}"/>
+                </div>
+                <div class="slds-col slds-large-size_1-of-4 slds-medium-size_2-of-4 slds-small-size_4-of-4">
+                    <label  class="slds-form-element__label slds-no-flex"><abbr lightning-input_input="" title="required" class="slds-required">*</abbr> {!v.languageLabelMap.CA_11}</label>
+                    <lightning:inputField disabled="{!or(and(v.sapRecord.Credit_Application_Status__c != 'Sent To Customer', v.sapRecord.Credit_Application_Status__c != 'Customer In Progress'), v.sapRecord.On_boarding_Request_Type__c != 'New Sold-To w/ Ship-to &amp; Product')}" fieldName="Sold_To_Postal_Code__c" variant="label-hidden" value="{!v.sapRecord.Sold_To_Postal_Code__c}" required="true"/>
+                </div>
+                <div class="slds-col slds-large-size_1-of-4 slds-medium-size_2-of-4 slds-small-size_4-of-4">
+                    <label  class="slds-form-element__label slds-no-flex"><abbr lightning-input_input="" title="required" class="slds-required">*</abbr> {!v.languageLabelMap.CA_12}</label>
+                    <lightning:inputField disabled="{!or(and(v.sapRecord.Credit_Application_Status__c != 'Sent To Customer', v.sapRecord.Credit_Application_Status__c != 'Customer In Progress'), v.sapRecord.On_boarding_Request_Type__c != 'New Sold-To w/ Ship-to &amp; Product')}" fieldName="Sold_To_Country__c" variant="label-hidden" value="{!v.sapRecord.Sold_To_Country__c}" required="true"/>
+                </div>
+                <div class="slds-col slds-large-size_1-of-4 slds-medium-size_2-of-4 slds-small-size_4-of-4"></div>
+                <div class="slds-col slds-size_1-of-1" style="min-width:100%;border: 1px solid #d8d8d8;margin: 5px 0;"></div>
+                <div class="slds-col slds-large-size_4-of-4 slds-medium-size_4-of-4 slds-small-size_4-of-4">
+                    <div class="slds-form-element">
+                        <label class="slds-form-element__label" for="text-input-id-1">&nbsp;</label>
+                        <div class="slds-form-element__control">
+                            <button class="slds-button slds-button_brand copyBtn" id="billToSameSoldTo" onclick="{!c.handleCopyAddresses}" type="button" disabled="{!and(v.sapRecord.Credit_Application_Status__c != 'Sent To Customer', v.sapRecord.Credit_Application_Status__c != 'Customer In Progress')}">
+                                <lightning:icon iconName="utility:copy" class="copyBtnIcon" size="x-small" style="margin-right:5px;"/><b>{!v.languageLabelMap.CA_13}</b>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="slds-col slds-large-size_1-of-4 slds-medium-size_2-of-4 slds-small-size_4-of-4">
+                    <label  class="slds-form-element__label slds-no-flex"><abbr lightning-input_input="" title="required" class="slds-required">*</abbr> {!v.languageLabelMap.CA_14}</label>
+                    <lightning:inputField disabled="{!and(v.sapRecord.Credit_Application_Status__c != 'Sent To Customer', v.sapRecord.Credit_Application_Status__c != 'Customer In Progress')}" fieldName="Bill_To_Company_Name__c" variant="label-hidden" value="{!v.sapRecord.Bill_To_Company_Name__c}" required="true"/>
+                </div>
+                <div class="slds-col slds-large-size_1-of-4 slds-medium-size_2-of-4 slds-small-size_4-of-4">
+                    <label  class="slds-form-element__label slds-no-flex"><abbr lightning-input_input="" title="required" class="slds-required">*</abbr> {!v.languageLabelMap.CA_15}</label>
+                    <lightning:inputField disabled="{!and(v.sapRecord.Credit_Application_Status__c != 'Sent To Customer', v.sapRecord.Credit_Application_Status__c != 'Customer In Progress')}" fieldName="Bill_To_Street__c" variant="label-hidden" value="{!v.sapRecord.Bill_To_Street__c}" required="true"/>
+                </div>
+                <div class="slds-col slds-large-size_1-of-4 slds-medium-size_2-of-4 slds-small-size_4-of-4">
+                    <label  class="slds-form-element__label slds-no-flex"> {!v.languageLabelMap.CA_16}</label>
+                    <lightning:inputField disabled="{!and(v.sapRecord.Credit_Application_Status__c != 'Sent To Customer', v.sapRecord.Credit_Application_Status__c != 'Customer In Progress')}" fieldName="Bill_To_Street_2__c" variant="label-hidden" value="{!v.sapRecord.Bill_To_Street_2__c}" />
+                </div>
+                <div class="slds-col slds-large-size_1-of-4 slds-medium-size_2-of-4 slds-small-size_4-of-4">
+                    <label  class="slds-form-element__label slds-no-flex"><abbr lightning-input_input="" title="required" class="slds-required">*</abbr> {!v.languageLabelMap.CA_17}</label>
+                    <lightning:inputField disabled="{!and(v.sapRecord.Credit_Application_Status__c != 'Sent To Customer', v.sapRecord.Credit_Application_Status__c != 'Customer In Progress')}" fieldName="Bill_To_City__c" variant="label-hidden" value="{!v.sapRecord.Bill_To_City__c}" required="true"/>
+                </div>
+                <div class="slds-col slds-large-size_1-of-4 slds-medium-size_2-of-4 slds-small-size_4-of-4">
+                    <label  class="slds-form-element__label slds-no-flex"><abbr lightning-input_input="" title="required" class="slds-required">*</abbr> {!v.languageLabelMap.CA_18}</label>
+                    <lightning:inputField disabled="{!and(v.sapRecord.Credit_Application_Status__c != 'Sent To Customer', v.sapRecord.Credit_Application_Status__c != 'Customer In Progress')}" fieldName="Bill_To_State_Province__c" variant="label-hidden" value="{!v.sapRecord.Bill_To_State_Province__c}" required="{!or(v.sapRecord.Bill_To_Country__c == 'United States', v.sapRecord.Bill_To_Country__c == 'Canada')}"/>
+                </div>
+                <div class="slds-col slds-large-size_1-of-4 slds-medium-size_2-of-4 slds-small-size_4-of-4">
+                    <label  class="slds-form-element__label slds-no-flex"><abbr lightning-input_input="" title="required" class="slds-required">*</abbr> {!v.languageLabelMap.CA_19}</label>
+                    <lightning:inputField disabled="{!and(v.sapRecord.Credit_Application_Status__c != 'Sent To Customer', v.sapRecord.Credit_Application_Status__c != 'Customer In Progress')}" fieldName="Bill_To_Postal_Code__c" variant="label-hidden" value="{!v.sapRecord.Bill_To_Postal_Code__c}" required="true"/>
+                </div>
+                <div class="slds-col slds-large-size_1-of-4 slds-medium-size_2-of-4 slds-small-size_4-of-4">
+                    <label  class="slds-form-element__label slds-no-flex"><abbr lightning-input_input="" title="required" class="slds-required">*</abbr> {!v.languageLabelMap.CA_20}</label>
+                    <lightning:inputField disabled="{!and(v.sapRecord.Credit_Application_Status__c != 'Sent To Customer', v.sapRecord.Credit_Application_Status__c != 'Customer In Progress')}" fieldName="Bill_To_Country__c" variant="label-hidden" value="{!v.sapRecord.Bill_To_Country__c}" required="true"/>
+                </div>
+                <aura:if isTrue="{!v.sapRecord.On_boarding_Request_Type__c != 'New Ship-To &amp; Product'}"> 
+                    <aura:if isTrue="{!and(v.vatList.length == 0,v.sapRecord.On_boarding_Request_Type__c != 'New Product')}">
+                        <div class="slds-col slds-size_1-of-1 slds-m-top_medium" style="border-bottom:2px solid #767676;color:#767676;font-size: 14px;font-weight:bold;">{!v.languageLabelMap.CA_21}
+                            <lightning:button label="{!v.languageLabelMap.CA_22}" variant="brand" class="addTaxButton slds-float_right slds-m-bottom_xx-small" onclick="{!c.addNewTax}" type="button"/>
+                        </div>
+                    </aura:if>
+                    <aura:if isTrue="{!v.sapRecord.On_boarding_Request_Type__c != 'New Product'}">
+                        <aura:iteration items="{!v.vatList}" var="vat" indexVar="vtIndx">
+                            <div class="slds-col slds-size_1-of-1 slds-m-top_medium" style="border-bottom:2px solid #767676;color:#767676;font-size: 14px;font-weight:bold;">{!v.languageLabelMap.CA_21} {!vtIndx+1}
+                                <aura:if isTrue="{!vtIndx+1 ==  v.vatList.length}">
+                                    <lightning:button label="{!v.languageLabelMap.CA_22}" variant="brand" class="addTaxButton slds-float_right slds-m-bottom_xx-small" onclick="{!c.addNewTax}" type="button" disabled="{!and(v.sapRecord.Credit_Application_Status__c != 'Sent To Customer', v.sapRecord.Credit_Application_Status__c != 'Customer In Progress')}"/>
+                                </aura:if>
+                            </div>
+                            <lightning:recordEditForm objectApiName="VAT__c" aura:id="vatForm" recordId="{!vat.Id}" onsuccess="{!c.handleVatSuccess}" 
+                                                      onerror="{!c.handleError}">
+                                <div class="slds-grid slds-wrap">
+                                    <div class="slds-hide">
+                                        <lightning:inputField disabled="{!and(v.sapRecord.Credit_Application_Status__c != 'Sent To Customer', v.sapRecord.Credit_Application_Status__c != 'Customer In Progress')}" fieldName="SAP_Onboarding__c" value="{!vat.SAP_Onboarding__c}" class="slds-hide" variant="label-hidden"/>
+                                    </div>
+                                    <div class="slds-col slds-large-size_1-of-4 slds-small-size_1-of-1 slds-medium-size_2-of-4">
+                                        <label  class="slds-form-element__label slds-no-flex"><abbr lightning-input_input="" title="required" class="slds-required">*</abbr> {!v.languageLabelMap.CA_23}</label>
+                                        <lightning:inputField disabled="{!and(v.sapRecord.Credit_Application_Status__c != 'Sent To Customer', v.sapRecord.Credit_Application_Status__c != 'Customer In Progress')}" fieldName="Country__c"  value="{!vat.Country__c}" variant="label-hidden" required="true"/>
+                                    </div>
+                                    <div class="slds-col slds-large-size_1-of-4 slds-small-size_1-of-1 slds-medium-size_2-of-4">
+                                        <label  class="slds-form-element__label slds-no-flex"><aura:if isTrue="{!vat.Country__c != ''}"><abbr lightning-input_input="" title="required" class="slds-required">*</abbr></aura:if> {!v.languageLabelMap.CA_24}</label>
+                                        <!--lightning:select variant="label-hidden" value="{!vat.Tax_Type__c}" disabled="{!and(v.sapRecord.Credit_Application_Status__c != 'Sent To Customer', v.sapRecord.Credit_Application_Status__c != 'Customer In Progress')}" required="{!vat.Country__c != ''}">
+                                        <aura:iteration items="{!vat.taxTypeOptions}" var="op">
+                                            <option value="{!op.value}" selected="{!vat.Tax_Type__c == op.value}">{!op.text}</option>
+                                        </aura:iteration>
+                                    </lightning:select-->
+                                        <lightning:inputField disabled="{!and(v.sapRecord.Credit_Application_Status__c != 'Sent To Customer', v.sapRecord.Credit_Application_Status__c != 'Customer In Progress')}" fieldName="Tax_Type__c"  value="{!vat.Tax_Type__c}" variant="label-hidden" required="{!vat.Country__c != ''}"/>
+                                    </div>
+                                    <div class="slds-col  slds-large-size_1-of-4 slds-small-size_1-of-1 slds-medium-size_2-of-4">
+                                        <label  class="slds-form-element__label slds-no-flex"><abbr lightning-input_input="" title="required" class="slds-required">*</abbr> {!v.languageLabelMap.CA_25}</label>
+                                        <lightning:select variant="label-hidden" value="{!vat.Tax_VAT1_Exempt__c}" disabled="{!and(v.sapRecord.Credit_Application_Status__c != 'Sent To Customer', v.sapRecord.Credit_Application_Status__c != 'Customer In Progress')}" required="true">
+                                            <option value="">--{!v.languageLabelMap.HP_45}--</option>
+                                            <option value="Yes">{!v.languageLabelMap.HP_31}</option>
+                                            <option value="No">{!v.languageLabelMap.HP_32}</option>
+                                        </lightning:select>
+                                        <!--lightning:inputField disabled="{!and(v.sapRecord.Credit_Application_Status__c != 'Sent To Customer', v.sapRecord.Credit_Application_Status__c != 'Customer In Progress')}"  fieldName="Tax_VAT1_Exempt__c"  value="{!vat.Tax_VAT1_Exempt__c}" variant="label-hidden" required="true"/-->
+                                    </div>
+                                    <div class="slds-col slds-large-size_1-of-4 slds-small-size_1-of-1 slds-medium-size_2-of-4">
+                                        <label  class="slds-form-element__label slds-no-flex"><abbr lightning-input_input="" title="required" class="slds-required">*</abbr> {!v.languageLabelMap.CA_26}</label>
+                                        <lightning:inputField disabled="{!and(v.sapRecord.Credit_Application_Status__c != 'Sent To Customer', v.sapRecord.Credit_Application_Status__c != 'Customer In Progress')}" fieldName="VAT_Tax_Number__c"  value="{!vat.VAT_Tax_Number__c}" 
+                                                              variant="label-hidden" required="true"/>
+                                    </div>
+                                    <label class="slds-form-element__label slds-size_1-of-1">
+                                        <abbr lightning-input_input="" title="required" class="{!if(vat.Tax_VAT1_Exempt__c == 'Yes' , 'slds-required', 'slds-hide')}">*</abbr>
+                                        {!v.languageLabelMap.CA_27}
+                                    </label>
+                                    <div class="slds-large-size_1-of-4 slds-small-size_1-of-1 slds-medium-size_2-of-4">
+                                        <lightning:input name="{!vat.Id}"  aura:id="vatNumber" disabled="{!or(vat.Tax_VAT1_Exempt__c != 'Yes', and(v.sapRecord.Credit_Application_Status__c != 'Sent To Customer', v.sapRecord.Credit_Application_Status__c != 'Customer In Progress'))}" variant="label-hidden" 
+                                                         required="{!and(vat.Tax_VAT1_Exempt__c == 'Yes', v.taxFileList.length == 0)}" type="file" label="{!v.languageLabelMap.CA_27}" 
+                                                         multiple="true" onchange="{! c.handleTaxFileChange }" />
+                                    </div>
+                                    <div class="slds-col slds-large-size_2-of-4 slds-small-size_1-of-1 slds-medium-size_2-of-4">
+                                        <aura:iteration items="{!v.taxFileList}" var="file" indexVar="fileNo">
+                                            <aura:if isTrue="{!file.ParentId == vat.Id}">
+                                                <p style="color:black;border-bottom:1px solid lightgrey;padding-top:4px" id="taxFileName">
+                                                    <aura:if isTrue="{!and(file.Id != '', file.ParentId == vat.Id)}">
+                                                        <b>{!v.languageLabelMap.HP_38}&nbsp;</b>
+                                                        <a href="{!file.link}" target="_blank" style="color:black;">{!file.Name}</a>
+                                                        <a href="" onclick="{!c.deleteFile}" id="{!file.Id}" class="slds-float_right" name="taxFile" style="{!if(and(v.sapRecord.Credit_Application_Status__c != 'Sent To Customer', v.sapRecord.Credit_Application_Status__c != 'Customer In Progress'), 'pointer-events:none;')}">{!v.languageLabelMap.HP_34}</a>
+                                                        <aura:set attribute="else">
+                                                            <b>{!v.languageLabelMap.HP_38}&nbsp;</b> {!file.name}
+                                                            <lightning:icon iconName="utility:close" id="{!fileNo}" title="Remove File" size="xx-small" class="slds-float_right" style="cursor:pointer;" onclick="{!c.removeFile}" aura:id="taxFile"/>
+                                                        </aura:set>
+                                                    </aura:if>
+                                                </p>
+                                            </aura:if>
+                                        </aura:iteration>
+                                    </div>
+                                </div>
+                            </lightning:recordEditForm>
+                            <aura:if isTrue="{!vtIndx+1 ==  v.vatList.length}">
+                                <div class="slds-size_12-of-12 slds-m-top_medium slds-text-align_right">
+                                    <aura:if isTrue="{!vtIndx > 0}">
+                                        <lightning:button label="{!v.languageLabelMap.HP_34}" type="button" name="{!vat.Id}" iconName="utility:delete" iconPosition="left" variant="destructive" onclick="{!c.removeTax}" value="{!vtIndx+'/'+vat.Id}" disabled="{!and(v.sapRecord.Credit_Application_Status__c != 'Sent To Customer', v.sapRecord.Credit_Application_Status__c != 'Customer In Progress')}"/>
+                                    </aura:if>
+                                </div>
+                            </aura:if>
+                        </aura:iteration>
+                    </aura:if>
+                </aura:if>
+                <div class="slds-col slds-size_1-of-1 slds-m-top_medium" style="border-bottom:2px solid #767676;color:#767676;font-size: 14px;font-weight:bold;">{!v.languageLabelMap.CA_29}</div>
+                <div class="slds-col slds-large-size_2-of-6 slds-medium-size_2-of-4 slds-small-size_5-of-5">
+                    <label  class="slds-form-element__label slds-no-flex"><abbr lightning-input_input="" title="required" class="slds-required">*</abbr> {!v.languageLabelMap.CA_30}</label>
+                    <lightning:inputField disabled="{!and(v.sapRecord.Credit_Application_Status__c != 'Sent To Customer', v.sapRecord.Credit_Application_Status__c != 'Customer In Progress')}" fieldName="Account_Payable_First_Name__c" value="{!v.sapRecord.Account_Payable_First_Name__c}" variant="label-hidden" required="true"/>
+                </div>
+                <div class="slds-col slds-large-size_2-of-6 slds-medium-size_2-of-4 slds-small-size_5-of-5">
+                    <label  class="slds-form-element__label slds-no-flex"><abbr lightning-input_input="" title="required" class="slds-required">*</abbr> {!v.languageLabelMap.CA_31}</label>
+                    <lightning:inputField disabled="{!and(v.sapRecord.Credit_Application_Status__c != 'Sent To Customer', v.sapRecord.Credit_Application_Status__c != 'Customer In Progress')}" fieldName="Account_Payable_Last_Name__c" value="{!v.sapRecord.Account_Payable_Last_Name__c}" variant="label-hidden"  required="true"/>
+                </div>
+                <div class="slds-col slds-large-size_2-of-6 slds-medium-size_2-of-4 slds-small-size_5-of-5">
+                    <label  class="slds-form-element__label slds-no-flex"><abbr lightning-input_input="" title="required" class="slds-required">*</abbr> {!v.languageLabelMap.CA_32}</label>
+                    <lightning:inputField disabled="{!and(v.sapRecord.Credit_Application_Status__c != 'Sent To Customer', v.sapRecord.Credit_Application_Status__c != 'Customer In Progress')}" fieldName="Account_Payable_Title__c" value="{!v.sapRecord.Account_Payable_Title__c}" variant="label-hidden" required="true"/>
+                </div>
+                <div class="slds-col slds-large-size_2-of-6 slds-medium-size_2-of-4 slds-small-size_5-of-5">
+                    <label  class="slds-form-element__label slds-no-flex"><abbr lightning-input_input="" title="required" class="slds-required">*</abbr> {!v.languageLabelMap.CA_33}</label>
+                    <lightning:inputField disabled="{!and(v.sapRecord.Credit_Application_Status__c != 'Sent To Customer', v.sapRecord.Credit_Application_Status__c != 'Customer In Progress')}" fieldName="Account_Payable_Phone__c" value="{!v.sapRecord.Account_Payable_Phone__c}" variant="label-hidden" required="true"/>
+                </div>
+                <div class="slds-col slds-large-size_2-of-6 slds-medium-size_4-of-5 slds-small-size_5-of-5">
+                    <label  class="slds-form-element__label slds-no-flex"><abbr lightning-input_input="" title="required" class="slds-required">*</abbr> {!v.languageLabelMap.CA_34}</label>
+                    <lightning:inputField disabled="{!and(v.sapRecord.Credit_Application_Status__c != 'Sent To Customer', v.sapRecord.Credit_Application_Status__c != 'Customer In Progress')}" fieldName="Account_Payable_Email__c"  value="{!v.sapRecord.Account_Payable_Email__c}" variant="label-hidden" required="true"/>
+                </div>
+                <div class="slds-col slds-size_5-of-5" style="border: 1px solid #d8d8d8;margin: 5px 0;"></div>
+                <div class="slds-col slds-large-size_2-of-6 slds-medium-size_2-of-4 slds-small-size_5-of-5">
+                    <label  class="slds-form-element__label slds-no-flex"><abbr lightning-input_input="" title="required" class="slds-required">*</abbr> {!v.languageLabelMap.CA_35}</label>
+                    <lightning:inputField disabled="{!and(v.sapRecord.Credit_Application_Status__c != 'Sent To Customer', v.sapRecord.Credit_Application_Status__c != 'Customer In Progress')}" fieldName="Credit_First_Name__c" value="{!v.sapRecord.Credit_First_Name__c}"  variant="label-hidden" required="true"/>
+                </div>
+                <div class="slds-col slds-large-size_2-of-6 slds-medium-size_2-of-4 slds-small-size_5-of-5">
+                    <label  class="slds-form-element__label slds-no-flex"><abbr lightning-input_input="" title="required" class="slds-required">*</abbr> {!v.languageLabelMap.CA_36}</label>
+                    <lightning:inputField disabled="{!and(v.sapRecord.Credit_Application_Status__c != 'Sent To Customer', v.sapRecord.Credit_Application_Status__c != 'Customer In Progress')}" fieldName="Credit_Last_Name__c" value="{!v.sapRecord.Credit_Last_Name__c}"  variant="label-hidden" required="true"/>
+                </div>
+                <div class="slds-col slds-large-size_2-of-6 slds-medium-size_2-of-4 slds-small-size_5-of-5">
+                    <label  class="slds-form-element__label slds-no-flex"><abbr lightning-input_input="" title="required" class="slds-required">*</abbr> {!v.languageLabelMap.CA_37}</label>
+                    <lightning:inputField disabled="{!and(v.sapRecord.Credit_Application_Status__c != 'Sent To Customer', v.sapRecord.Credit_Application_Status__c != 'Customer In Progress')}" fieldName="Credit_Title__c" value="{!v.sapRecord.Credit_Title__c}" variant="label-hidden" required="true"/>
+                </div>
+                <div class="slds-col slds-large-size_2-of-6 slds-medium-size_2-of-4 slds-small-size_5-of-5">
+                    <label  class="slds-form-element__label slds-no-flex"><abbr lightning-input_input="" title="required" class="slds-required">*</abbr> {!v.languageLabelMap.CA_38}</label>
+                    <lightning:inputField disabled="{!and(v.sapRecord.Credit_Application_Status__c != 'Sent To Customer', v.sapRecord.Credit_Application_Status__c != 'Customer In Progress')}" fieldName="Credit_Phone__c"  value="{!v.sapRecord.Credit_Phone__c}" variant="label-hidden" required="true"/>
+                </div>
+                <div class="slds-col slds-large-size_2-of-6 slds-medium-size_4-of-5 slds-small-size_5-of-5">
+                    <label  class="slds-form-element__label slds-no-flex"><abbr lightning-input_input="" title="required" class="slds-required">*</abbr> {!v.languageLabelMap.CA_39}</label>
+                    <lightning:inputField disabled="{!and(v.sapRecord.Credit_Application_Status__c != 'Sent To Customer', v.sapRecord.Credit_Application_Status__c != 'Customer In Progress')}" fieldName="Credit_Email__c" value="{!v.sapRecord.Credit_Email__c}" variant="label-hidden" required="true"/>
+                </div>
+                <div class="slds-col slds-size_5-of-5" style="border: 1px solid #d8d8d8;margin: 5px 0;"></div>
+                <div class="slds-col slds-large-size_2-of-6 slds-medium-size_2-of-4 slds-small-size_5-of-5">
+                    <label  class="slds-form-element__label slds-no-flex"> {!v.languageLabelMap.CA_40}</label>
+                    <lightning:inputField disabled="{!and(v.sapRecord.Credit_Application_Status__c != 'Sent To Customer', v.sapRecord.Credit_Application_Status__c != 'Customer In Progress')}" fieldName="CXO_Officer_First_Name__c" value="{!v.sapRecord.CXO_Officer_First_Name__c}" variant="label-hidden" />
+                </div>
+                <div class="slds-col slds-large-size_2-of-6 slds-medium-size_2-of-4 slds-small-size_5-of-5">
+                    <label  class="slds-form-element__label slds-no-flex"> {!v.languageLabelMap.CA_41}</label>
+                    <lightning:inputField disabled="{!and(v.sapRecord.Credit_Application_Status__c != 'Sent To Customer', v.sapRecord.Credit_Application_Status__c != 'Customer In Progress')}" fieldName="CXO_Officer_Last_Name__c" value="{!v.sapRecord.CXO_Officer_Last_Name__c}" variant="label-hidden" />
+                </div>
+                <div class="slds-col slds-large-size_2-of-6 slds-medium-size_2-of-4 slds-small-size_5-of-5">
+                    <label  class="slds-form-element__label slds-no-flex"> {!v.languageLabelMap.CA_42}</label>
+                    <lightning:inputField disabled="{!and(v.sapRecord.Credit_Application_Status__c != 'Sent To Customer', v.sapRecord.Credit_Application_Status__c != 'Customer In Progress')}" fieldName="CXO_Officer_Title__c" value="{!v.sapRecord.CXO_Officer_Title__c}" variant="label-hidden" />
+                </div>
+                <div class="slds-col slds-large-size_2-of-6 slds-medium-size_2-of-4 slds-small-size_5-of-5">
+                    <label  class="slds-form-element__label slds-no-flex">{!v.languageLabelMap.CA_43}</label>
+                    <lightning:inputField disabled="{!and(v.sapRecord.Credit_Application_Status__c != 'Sent To Customer', v.sapRecord.Credit_Application_Status__c != 'Customer In Progress')}" fieldName="CXO_Officer_Phone__c" value="{!v.sapRecord.CXO_Officer_Phone__c}" variant="label-hidden" />
+                </div>
+                <div class="slds-col slds-large-size_2-of-6 slds-medium-size_4-of-5 slds-small-size_5-of-5">
+                    <label  class="slds-form-element__label slds-no-flex"> {!v.languageLabelMap.CA_44}</label>
+                    <lightning:inputField disabled="{!and(v.sapRecord.Credit_Application_Status__c != 'Sent To Customer', v.sapRecord.Credit_Application_Status__c != 'Customer In Progress')}" fieldName="CXO_Officer_Email__c" value="{!v.sapRecord.CXO_Officer_Email__c}" variant="label-hidden" />
+                </div>
+                <div class="slds-col slds-size_1-of-1 slds-m-top_large" style="border-bottom:2px solid #767676;color:#767676;font-size: 14px;font-weight:bold;">{!v.languageLabelMap.CA_45}</div>
+                <aura:if isTrue="{!v.showCreditInfo}">
+                    <div class="slds-col slds-size_12-of-12  slds-grid slds-wrap slds-m-bottom_small slds-m-top_small">
+                        <label class="slds-form-element__label slds-size_1-of-1">{!v.languageLabelMap.CA_46}</label>
+                        <div class="slds-large-size_1-of-4 slds-small-size_1-of-1 slds-medium-size_2-of-4">
+                            <lightning:input name="{!v.sapId}"  aura:id="bankReferenceFile" variant="label-hidden" type="file" multiple="true" onchange="{! c.handleBankReferenceFileChange }" disabled="{!and(v.sapRecord.Credit_Application_Status__c != 'Sent To Customer', v.sapRecord.Credit_Application_Status__c != 'Customer In Progress')}"/>
+                        </div>
+                        <div class="slds-col slds-large-size_2-of-4 slds-small-size_1-of-1 slds-medium-size_2-of-4">
+                            <aura:iteration items="{!v.bankReferenceFileList}" var="file" indexVar="fileNo">
+                                <aura:if isTrue="{!file.ParentId == v.sapId}">
+                                    <p style="color:black;border-bottom:1px solid lightgrey;padding-top:4px" id="bankReferenceFileName">
+                                        <aura:if isTrue="{!and(file.Id != '', file.ParentId == v.sapId)}">
+                                            <b>{!v.languageLabelMap.HP_38}&nbsp;</b>
+                                            <a href="{!file.link}" target="_blank" style="color:black;">{!file.Name}</a>
+                                            <a href="" onclick="{!c.deleteFile}" id="{!file.Id}" class="slds-float_right" name="bankReferenceFile" style="{!if(and(v.sapRecord.Credit_Application_Status__c != 'Sent To Customer', v.sapRecord.Credit_Application_Status__c != 'Customer In Progress'), 'pointer-events:none;')}">{!v.languageLabelMap.HP_34}</a>
+                                            <aura:set attribute="else">
+                                                <b>{!v.languageLabelMap.HP_38}&nbsp;</b> {!file.name}
+                                                <lightning:icon iconName="utility:close" id="{!fileNo}" title="Remove File" size="xx-small" class="slds-float_right" style="cursor:pointer;" onclick="{!c.removeFile}" aura:id="bankReferenceFile"/>
+                                            </aura:set>
+                                        </aura:if>
+                                    </p>
+                                </aura:if>
+                            </aura:iteration>
+                        </div>
+                    </div>
+                    <div class="slds-col slds-small-size_3-of-3 slds-medium-size_3-of-3 slds-large-size_3-of-3 slds-m-top_small"><u>{!v.languageLabelMap.CA_48}</u></div>
+                    <!--div class="slds-col slds-small-size_3-of-3 slds-medium-size_1-of-3 slds-large-size_1-of-3 slds-m-top_small"><u>{!v.languageLabelMap.CA_48} 2</u></div-->
+                    <!--div class="slds-col slds-small-size_3-of-3 slds-medium-size_1-of-3 slds-large-size_1-of-3 slds-m-top_small"><u>{!v.languageLabelMap.CA_48} 3</u></div!-->
+                    <aura:if isTrue="{!v.showBankRefFields}">
+                        <div class="slds-col slds-small-size_3-of-3 slds-medium-size_1-of-3 slds-large-size_1-of-3 slds-p-right_x-small">
+                            <label  class="slds-form-element__label slds-no-flex"><abbr lightning-input_input="" title="required" class="slds-required">*</abbr>{!v.languageLabelMap.CA_49} </label>
+                            <lightning:inputField disabled="{!and(v.sapRecord.Credit_Application_Status__c != 'Sent To Customer', v.sapRecord.Credit_Application_Status__c != 'Customer In Progress')}" fieldName="Bank_Institution_Name_1__c"  variant="label-hidden" required="true"/>
+                        </div>
+                        <!--div class="slds-col slds-small-size_3-of-3 slds-medium-size_1-of-3 slds-large-size_1-of-3 slds-p-right_x-small">
+                    <label  class="slds-form-element__label slds-no-flex">{!v.languageLabelMap.CA_49}</label>
+                    <lightning:inputField disabled="{!and(v.sapRecord.Credit_Application_Status__c != 'Sent To Customer', v.sapRecord.Credit_Application_Status__c != 'Customer In Progress')}" fieldName="Bank_Institution_Name_2__c" variant="label-hidden" value="{!v.sapRecord.Bank_Institution_Name_2__c}"/>
+                </div>
+                <div class="slds-col slds-small-size_3-of-3 slds-medium-size_1-of-3 slds-large-size_1-of-3">
+                    <label  class="slds-form-element__label slds-no-flex">{!v.languageLabelMap.CA_49}</label>
+                    <lightning:inputField disabled="{!and(v.sapRecord.Credit_Application_Status__c != 'Sent To Customer', v.sapRecord.Credit_Application_Status__c != 'Customer In Progress')}" fieldName="Bank_Institution_Name_3__c" variant="label-hidden" value="{!v.sapRecord.Bank_Institution_Name_3__c}"/>
+                </div-->
+                        <div class="slds-col slds-small-size_3-of-3 slds-medium-size_1-of-3 slds-large-size_1-of-3 slds-p-right_x-small">
+                            <label  class="slds-form-element__label slds-no-flex"><abbr lightning-input_input="" title="required" class="slds-required">*</abbr> {!v.languageLabelMap.CA_50} </label>
+                            <lightning:select variant="label-hidden" value="{!v.sapRecord.Type_of_Account_1__c}" disabled="{!and(v.sapRecord.Credit_Application_Status__c != 'Sent To Customer', v.sapRecord.Credit_Application_Status__c != 'Customer In Progress')}" required="true">
+                                <option value="">--{!v.languageLabelMap.HP_45}--</option>
+                                <option value="Checking">{!v.languageLabelMap.CI_28}</option>
+                                <option value="Savings">{!v.languageLabelMap.CI_29}</option>
+                                <option value="CD">{!v.languageLabelMap.CI_30}</option>
+                                <option value="Money Market">{!v.languageLabelMap.CI_31}</option>
+                                <option value="Other">{!v.languageLabelMap.CI_32}</option>
+                            </lightning:select>
+                            <!--lightning:inputField disabled="{!and(v.sapRecord.Credit_Application_Status__c != 'Sent To Customer', v.sapRecord.Credit_Application_Status__c != 'Customer In Progress')}" fieldName="Type_of_Account_1__c" variant="label-hidden"/-->
+                        </div>
+                        <!--div class="slds-col slds-small-size_3-of-3 slds-medium-size_1-of-3 slds-large-size_1-of-3 slds-p-right_x-small">
+                    <label  class="slds-form-element__label slds-no-flex">{!v.languageLabelMap.CA_50}</label>
+                    <lightning:select variant="label-hidden" value="{!v.sapRecord.Type_of_Account_2__c}" disabled="{!and(v.sapRecord.Credit_Application_Status__c != 'Sent To Customer', v.sapRecord.Credit_Application_Status__c != 'Customer In Progress')}">
+                       <option value="">-{!v.languageLabelMap.HP_45}-</option>
+                        <option value="Checking">{!v.languageLabelMap.CI_28}</option>
+                        <option value="Savings">{!v.languageLabelMap.CI_29}</option>
+                        <option value="CD">{!v.languageLabelMap.CI_30}</option>
+                        <option value="Money Market">{!v.languageLabelMap.CI_31}</option>
+                        <option value="Other">{!v.languageLabelMap.CI_32}</option>
+                    </lightning:select-->
+                        <!--lightning:inputField disabled="{!and(v.sapRecord.Credit_Application_Status__c != 'Sent To Customer', v.sapRecord.Credit_Application_Status__c != 'Customer In Progress')}" fieldName="Type_of_Account_2__c" variant="label-hidden" /-->
+                        <!--/div>
+                <div class="slds-col slds-small-size_3-of-3 slds-medium-size_1-of-3 slds-large-size_1-of-3">
+                    <label  class="slds-form-element__label slds-no-flex">{!v.languageLabelMap.CA_50}</label>
+                    <lightning:select variant="label-hidden" value="{!v.sapRecord.Type_of_Account_3__c}" disabled="{!and(v.sapRecord.Credit_Application_Status__c != 'Sent To Customer', v.sapRecord.Credit_Application_Status__c != 'Customer In Progress')}">
+                       <option value="">-{!v.languageLabelMap.HP_45}-</option>
+                        <option value="Checking">{!v.languageLabelMap.CI_28}</option>
+                        <option value="Savings">{!v.languageLabelMap.CI_29}</option>
+                        <option value="CD">{!v.languageLabelMap.CI_30}</option>
+                        <option value="Money Market">{!v.languageLabelMap.CI_31}</option>
+                        <option value="Other">{!v.languageLabelMap.CI_32}</option>
+                    </lightning:select-->
+                        <!--lightning:inputField disabled="{!and(v.sapRecord.Credit_Application_Status__c != 'Sent To Customer', v.sapRecord.Credit_Application_Status__c != 'Customer In Progress')}" fieldName="Type_of_Account_3__c" variant="label-hidden"/-->
+                        <!--/div-->
+                        <div class="slds-col slds-small-size_3-of-3 slds-medium-size_1-of-3 slds-large-size_1-of-3 slds-p-right_x-small">
+                            <label  class="slds-form-element__label slds-no-flex"><abbr lightning-input_input="" title="required" class="slds-required">*</abbr>{!v.languageLabelMap.CA_51} </label>
+                            <lightning:inputField disabled="{!and(v.sapRecord.Credit_Application_Status__c != 'Sent To Customer', v.sapRecord.Credit_Application_Status__c != 'Customer In Progress')}" fieldName="Account_No_1__c" variant="label-hidden" required="true"/>
+                        </div>
+                        <!--div class="slds-col slds-small-size_3-of-3 slds-medium-size_1-of-3 slds-large-size_1-of-3 slds-p-right_x-small">
+                    <label  class="slds-form-element__label slds-no-flex"> {!v.languageLabelMap.CA_51}</label>
+                    <lightning:inputField disabled="{!and(v.sapRecord.Credit_Application_Status__c != 'Sent To Customer', v.sapRecord.Credit_Application_Status__c != 'Customer In Progress')}" fieldName="Account_No_2__c" variant="label-hidden" />
+                </div>
+                <div class="slds-col slds-small-size_3-of-3 slds-medium-size_1-of-3 slds-large-size_1-of-3">
+                    <label  class="slds-form-element__label slds-no-flex">{!v.languageLabelMap.CA_51}</label>
+                    <lightning:inputField disabled="{!and(v.sapRecord.Credit_Application_Status__c != 'Sent To Customer', v.sapRecord.Credit_Application_Status__c != 'Customer In Progress')}" fieldName="Account_No_3__c" variant="label-hidden" />
+                </div-->
+                        <div class="slds-col slds-small-size_3-of-3 slds-medium-size_1-of-3 slds-large-size_1-of-3 slds-p-right_x-small">
+                            <label  class="slds-form-element__label slds-no-flex"><abbr lightning-input_input="" title="required" class="slds-required">*</abbr>{!v.languageLabelMap.CA_52} </label>
+                            <lightning:inputField disabled="{!and(v.sapRecord.Credit_Application_Status__c != 'Sent To Customer', v.sapRecord.Credit_Application_Status__c != 'Customer In Progress')}" fieldName="Bank_Institution_Address_1__c" variant="label-hidden" required="true"/>
+                        </div>
+                        <!--div class="slds-col slds-small-size_3-of-3 slds-medium-size_1-of-3 slds-large-size_1-of-3 slds-p-right_x-small">
+                    <label  class="slds-form-element__label slds-no-flex">{!v.languageLabelMap.CA_52}</label>
+                    <lightning:inputField disabled="{!and(v.sapRecord.Credit_Application_Status__c != 'Sent To Customer', v.sapRecord.Credit_Application_Status__c != 'Customer In Progress')}" fieldName="Bank_Institution_Address_2__c" variant="label-hidden" />
+                </div>
+                <div class="slds-col slds-small-size_3-of-3 slds-medium-size_1-of-3 slds-large-size_1-of-3">
+                    <label  class="slds-form-element__label slds-no-flex">{!v.languageLabelMap.CA_52}</label>
+                    <lightning:inputField disabled="{!and(v.sapRecord.Credit_Application_Status__c != 'Sent To Customer', v.sapRecord.Credit_Application_Status__c != 'Customer In Progress')}" fieldName="Bank_Institution_Address_3__c" variant="label-hidden" />
+                </div-->
+                        <div class="slds-col slds-small-size_3-of-3 slds-medium-size_1-of-3 slds-large-size_1-of-3 slds-p-right_x-small">
+                            <label  class="slds-form-element__label slds-no-flex"><abbr lightning-input_input="" title="required" class="slds-required">*</abbr> {!v.languageLabelMap.CA_53}</label>
+                            <lightning:inputField disabled="{!and(v.sapRecord.Credit_Application_Status__c != 'Sent To Customer', v.sapRecord.Credit_Application_Status__c != 'Customer In Progress')}" fieldName="Bank_Institution_Contact_1__c" variant="label-hidden" required="true"/>
+                        </div>
+                        <!--div class="slds-col slds-small-size_3-of-3 slds-medium-size_1-of-3 slds-large-size_1-of-3 slds-p-right_x-small">
+                    <label  class="slds-form-element__label slds-no-flex"> {!v.languageLabelMap.CA_53}</label>
+                    <lightning:inputField disabled="{!and(v.sapRecord.Credit_Application_Status__c != 'Sent To Customer', v.sapRecord.Credit_Application_Status__c != 'Customer In Progress')}" fieldName="Bank_Institution_Contact_2__c" variant="label-hidden" />
+                </div>
+                <div class="slds-col slds-small-size_3-of-3 slds-medium-size_1-of-3 slds-large-size_1-of-3">
+                    <label  class="slds-form-element__label slds-no-flex">{!v.languageLabelMap.CA_53}</label>
+                    <lightning:inputField disabled="{!and(v.sapRecord.Credit_Application_Status__c != 'Sent To Customer', v.sapRecord.Credit_Application_Status__c != 'Customer In Progress')}" fieldName="Bank_Institution_Contact_3__c" variant="label-hidden" />
+                </div-->
+                        <div class="slds-col slds-small-size_3-of-3 slds-medium-size_1-of-3 slds-large-size_1-of-3 slds-p-right_x-small">
+                            <label  class="slds-form-element__label slds-no-flex"><abbr lightning-input_input="" title="required" class="slds-required">*</abbr>{!v.languageLabelMap.CA_54} </label>
+                            <lightning:inputField disabled="{!and(v.sapRecord.Credit_Application_Status__c != 'Sent To Customer', v.sapRecord.Credit_Application_Status__c != 'Customer In Progress')}" fieldName="Phone_1__c" variant="label-hidden" required="true"/>
+                        </div>
+                        <!--div class="slds-col slds-small-size_3-of-3 slds-medium-size_1-of-3 slds-large-size_1-of-3 slds-p-right_x-small">
+                    <label  class="slds-form-element__label slds-no-flex"> {!v.languageLabelMap.CA_54}</label>
+                    <lightning:inputField disabled="{!and(v.sapRecord.Credit_Application_Status__c != 'Sent To Customer', v.sapRecord.Credit_Application_Status__c != 'Customer In Progress')}" fieldName="Phone_2__c" variant="label-hidden" />
+                </div>
+                <div class="slds-col slds-small-size_3-of-3 slds-medium-size_1-of-3 slds-large-size_1-of-3">
+                    <label  class="slds-form-element__label slds-no-flex">{!v.languageLabelMap.CA_54}</label>
+                    <lightning:inputField disabled="{!and(v.sapRecord.Credit_Application_Status__c != 'Sent To Customer', v.sapRecord.Credit_Application_Status__c != 'Customer In Progress')}" fieldName="Phone_3__c" variant="label-hidden" />
+                </div-->
+                    </aura:if>
+                    <aura:set attribute="else">
+                        <div class="slds-col slds-size_1-of-1 slds-p-top_medium">
+                            <b>{!v.languageLabelMap.CI_164}</b>
+                        </div>
+                    </aura:set>
+                </aura:if>
+                <div class="slds-col slds-size_1-of-1 slds-m-top_large" style="border-bottom:2px solid #767676;color:#767676;font-size: 14px;font-weight:bold;">{!v.languageLabelMap.CA_55}</div>
+                <aura:if isTrue="{!v.showCreditInfo}">
+                    <div class="slds-col slds-size_12-of-12  slds-grid slds-wrap slds-m-bottom_small slds-p-top_small">
+                        <label class="slds-form-element__label slds-size_1-of-1">{!v.languageLabelMap.CA_56}</label>
+                        <div class="slds-large-size_1-of-4 slds-small-size_1-of-1 slds-medium-size_2-of-4">
+                            <lightning:input name="{!v.sapId}"  aura:id="tradeReferenceFile" variant="label-hidden" type="file" multiple="true" onchange="{!c.handleTradeReferenceFileChange }" disabled="{!and(v.sapRecord.Credit_Application_Status__c != 'Sent To Customer', v.sapRecord.Credit_Application_Status__c != 'Customer In Progress')}"/>
+                        </div>
+                        <div class="slds-col slds-large-size_2-of-4 slds-small-size_1-of-1 slds-medium-size_2-of-4">
+                            <aura:iteration items="{!v.tradeReferenceFileList}" var="file" indexVar="fileNo">
+                                <aura:if isTrue="{!file.ParentId == v.sapId}">
+                                    <p style="color:black;border-bottom:1px solid lightgrey;padding-top:4px" id="tradeReferenceFileName">
+                                        <aura:if isTrue="{!and(file.Id != '', file.ParentId == v.sapId)}">
+                                            <b>{!v.languageLabelMap.HP_38}&nbsp;</b>
+                                            <a href="{!file.link}" target="_blank" style="color:black;">{!file.Name}</a>
+                                            <a href="" onclick="{!c.deleteFile}" id="{!file.Id}" class="slds-float_right" name="tradeReferenceFile" style="{!if(and(v.sapRecord.Credit_Application_Status__c != 'Sent To Customer', v.sapRecord.Credit_Application_Status__c != 'Customer In Progress'), 'pointer-events:none;')}">{!v.languageLabelMap.HP_34}</a>
+                                            <aura:set attribute="else">
+                                                <b>{!v.languageLabelMap.HP_38}&nbsp;</b> {!file.name}
+                                                <lightning:icon iconName="utility:close" id="{!fileNo}" title="Remove File" size="xx-small" class="slds-float_right" style="cursor:pointer;" onclick="{!c.removeFile}" aura:id="tradeReferenceFile"/>
+                                            </aura:set>
+                                        </aura:if>
+                                    </p>
+                                </aura:if>
+                            </aura:iteration>
+                        </div>
+                    </div>
+                    <div class="slds-col slds-small-size_3-of-3 slds-medium-size_1-of-3 slds-large-size_1-of-3 slds-m-top_small"><u>{!v.languageLabelMap.HP_55} 1</u></div>
+                    <div class="slds-col slds-small-size_3-of-3 slds-medium-size_1-of-3 slds-large-size_1-of-3 slds-m-top_small"><u>{!v.languageLabelMap.HP_55} 2</u></div>
+                    <div class="slds-col slds-small-size_3-of-3 slds-medium-size_1-of-3 slds-large-size_1-of-3 slds-m-top_small"><u>{!v.languageLabelMap.HP_55} 3</u></div>
+                    <aura:if isTrue="{!v.showTradeRefFields}">
+                        <div class="slds-col slds-small-size_3-of-3 slds-medium-size_1-of-3 slds-large-size_1-of-3 slds-p-right_x-small">
+                            <label  class="slds-form-element__label slds-no-flex"><aura:if isTrue="{!v.tradeReferenceFileList.length == 0}"><abbr lightning-input_input="" title="required" class="slds-required">*</abbr></aura:if>{!v.languageLabelMap.CA_59}</label>
+                            <lightning:inputField aura:id="trd1" disabled="{!and(v.sapRecord.Credit_Application_Status__c != 'Sent To Customer', v.sapRecord.Credit_Application_Status__c != 'Customer In Progress')}" fieldName="Company_Name_1__c" variant="label-hidden" required="{!v.tradeReferenceFileList.length == 0}"/>
+                        </div>
+                        <div class="slds-col slds-small-size_3-of-3 slds-medium-size_1-of-3 slds-large-size_1-of-3 slds-p-right_x-small">
+                            <label  class="slds-form-element__label slds-no-flex">{!v.languageLabelMap.CA_59}</label>
+                            <lightning:inputField disabled="{!and(v.sapRecord.Credit_Application_Status__c != 'Sent To Customer', v.sapRecord.Credit_Application_Status__c != 'Customer In Progress')}" fieldName="Company_Name_2__c" variant="label-hidden" />
+                        </div>
+                        <div class="slds-col slds-small-size_3-of-3 slds-medium-size_1-of-3 slds-large-size_1-of-3 ">
+                            <label  class="slds-form-element__label slds-no-flex">{!v.languageLabelMap.CA_59}</label>
+                            <lightning:inputField disabled="{!and(v.sapRecord.Credit_Application_Status__c != 'Sent To Customer', v.sapRecord.Credit_Application_Status__c != 'Customer In Progress')}" fieldName="Company_Name_3__c" variant="label-hidden" />
+                        </div>
+                        <div class="slds-col slds-small-size_3-of-3 slds-medium-size_1-of-3 slds-large-size_1-of-3 slds-p-right_x-small">
+                            <label  class="slds-form-element__label slds-no-flex"><aura:if isTrue="{!v.tradeReferenceFileList.length == 0}"><abbr lightning-input_input="" title="required" class="slds-required">*</abbr></aura:if>{!v.languageLabelMap.CA_60}</label>
+                            <lightning:inputField disabled="{!and(v.sapRecord.Credit_Application_Status__c != 'Sent To Customer', v.sapRecord.Credit_Application_Status__c != 'Customer In Progress')}" fieldName="Contact_Name_1__c" variant="label-hidden" required="{!v.tradeReferenceFileList.length == 0}"/>
+                        </div>
+                        <div class="slds-col slds-small-size_3-of-3 slds-medium-size_1-of-3 slds-large-size_1-of-3 slds-p-right_x-small">
+                            <label  class="slds-form-element__label slds-no-flex">{!v.languageLabelMap.CA_60}</label>
+                            <lightning:inputField disabled="{!and(v.sapRecord.Credit_Application_Status__c != 'Sent To Customer', v.sapRecord.Credit_Application_Status__c != 'Customer In Progress')}" fieldName="Contact_Name_2__c" variant="label-hidden" />
+                        </div>
+                        <div class="slds-col slds-small-size_3-of-3 slds-medium-size_1-of-3 slds-large-size_1-of-3">
+                            <label  class="slds-form-element__label slds-no-flex">{!v.languageLabelMap.CA_60}</label>
+                            <lightning:inputField disabled="{!and(v.sapRecord.Credit_Application_Status__c != 'Sent To Customer', v.sapRecord.Credit_Application_Status__c != 'Customer In Progress')}" fieldName="Contact_Name_3__c" variant="label-hidden" />
+                        </div>
+                        <div class="slds-col slds-small-size_3-of-3 slds-medium-size_1-of-3 slds-large-size_1-of-3 slds-p-right_x-small">
+                            <label  class="slds-form-element__label slds-no-flex"><aura:if isTrue="{!v.tradeReferenceFileList.length == 0}"><abbr lightning-input_input="" title="required" class="slds-required">*</abbr></aura:if>{!v.languageLabelMap.CA_61}</label>
+                            <lightning:inputField disabled="{!and(v.sapRecord.Credit_Application_Status__c != 'Sent To Customer', v.sapRecord.Credit_Application_Status__c != 'Customer In Progress')}" fieldName="Address_1__c" variant="label-hidden"  required="{!v.tradeReferenceFileList.length == 0}"/>
+                        </div>
+                        <div class="slds-col slds-small-size_3-of-3 slds-medium-size_1-of-3 slds-large-size_1-of-3 slds-p-right_x-small">
+                            <label  class="slds-form-element__label slds-no-flex">{!v.languageLabelMap.CA_61}</label>
+                            <lightning:inputField disabled="{!and(v.sapRecord.Credit_Application_Status__c != 'Sent To Customer', v.sapRecord.Credit_Application_Status__c != 'Customer In Progress')}" fieldName="Address_2__c" variant="label-hidden" />
+                        </div>
+                        <div class="slds-col slds-small-size_3-of-3 slds-medium-size_1-of-3 slds-large-size_1-of-3">
+                            <label  class="slds-form-element__label slds-no-flex">{!v.languageLabelMap.CA_61}</label>
+                            <lightning:inputField disabled="{!and(v.sapRecord.Credit_Application_Status__c != 'Sent To Customer', v.sapRecord.Credit_Application_Status__c != 'Customer In Progress')}" fieldName="Address_3__c" variant="label-hidden" />
+                        </div>
+                        <div class="slds-col slds-small-size_3-of-3 slds-medium-size_1-of-3 slds-large-size_1-of-3 slds-p-right_x-small">
+                            <label  class="slds-form-element__label slds-no-flex"><aura:if isTrue="{!v.tradeReferenceFileList.length == 0}"><abbr lightning-input_input="" title="required" class="slds-required">*</abbr></aura:if>{!v.languageLabelMap.CA_62}</label>
+                            <lightning:inputField disabled="{!and(v.sapRecord.Credit_Application_Status__c != 'Sent To Customer', v.sapRecord.Credit_Application_Status__c != 'Customer In Progress')}" fieldName="Trade_Phone_1__c" variant="label-hidden"  required="{!v.tradeReferenceFileList.length == 0}"/>
+                        </div>
+                        <div class="slds-col slds-small-size_3-of-3 slds-medium-size_1-of-3 slds-large-size_1-of-3 slds-p-right_x-small">
+                            <label  class="slds-form-element__label slds-no-flex">{!v.languageLabelMap.CA_62}</label>
+                            <lightning:inputField disabled="{!and(v.sapRecord.Credit_Application_Status__c != 'Sent To Customer', v.sapRecord.Credit_Application_Status__c != 'Customer In Progress')}" fieldName="Trade_Phone_2__c" variant="label-hidden" />
+                        </div>
+                        <div class="slds-col slds-small-size_3-of-3 slds-medium-size_1-of-3 slds-large-size_1-of-3 ">
+                            <label  class="slds-form-element__label slds-no-flex">{!v.languageLabelMap.CA_62}</label>
+                            <lightning:inputField disabled="{!and(v.sapRecord.Credit_Application_Status__c != 'Sent To Customer', v.sapRecord.Credit_Application_Status__c != 'Customer In Progress')}" fieldName="Trade_Phone_3__c" variant="label-hidden" />
+                        </div>
+                        <div class="slds-col slds-small-size_3-of-3 slds-medium-size_1-of-3 slds-large-size_1-of-3 slds-p-right_x-small">
+                            <label  class="slds-form-element__label slds-no-flex"><aura:if isTrue="{!v.tradeReferenceFileList.length == 0}"><abbr lightning-input_input="" title="required" class="slds-required">*</abbr></aura:if>{!v.languageLabelMap.CA_63}</label>
+                            <lightning:inputField disabled="{!and(v.sapRecord.Credit_Application_Status__c != 'Sent To Customer', v.sapRecord.Credit_Application_Status__c != 'Customer In Progress')}" fieldName="Account_Opened_Since_1__c" variant="label-hidden"  required="{!v.tradeReferenceFileList.length == 0}"/>
+                        </div>
+                        <div class="slds-col slds-small-size_3-of-3 slds-medium-size_1-of-3 slds-large-size_1-of-3 slds-p-right_x-small">
+                            <label  class="slds-form-element__label slds-no-flex">{!v.languageLabelMap.CA_63}</label>
+                            <lightning:inputField disabled="{!and(v.sapRecord.Credit_Application_Status__c != 'Sent To Customer', v.sapRecord.Credit_Application_Status__c != 'Customer In Progress')}" fieldName="Account_Opened_Since_2__c" variant="label-hidden" />
+                        </div>
+                        <div class="slds-col slds-small-size_3-of-3 slds-medium-size_1-of-3 slds-large-size_1-of-3">
+                            <label  class="slds-form-element__label slds-no-flex">{!v.languageLabelMap.CA_63}</label>
+                            <lightning:inputField disabled="{!and(v.sapRecord.Credit_Application_Status__c != 'Sent To Customer', v.sapRecord.Credit_Application_Status__c != 'Customer In Progress')}" fieldName="Account_Opened_Since_3__c" variant="label-hidden" />
+                        </div>
+                    </aura:if>
+                    <aura:set attribute="else">
+                        <div class="slds-col slds-size_1-of-1 slds-p-top_medium">
+                            <b>{!v.languageLabelMap.CI_164}</b>
+                        </div>
+                    </aura:set>
+                </aura:if>
+            </aura:if>
+            <div class="slds-col slds-size_1-of-1 slds-m-top_large" style="border-bottom:2px solid #767676;color:#767676;font-size: 14px;font-weight:bold;">{!v.languageLabelMap.CA_64}</div>
+            <aura:if isTrue="{!v.showCreditInfo}">
+                <div class="slds-col slds-small-size_3-of-3 slds-medium-size_3-of-3 slds-large-size_3-of-3">
+                    <p><aura:if isTrue="{!v.creditType == 'Partial'}"><abbr lightning-input_input="" title="required" class="slds-required">*</abbr></aura:if>{!v.languageLabelMap.CA_66}</p>
+                    <div class="slds-col slds-size_12-of-12  slds-grid slds-wrap slds-m-bottom_small">
+                        <!--label class="slds-form-element__label slds-size_1-of-1">{!v.languageLabelMap.CA_67}</label-->
+                        <div class="slds-large-size_1-of-4 slds-small-size_1-of-1 slds-medium-size_2-of-4">
+                            <lightning:input name="{!v.sapId}" aura:id="financialFileInput" variant="label-hidden" type="file" multiple="true" onchange="{!c.handleFinancialFileChange }" disabled="{!and(v.sapRecord.Credit_Application_Status__c != 'Sent To Customer', v.sapRecord.Credit_Application_Status__c != 'Customer In Progress')}"  required="{!and(v.creditType == 'Partial',v.financialFileList.length == 0)}"/>
+                        </div>
+                        <div class="slds-col slds-large-size_2-of-4 slds-small-size_1-of-1 slds-medium-size_2-of-4">
+                            <aura:iteration items="{!v.financialFileList}" var="file" indexVar="fileNo">
+                                <aura:if isTrue="{!file.ParentId == v.sapId}">
+                                    <p style="color:black;border-bottom:1px solid lightgrey;padding-top:4px" id="financialFileName">
+                                        <aura:if isTrue="{!and(file.Id != '', file.ParentId == v.sapId)}">
+                                            <b>{!v.languageLabelMap.HP_38}&nbsp;</b>
+                                            <a href="{!file.link}" target="_blank" style="color:black;">{!file.Name}</a>
+                                            <a href="" onclick="{!c.deleteFile}" id="{!file.Id}" class="slds-float_right" name="financialFile" style="{!if(and(v.sapRecord.Credit_Application_Status__c != 'Sent To Customer', v.sapRecord.Credit_Application_Status__c != 'Customer In Progress'), 'pointer-events:none;')}">{!v.languageLabelMap.HP_34}</a>
+                                            <aura:set attribute="else">
+                                                <b>{!v.languageLabelMap.HP_38}&nbsp;</b> {!file.name}
+                                                <lightning:icon iconName="utility:close" id="{!fileNo}" title="Remove File" size="xx-small" class="slds-float_right" style="cursor:pointer;" onclick="{!c.removeFile}" aura:id="financialFile"/>
+                                            </aura:set>
+                                        </aura:if>
+                                    </p>
+                                </aura:if>
+                            </aura:iteration>
+                        </div>
+                    </div>
+                </div>
+                <aura:set attribute="else">
+                    <div class="slds-col slds-size_1-of-1 slds-p-top_medium">
+                        <b>{!v.languageLabelMap.CI_164}</b>
+                    </div>
+                </aura:set>
+            </aura:if>
+            <div class="slds-col slds-size_1-of-1 slds-m-top_large" style="border-bottom:2px solid #767676;color:#767676;font-size: 14px;font-weight:bold;">{!v.languageLabelMap.CA_68}</div>
+            <div class="slds-col slds-size_1-of-1 slds-m-top_small">
+                <ul>
+                    <li>{!v.languageLabelMap.CA_69}</li>
+                    <li>{!v.languageLabelMap.CA_70}</li>
+                    <li>{!v.languageLabelMap.CA_71}</li>
+                    <li>{!v.languageLabelMap.CA_72}</li>
+                    <li>{!v.languageLabelMap.CA_73}</li>
+                    <li>{!v.languageLabelMap.CA_74}</li>
+                    <li>{!v.languageLabelMap.CA_75}</li>
+                    <li>{!v.languageLabelMap.CA_76}</li>
+                </ul>
+            </div>
+        </div>
+    </lightning:recordEditForm>
+</aura:component>

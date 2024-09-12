@@ -1,0 +1,331 @@
+<aura:component  controller="SimplusGridController">
+    <aura:attribute name="approvalId" type="String" />
+    <aura:attribute name="quoteLineId" type="String" />
+    <aura:attribute name="soldToName" type="String" />
+    <aura:attribute name="approverName" type="String" />
+    <aura:attribute name="callerRect" type="Object" />
+    <aura:attribute name="opacity" type="Integer" default="1" />
+    <aura:attribute name="closeMe" type="Object" />
+    
+    <aura:attribute name="initialtop" type="Integer" default="0" />
+    <aura:attribute name="initialLeft" type="Integer" default="0" />
+    
+    <aura:attribute name="pos1" type="Integer" default="0" />
+    <aura:attribute name="pos2" type="Integer" default="0" />
+    <aura:attribute name="pos3" type="Integer" default="0" />
+    <aura:attribute name="pos4" type="Integer" default="0" />
+
+    <aura:attribute name="showCUPSInfo" type="Boolean" default="false" />
+    <aura:attribute name="showCUPSInfo1" type="Boolean" default="false" />
+    <aura:attribute name="showCUPSInfo2" type="Boolean" default="false" />
+    <aura:attribute name="showCUPSInfo3" type="Boolean" default="false" />
+    <aura:attribute name="showCUPSInfo4" type="Boolean" default="false" />
+    <aura:attribute name="showCompetitiveInfo" type="Boolean" default="false" />
+    
+    <aura:attribute name="data" type="Object" />
+    <aura:attribute name="surcharges" type="List" />
+    <aura:attribute name="discounts" type="List" />
+    <aura:attribute name="scales" type="List" />
+    <aura:attribute name="loading" type="Boolean" default="true"/>
+    
+    <aura:handler name="init" value="{!this}" action="{!c.onInit}" />
+    <aura:registerEvent name="pushClose" type="c:SimplusGrid_PushUp"/>
+    
+    <div class="{!'opacity_' + v.opacity}">
+        <div style="display: flex;" class="header">
+            <div aura:id="historicalDataHeader" onmousedown="{!c.dragMouseDown}">
+                &nbsp;Details for {!v.data.Name}
+            </div>
+            <div >
+                <lightning:buttonIcon onclick="{!c.toggleOpacity}" iconName="utility:preview"  variant="bare-inverse" title="visibility" alternativeText="Toggle Visibility"/>
+                <lightning:buttonIcon onclick="{!c.runCloseMe}" iconName="utility:close"  variant="bare-inverse" title="close" alternativeText="Close window"/>
+            </div>
+        </div>
+        <div class="body">
+            <!-- body here -->
+            <aura:if isTrue="{!v.loading}">
+                <div class="slds-align_absolute-center" style="height: 4rem; margin: 10px 0;">
+                    <div role="status" class="slds-spinner slds-spinner_medium slds-spinner_inline">
+                        <span class="slds-assistive-text">Loading</span>
+                        <div class="slds-spinner__dot-a"></div>
+                        <div class="slds-spinner__dot-b"></div>
+                    </div>
+                </div>
+                
+                <aura:set attribute="else">
+                    <div style="display: flex; margin: 10px 0px 10px 0px; font-size: 13pt; justify-content: space-between;">
+                    	<div><span style="font-weight: 600;">Sold To: </span>{!v.soldToName}</div>
+                    	<div><span style="font-weight: 600;">Approver: </span>{!v.approverName}</div>
+                    </div>
+                    <aura:if isTrue="{!!v.data}">
+                        <div style="text-align: center; padding: 20px 0;">
+                            No details found
+                        </div>
+                        <aura:set attribute="else">
+                            <div>
+                                <table class="slds-table slds-table_bordered">
+                                    <thead>
+                                        <tr>
+                                            <th colspan="6" style="padding-left: 1px;">Product Info</th>
+                                        </tr>
+                                        <tr>
+                                            <th class='slds-text-title_caps'>Product Name</th>
+                                            <th class='slds-text-title_caps'>Ship To, City State Country</th>
+                                            <th class='slds-text-title_caps'>Ship From Source</th>
+                                            <th class='slds-text-title_caps'>New Price</th>
+                                            <th class='slds-text-title_caps'>Prior Price</th>
+                                            <th class='slds-text-title_caps'>Price Change Frequency</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>{!v.data.ProductName_Concatenated__c}</td>
+                                            <td>{!v.data.Ship_To_City_State_Country__c}</td>
+                                            <td>{!v.data.Ship_From_Name__c}</td>
+                                            <td>
+                                                <aura:if isTrue="{!v.data.SBQQ__ListPrice__c}">
+                                                    <span class="currency">{!v.data.CurrencyIsoCode}</span>
+                                                    <ui:outputNumber value="{!v.data.SBQQ__ListPrice__c}" format="#,##0.00" />
+                                                </aura:if>
+                                            </td>                                            
+                                            <td>
+                                                <aura:if isTrue="{!v.data.Previous_Price_Value__c}">
+                                                    <span class="currency">{!v.data.CurrencyIsoCode}</span>  
+                                                    <ui:outputNumber value="{!v.data.Previous_Price_Value__c}" format="#,##0.00" />
+                                                </aura:if>
+                                            </td>
+                                            <td>{!v.data.Price_Change_Frequency__c}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <aura:if isTrue="{!not(empty(v.scales))}">
+                                <div style="margin-top: 2rem;">
+                                    <table class="slds-table slds-table_bordered">
+                                        <thead>
+                                            <tr>
+                                                <th colspan="5" style="padding-left: 1px;">Scales</th>
+                                            </tr>
+                                            <tr>
+                                                <th class='slds-text-title_caps'>Min Volume</th>
+                                                <th class='slds-text-title_caps'>Scale UOM</th>
+                                                <th class='slds-text-title_caps'>Per</th>
+                                                <th class='slds-text-title_caps'>Unit Price</th>
+                                                <th class='slds-text-title_caps'>Prior Price</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <aura:iteration items="{!v.scales}" var="scale">
+                                                <tr>
+                                                    <td>{!scale.Min_Volume__c}</td>
+                                                    <td>{!scale.Scale_UOM__c}</td>
+                                                    <td>{!scale.Per_Quantity__c}</td>
+                                                    <td>
+                                                        <span class="currency">{!scale.CurrencyIsoCode}</span>
+                                                        <aura:if isTrue="{!scale.Per_Quantity__c == '1'}">
+                                                            <ui:outputNumber value="{!scale.Display_Price_Whole_Numbers__c}" format="#,##0.00" />
+                                                            <aura:set attribute="else">
+                                                                <ui:outputNumber value="{!scale.Display_Price_Whole_Numbers__c}" format="###0.0000" />
+                                                            </aura:set>
+                                                        </aura:if>    
+                                                    </td>
+                                                    <td>
+                                                        <aura:if isTrue="{!scale.Previous_Price_Value__c}">
+                                                            <span class="currency">{!scale.CurrencyIsoCode}</span>  
+                                                            <ui:outputNumber value="{!scale.Previous_Price_Value__c}" format="#,##0.00" />
+                                                        </aura:if>
+                                                    </td>
+                                                </tr>
+                                            </aura:iteration>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </aura:if>
+
+                            <aura:if isTrue="{!not(empty(v.discounts))}">
+                                <div style="margin-top: 2rem;">
+                                    <table class="slds-table slds-table_bordered">
+                                        <thead>
+                                            <tr>
+                                                <th colspan="4" style="padding-left: 1px;">Discounts</th>
+                                            </tr>
+                                            <tr>
+                                                <th class='slds-text-title_caps'>Name</th>
+                                                <th class='slds-text-title_caps'>Discount Value/Percent</th>
+                                                <th class='slds-text-title_caps'>Start Date</th>
+                                                <th class='slds-text-title_caps'>End Date</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <aura:iteration items="{!v.discounts}" var="discount">
+                                                <tr>
+                                                    <td>{!discount.SBQQ__ProductName__c}</td>
+                                                    <td>
+                                                        <aura:if isTrue="{!discount.Discount_Percent__c}">
+                                                            <ui:outputNumber value="{!discount.Discount_Percent__c}" format="#,##0.00" />%
+                                                            <aura:set attribute="else">
+                                                                <span class="currency">{!discount.CurrencyIsoCode}</span>
+                                                                <ui:outputNumber value="{!discount.Display_Price_Whole_Numbers__c}" format="#,##0.00" />
+                                                            </aura:set>
+                                                        </aura:if>    
+                                                    </td>
+                                                    <td>{!discount.Validity_Start_Date__c}</td>
+                                                    <td>{!discount.Validity_End_Date__c}</td>
+                                                </tr>
+                                            </aura:iteration>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </aura:if>
+
+                            <aura:if isTrue="{!v.showCUPSInfo}">
+                                <div style="margin-top: 2rem;">
+                                    <table class="slds-table slds-table_bordered">
+                                        <thead>
+                                            <tr>
+                                                <th colspan="5" style="padding-left: 1px;">CUPS</th>
+                                            </tr>
+                                            <tr>
+                                                <th class='slds-text-title_caps'>End User</th>
+                                                <th class='slds-text-title_caps'>Support Price</th>
+                                                <th class='slds-text-title_caps'>CUPS Discount</th>
+                                                <th class='slds-text-title_caps'>Start Date</th>
+                                                <th class='slds-text-title_caps'>End Date</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <aura:if isTrue="{!v.showCUPSInfo1}">
+                                                <tr>
+                                                    <td>{!v.data.CUPS_End_User__r.Name}</td>
+                                                    <td>
+                                                        <aura:if isTrue="{!v.data.CUPS_Support_Price__c}">
+                                                            <span class="currency">{!v.data.CurrencyIsoCode}</span>
+                                                            <ui:outputNumber value="{!v.data.CUPS_Support_Price__c}" format="#,##0.00" />
+                                                        </aura:if>
+                                                    </td>
+                                                    <td>
+                                                        <ui:outputNumber value="{!v.data.CUPS_Discount_Percent__c}" format="#,##0.00" />%
+                                                    </td>
+                                                    <td>{!v.data.CUPS_Start_Date__c}</td>
+                                                    <td>{!v.data.CUPS_End_Date__c}</td>
+                                                </tr>
+                                            </aura:if>
+                                            <aura:if isTrue="{!v.showCUPSInfo2}">
+                                                <tr>
+                                                    <td>{!v.data.CUPS_End_User2__r.Name}</td>
+                                                    <td>
+                                                        <aura:if isTrue="{!v.data.CUPS_Support_Price2__c}">
+                                                            <span class="currency">{!v.data.CurrencyIsoCode}</span>
+                                                            <ui:outputNumber value="{!v.data.CUPS_Support_Price2__c}" format="#,##0.00" />
+                                                        </aura:if>
+                                                    </td>
+                                                    <td>
+                                                        <ui:outputNumber value="{!v.data.CUPS_Discount_Percent2__c}" format="#,##0.00" />%
+                                                    </td>
+                                                    <td>{!v.data.CUPS_Start_Date2__c}</td>
+                                                    <td>{!v.data.CUPS_End_Date2__c}</td>
+                                                </tr>
+                                            </aura:if>
+                                            <aura:if isTrue="{!v.showCUPSInfo3}">
+                                                <tr>
+                                                    <td>{!v.data.CUPS_End_User3__r.Name}</td>
+                                                    <td>
+                                                        <aura:if isTrue="{!v.data.CUPS_Support_Price3__c}">
+                                                            <span class="currency">{!v.data.CurrencyIsoCode}</span>
+                                                            <ui:outputNumber value="{!v.data.CUPS_Support_Price3__c}" format="#,##0.00" />
+                                                        </aura:if>
+                                                    </td>
+                                                    <td>
+                                                        <ui:outputNumber value="{!v.data.CUPS_Discount_Percent3__c}" format="#,##0.00" />%
+                                                    </td>
+                                                    <td>{!v.data.CUPS_Start_Date3__c}</td>
+                                                    <td>{!v.data.CUPS_End_Date3__c}</td>
+                                                </tr>
+                                            </aura:if>
+                                            <aura:if isTrue="{!v.showCUPSInfo4}">
+                                                <tr>
+                                                    <td>{!v.data.CUPS_End_User4__r.Name}</td>
+                                                    <td>
+                                                        <aura:if isTrue="{!v.data.CUPS_Support_Price4__c}">
+                                                            <span class="currency">{!v.data.CurrencyIsoCode}</span>
+                                                            <ui:outputNumber value="{!v.data.CUPS_Support_Price4__c}" format="#,##0.00" />
+                                                        </aura:if>
+                                                    </td>
+                                                    <td>
+                                                        <ui:outputNumber value="{!v.data.CUPS_Discount_Percent4__c}" format="#,##0.00" />%
+                                                    </td>
+                                                    <td>{!v.data.CUPS_Start_Date4__c}</td>
+                                                    <td>{!v.data.CUPS_End_Date4__c}</td>
+                                                </tr>
+                                            </aura:if>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </aura:if>
+
+                            <aura:if isTrue="{!v.showCompetitiveInfo}">
+                                <div style="margin-top: 2rem;">
+                                    <table class="slds-table slds-table_bordered">
+                                        <thead>
+                                            <tr>
+                                                <th colspan="3" style="padding-left: 1px;">Competitive</th>
+                                            </tr>
+                                            <tr>
+                                                <th class='slds-text-title_caps'>Competitor</th>
+                                                <th class='slds-text-title_caps'>Competitor Product</th>
+                                                <th class='slds-text-title_caps'>Competitor Price</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>{!v.data.Competitive_Distributor__r.Name}</td>
+                                                <td>{!v.data.Competitor_Product__r.Name}</td>
+                                                <td>
+                                                    <aura:if isTrue="{!v.data.Competitive_Price__c}">
+                                                        <span class="currency">{!v.data.CurrencyIsoCode}</span>
+                                                        <ui:outputNumber value="{!v.data.Competitive_Price__c}" format="#,##0.00" />
+                                                    </aura:if>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </aura:if>
+
+                            <aura:if isTrue="{!not(empty(v.surcharges))}">
+                                <div style="margin-top: 2rem;">
+                                    <table class="slds-table slds-table_bordered">
+                                        <thead>
+                                            <tr>
+                                                <th colspan="2" style="padding-left: 1px;">Surcharges</th>
+                                            </tr>
+                                            <tr>
+                                                <th class='slds-text-title_caps'>Name</th>
+                                                <th class='slds-text-title_caps'>Unit Price/Percent</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <aura:iteration items="{!v.surcharges}" var="surcharge">
+                                                <tr>
+                                                    <td>{!surcharge.SBQQ__ProductName__c}</td>
+                                                    <td>
+                                                        <aura:if isTrue="{!v.data.SBQQ__ListPrice__c}">
+                                                            <span class="currency">{!surcharge.CurrencyIsoCode}</span>
+                                                            <ui:outputNumber value="{!surcharge.SBQQ__ListPrice__c}" format="#,##0.00" />
+                                                        </aura:if>
+                                                    </td>
+                                                </tr>
+                                            </aura:iteration>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </aura:if>
+                        </aura:set>
+                    </aura:if>
+                </aura:set>
+            </aura:if>
+            
+        </div>
+    </div>
+</aura:component>

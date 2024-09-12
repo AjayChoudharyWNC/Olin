@@ -1,0 +1,43 @@
+<aura:component controller="SimplusGridController">
+    <aura:attribute type="String" name="recordId" />
+    <aura:attribute type="Boolean" name="isApprove" />
+    <aura:attribute type="Boolean" name="approveClicked" default="false"/>
+    <aura:attribute type="Boolean" name="iframeLoaded" default="false"/>
+    <aura:attribute type="String" name="approvalComments" />
+    <aura:attribute type="Boolean" name="display" default="false" />
+    <aura:attribute name="message" type="String"/>
+    <aura:attribute name="vfHost" type="String" default="olin.my.salesforce.com"/>
+
+    
+    <aura:registerEvent type="c:SimplusApproval_CloseOthers" name="closeOthers" />
+    <aura:handler event="c:SimplusApproval_CloseOthers" action="{!c.closeMe}"/>
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+    <div style="display: inline-block;">
+        
+        <aura:if isTrue="{!v.isApprove}">
+            <lightning:button label="approve" variant="brand" class="approvalButton" onclick="{!c.toggleDisplay}" />
+            <aura:set attribute="else">
+                <lightning:button label="reject" variant="neutral" class="approvalButton" onclick="{!c.toggleDisplay}" />
+            </aura:set>
+        </aura:if>
+    	<div class="{!'fullWindow ' + (v.display ? '' : ' hide')}">
+            <aura:if isTrue="{! not(and(v.approveClicked, v.iframeLoaded))}">
+                <br /><br />
+                <div class="slds-align_absolute-center" style="height: 4rem;">
+                    <div role="status" class="slds-spinner slds-spinner_medium slds-spinner_inline">
+                        <span class="slds-assistive-text">Loading</span>
+                        <div class="slds-spinner__dot-a"></div>
+                        <div class="slds-spinner__dot-b"></div>
+                    </div>
+                </div>
+            </aura:if>
+            <aura:if isTrue="{!v.display}">
+                <div style="display: hidden; opacity: 0; height:0px; width:0px; position:absolute;overflow:hidden;">version 1</div>
+                <div style="{!v.approveClicked &amp;&amp; v.iframeLoaded ? 'opacity: 1;' : 'opacity: 0'}">
+                    <iframe id="{!v.recordId}" onload="{!c.loadComplete}" src="{!'/apex/Simplus' + (v.isApprove ? 'Approvals' : 'Reject') + '?id=' + v.recordId + '&amp;isdtp=p1&amp;sfdcIFrameOrigin=https://olin.my.salesforce.com'}" />
+                </div>
+            </aura:if>
+        </div>
+        
+    </div>
+</aura:component>

@@ -1,0 +1,6 @@
+<!-- Triggered from "OCO_CustomerLeft" and handled from "OCO_CustomerRight" component  -->
+<aura:event type="APPLICATION" description="Event template">
+    <aura:attribute name="nodeClicked" type="String"/>
+    <aura:attribute name="nodeId" type="String"/>
+    <aura:attribute name="sapNo" type="String"/>
+</aura:event>

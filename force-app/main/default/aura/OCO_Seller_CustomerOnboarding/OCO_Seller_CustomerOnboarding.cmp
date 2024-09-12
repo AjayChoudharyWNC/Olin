@@ -1,0 +1,396 @@
+<aura:component controller="OCO_SellerController" implements="flexipage:availableForRecordHome,force:hasRecordId">
+    <aura:attribute name="mainAccount" type="Account"/>
+    <aura:attribute name="sapType" type="string"/>
+    <aura:attribute name="shipAccId" type="string" default=""/>
+    <aura:attribute name="sapId" type="string" default=""/>
+    <aura:attribute name="selectedCSRId" type="string"/>
+    <aura:attribute name="sapRecord" type="SAP_Onboarding__c" default="{'sObjectType' : 'SAP_Onboarding__c'}"/>
+    <aura:attribute name="existingSapRecord" type="Object"/>
+    <aura:attribute name="conRecord" type="Contact" default="{'sObjectType' : 'Contact', 'FirstName' : ''}"/>
+    <aura:attribute name="spinner" type="boolean" default="false"/>
+    <aura:attribute name="showAppUser" type="boolean" default="true"/>
+    <aura:attribute name="mainOnboardContact" type="String"/>
+    <aura:attribute name="layoutSections" type="List" />
+    <aura:attribute name="recordId" type="string"/>
+    <aura:handler name="init" value="this" action="{!c.doInit}"/>
+    <aura:attribute name="dueDate" type="Date"/>
+    <aura:attribute name="isProspect" type="Boolean"/>
+    <aura:attribute name="estDate" type="Date"/>
+    <aura:attribute name="selectedSalesOrg" type="String"/>
+    <aura:attribute name="relatedProducts" type="List"/>
+    <aura:attribute name="relatedContacts" type="List"/>
+    <aura:attribute name="salesRep" type="String"/>
+    <aura:attribute name="selectedShipToAccounts" type="List" default="[]"/>
+    <aura:attribute name="cusType" type="String"/>
+    <aura:attribute name="checkForFinalButton" type="boolean" default="true"/>
+    <aura:attribute name="showOnboardingShipTo" type="boolean"/>
+    <aura:attribute name="purchasedProd12Month" type="String"/>
+     <aura:attribute name="exceedingCredit" type="String"/>
+    <aura:attribute name="salesOrgs" type="List"/>
+    <aura:attribute name="creditType" type="String"/>
+    <aura:attribute name="oldCreditType" type="String"/>
+    <aura:registerEvent name="checkBoxUpdateEvt" type="c:OCO_Seller_CheckboxUpdateEvt"/>
+    <aura:registerEvent name="updateSapIdEvt" type="c:OCO_Seller_UpdateSapIdInLeft"/>
+    <ltng:require styles="{!$Resource.IncPopUpWidthForCreateSAP}"/>
+    <lightning:quickActionAPI aura:id="quickActionAPI" />
+    <aura:if isTrue="{!v.spinner}">
+        <div aura:id="spinnerId" class="slds-spinner_container">
+            <div class="slds-spinner--brand  slds-spinner slds-spinner--large slds-is-relative" role="alert">
+                <span class="slds-assistive-text">Loading</span>
+                <div class="slds-spinner__dot-a"></div>
+                <div class="slds-spinner__dot-b"></div>
+            </div>
+        </div>
+    </aura:if>    
+    <aura:if isTrue="{!not(v.showOnboardingShipTo)}">
+        <aura:if isTrue ="{!or(v.sapType == 'Modify Sold-To', v.sapType == 'Modify Ship-To')}">
+            <div class="slds-size_12-of-12 slds-text-align_right slds-p-top_medium slds-p-bottom_medium">
+                <!--lightning:button label="Send To SAP" disabled="true" aura:id="sapSendButton" variant="success" onclick="{!c.sendToSap}"/-->
+                <aura:if isTrue="{!or(or(v.existingSapRecord.Credit_Application_Status__c != 'Customer Submitted',  v.existingSapRecord.Order_Placement_Status__c != 'Customer Submitted'), v.existingSapRecord.Customer_Information_Status__c != 'Customer Submitted')}">
+                    <lightning:button label="Save Form" disabled="true" aura:id="finalSubmitBtn" variant="success" onclick="{!c.finalSubmit}"/>
+                </aura:if>
+            </div>
+        </aura:if>
+        <div>
+            <lightning:recordEditForm onsubmit="{!c.handleSubmitSap}"
+                                      onsuccess="{!c.handleSuccessSap}"
+                                      onerror="{!c.handleError}"
+                                      objectApiName="SAP_Onboarding__c"
+                                      recordId="{!v.sapId}"
+                                      aura:id="onboardForm">
+                <lightning:messages />
+                <div class="slds-size_12-of-12 slds-text-align_right">
+                    <aura:if isTrue="{!v.existingSapRecord.Customer_Information_Status__c != 'Customer Submitted'}" >
+                        <lightning:button label="Save" variant="brand" type="submit"/>
+                    </aura:if>
+                    <aura:if isTrue="{!and(v.sapType != 'Modify Sold-To', v.sapType != 'Modify Ship-To')}">
+                        <lightning:button label="Go To Ship To's" variant="brand" disabled="{!or(v.sapId == '', v.oldCreditType != v.creditType)}" onclick="{!c.openShipTos}"/>
+                    </aura:if>
+                </div>
+                <div class="slds-hide">
+                    <lightning:inputField fieldName="Customer_Purchased_Prod_In_Last_12_Month__c" value="{!v.purchasedProd12Month}"/>
+                     <lightning:inputField fieldName="New_Business_Result_In_Exceeding_Credit__c" value="{!v.exceedingCredit}"/>
+                    <lightning:inputField fieldName = 'Main_Onboarding_Contact__c' value="{!v.mainOnboardContact}" />
+                    <lightning:inputField fieldName="SAP_Language__c" value="English"/>
+                    <aura:if isTrue="{!v.sapType == 'New Sold-To w/ Ship-to &amp; Product'}">
+                        <lightning:inputField fieldName="CSR_Mgr__c" value="{!v.selectedCSRId}"/>
+                        <aura:set attribute="else">
+                            <lightning:inputField fieldName="Customer_Service_Rep__c" value="{!v.selectedCSRId}"/>
+                        </aura:set>
+                    </aura:if>
+                    <lightning:inputField fieldName="Customer_Type__c" value="{!v.cusType}"/>
+                    <lightning:inputField fieldName="Status__c" value="In Progress"/>
+                </div>
+                <aura:if isTrue="{!v.creditType == 'Full'}">
+                    <div class="slds-section slds-is-open">
+                        <h3 class="slds-section__title sectionHeader">
+                            Data Validation
+                        </h3>
+                        <div class="slds-section__content">
+                            <div class="slds-grid slds-wrap">
+                                <div class="slds-size_12-of-12">
+                                    <lightning:input type="checkbox" label="I have validated Sold-To Data" required="true" disabled="{!v.sapId != ''}" checked="{!v.sapId != ''}"/>
+                                </div>
+                            </div>
+                        </div> 
+                    </div>
+                </aura:if>
+                <div class="slds-section slds-is-open">
+                    <h3 class="slds-section__title sectionHeader">
+                        Information
+                    </h3>
+                    <div class="slds-section__content">
+                        <div class="slds-grid slds-wrap">
+                            <div class="slds-size_6-of-12">
+                                <lightning:inputField fieldName="Account__c" value="{!v.recordId}" disabled="true"/>
+                            </div>
+                            <div class="slds-size_6-of-12">
+                                <lightning:inputField fieldName="On_boarding_Request_Type__c" value="{!v.sapType}" disabled="true"/>
+                            </div>
+                            <div class="slds-size_6-of-12 slds-p-right_xx-small slds-p-left_xx-small">
+                                <aura:if isTrue="{!v.mainAccount.RecordType.Name == 'Prospect'}">
+                                    <lightning:inputField fieldName="Sales_Organization__c" value="{!v.selectedSalesOrg}" disabled="true"/>
+                                    <aura:set attribute="else">
+                                        <lightning:select label="Sales Org" aura:id="Sales_Organization__c" value="{!v.selectedSalesOrg}" disabled="{!or(v.creditType == 'Partial', v.existingSapRecord.Customer_Information_Status__c == 'Customer Submitted')}">
+                                            <option value="">-None-</option>
+                                            <aura:iteration items="{!v.salesOrgs}" var="con">
+                                                    <option value="{!con.Sales_Organization__r.Id}">{!con.Sales_Org_Name_Code__c}</option>
+                                            </aura:iteration>
+                                        </lightning:select>
+                                    </aura:set>
+                                </aura:if>
+                                
+                            </div>
+                            <div class="slds-size_6-of-12">
+                                <lightning:inputField fieldName="Full_Legal_Name__c" value="{!v.sapRecord.Full_Legal_Name__c}" disabled="{!or(v.existingSapRecord.Customer_Information_Status__c == 'Customer Submitted', v.creditType == 'Partial')}"/>
+                            </div>
+                            <div class="slds-size_6-of-12">
+                                <lightning:inputField fieldName="Form_Due_Date__c" value="{!v.dueDate}" disabled="{!or(v.existingSapRecord.Customer_Information_Status__c == 'Customer Submitted', v.creditType == 'Partial')}"/>
+                            </div>
+                            <aura:if isTrue="{!v.sapRecord.Sold_To_Country__c == 'United States'}">
+                                <div class="slds-size_6-of-12">
+                                    <lightning:inputField fieldName="Does_Customer_Sell_Outside_US__c" required="true" disabled="{!v.existingSapRecord.Customer_Information_Status__c == 'Customer Submitted'}"/>
+                                </div>
+                            </aura:if>
+                            <div class="slds-size_6-of-12 slds-p-right_xx-small slds-p-left_xx-small">
+                                <lightning:select label="Sales Rep" aura:id="Sales_Rep__c" value="{!v.salesRep}" disabled="{!or(v.existingSapRecord.Customer_Information_Status__c == 'Customer Submitted', v.creditType == 'Partial')}">
+                                    <option value="">--None--</option>
+                                    <option value="{!v.mainAccount.OwnerId}">{!v.mainAccount.Owner.Name}</option>
+                                    <aura:iteration items="{!v.mainAccount.AccountTeamMembers}" var="user">
+                                        <aura:if isTrue="{!user.UserId != v.mainAccount.OwnerId}">
+                                            <option value="{!user.UserId}">{!user.User.Name}</option>
+                                        </aura:if>
+                                    </aura:iteration>
+                                </lightning:select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="slds-section slds-is-open">
+                    <h3 class="slds-section__title sectionHeader">
+                        Credit Information
+                    </h3>
+                    <div class="slds-section__content">
+                        <div class="slds-grid slds-wrap">
+                            <div class="slds-size_6-of-12">
+                                <lightning:inputField fieldName="Is_Customer_a_Publically_Traded_Company__c" disabled="{!v.existingSapRecord.Customer_Information_Status__c == 'Customer Submitted'}"/>
+                            </div>
+                            <div class="slds-size_6-of-12">
+                                <lightning:inputField fieldName="Estimated_Date_of_First_Shipment__c" value="{!v.estDate}" required="true" disabled="{!v.existingSapRecord.Customer_Information_Status__c == 'Customer Submitted'}"/>
+                            </div>
+                            <div class="slds-size_6-of-12">
+                                <lightning:inputField fieldName="DUNS_No__c" disabled="{!v.existingSapRecord.Customer_Information_Status__c == 'Customer Submitted'}"/>
+                            </div>
+                            <div class="slds-size_6-of-12">
+                                <lightning:inputField fieldName="Estimated_First_Order_Amount__c" required="true" disabled="{!v.existingSapRecord.Customer_Information_Status__c == 'Customer Submitted'}"/>
+                            </div>
+                            <div class="slds-size_6-of-12">
+                                <lightning:inputField fieldName="Non_Standard_Billing_Procedure_Details__c" disabled="{!v.existingSapRecord.Customer_Information_Status__c == 'Customer Submitted'}"/>
+                            </div>
+                            <div class="slds-size_6-of-12">
+                                <lightning:inputField fieldName="Estimated_Annual_Sales__c" required="true" disabled="{!v.existingSapRecord.Customer_Information_Status__c == 'Customer Submitted'}"/>
+                            </div>
+                            <div class="slds-size_6-of-12">
+                                <lightning:inputField fieldName="Additional_Information__c" disabled="{!v.existingSapRecord.Customer_Information_Status__c == 'Customer Submitted'}"/>
+                            </div>
+                            <div class="slds-size_6-of-12">
+                                <lightning:inputField fieldName="Requested_Payment_Terms__c" required="true" disabled="{!v.existingSapRecord.Customer_Information_Status__c == 'Customer Submitted'}"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <aura:if isTrue="{!v.creditType == 'Full'}">
+                    <div class="slds-section slds-is-open">
+                        <h3 class="slds-section__title sectionHeader">
+                            Customer Address Details
+                        </h3>
+                        <div class="slds-section__content">
+                            <div class="slds-grid slds-wrap">
+                                <!--div class="slds-size_6-of-12"></div>
+                                <div class="slds-size_6-of-12">
+                                    <div class="slds-form-element slds-m-left_xx-small slds-m-bottom_x-small">
+                                        <div class="slds-form-element__control">
+                                            <lightning:button type="button" variant="neutral" iconName="utility:copy" iconPosition="left" label="Copy Sold-To To Global Customer" onclick="{!c.handleSoldToCopy}" disabled="{!v.existingSapRecord.Customer_Information_Status__c == 'Customer Submitted'}"/>
+                                        </div>
+                                    </div>
+                                </div-->
+                                <div class="slds-grid slds-size_6-of-12 slds-grid--vertical">
+                                    <lightning:inputField fieldName="SAP_S_4_No_Sold_To__c" value="{!v.sapRecord.SAP_S_4_No_Sold_To__c}" class="slds-hide"/>
+                                    <lightning:inputField fieldName="Sold_To_Company_Name__c" value="{!v.sapRecord.Sold_To_Company_Name__c}" disabled="{!or((v.sapType == 'New Product' || v.sapType == 'New Ship-To &amp; Product'), v.existingSapRecord.Customer_Information_Status__c == 'Customer Submitted')}"/>
+                                    <lightning:inputField fieldName="Sold_To_Street__c"  value="{!v.sapRecord.Sold_To_Street__c}" disabled="{!or((v.sapType == 'New Product' || v.sapType == 'New Ship-To &amp; Product'), v.existingSapRecord.Customer_Information_Status__c == 'Customer Submitted')}"/>
+                                    <lightning:inputField fieldName="Sold_To_Street_2__c" value="{!v.sapRecord.Sold_To_Street_2__c}" disabled="{!or((v.sapType == 'New Product' || v.sapType == 'New Ship-To &amp; Product'), v.existingSapRecord.Customer_Information_Status__c == 'Customer Submitted')}"/>
+                                    <lightning:inputField fieldName="Sold_To_City__c" value="{!v.sapRecord.Sold_To_City__c}" disabled="{!or((v.sapType == 'New Product' || v.sapType == 'New Ship-To &amp; Product'), v.existingSapRecord.Customer_Information_Status__c == 'Customer Submitted')}"/>
+                                    <lightning:inputField fieldName="Sold_To_State_Province__c" value="{!v.sapRecord.Sold_To_State_Province__c}" disabled="{!or((v.sapType == 'New Product' || v.sapType == 'New Ship-To &amp; Product'), v.existingSapRecord.Customer_Information_Status__c == 'Customer Submitted')}"/>
+                                    <lightning:inputField fieldName="Sold_To_Postal_Code__c" value="{!v.sapRecord.Sold_To_Postal_Code__c}" disabled="{!or((v.sapType == 'New Product' || v.sapType == 'New Ship-To &amp; Product'), v.existingSapRecord.Customer_Information_Status__c == 'Customer Submitted')}"/>
+                                    <lightning:inputField fieldName="Sold_To_Country__c" value="{!v.sapRecord.Sold_To_Country__c}" disabled="{!or((v.sapType == 'New Product' || v.sapType == 'New Ship-To &amp; Product'), v.existingSapRecord.Customer_Information_Status__c == 'Customer Submitted')}"/>
+                                </div>
+                                <!--aura:if isTrue="{!or(v.sapType == 'New Sold-To w/ Ship-to &amp; Product', v.creditType == 'Full')}">
+                                    <div class="slds-grid slds-grid-vertical slds-size_6-of-12">
+                                        <lightning:inputField fieldName="SAP_S_4_No_Global_Customer__c" value="{!v.sapRecord.SAP_S_4_No_Global_Customer__c}" class="slds-hide"/>
+                                        <lightning:inputField fieldName="Parent_Company_Name__c" value="{!v.sapRecord.Parent_Company_Name__c}" disabled="{!v.existingSapRecord.Customer_Information_Status__c == 'Customer Submitted'}"/>
+                                        <lightning:inputField fieldName="Parent_Street__c" value="{!v.sapRecord.Parent_Street__c}" disabled="{!v.existingSapRecord.Customer_Information_Status__c == 'Customer Submitted'}"/>
+                                        <lightning:inputField fieldName="Parent_Street_2__c" value="{!v.sapRecord.Parent_Street_2__c}" disabled="{!v.existingSapRecord.Customer_Information_Status__c == 'Customer Submitted'}"/>
+                                        <lightning:inputField fieldName="Parent_City__c" value="{!v.sapRecord.Parent_City__c}" disabled="{!v.existingSapRecord.Customer_Information_Status__c == 'Customer Submitted'}"/>
+                                        <lightning:inputField fieldName="Parent_State_Province__c" value="{!v.sapRecord.Parent_State_Province__c}" disabled="{!v.existingSapRecord.Customer_Information_Status__c == 'Customer Submitted'}"/>
+                                        <lightning:inputField fieldName="Parent_Postal_Code__c" value="{!v.sapRecord.Parent_Postal_Code__c}" disabled="{!v.existingSapRecord.Customer_Information_Status__c == 'Customer Submitted'}"/>
+                                        <lightning:inputField fieldName="Parent_Country__c" value="{!v.sapRecord.Parent_Country__c}" disabled="{!v.existingSapRecord.Customer_Information_Status__c == 'Customer Submitted'}"/>
+                                    </div>
+                                </aura:if-->
+                                <aura:if isTrue="{!v.sapType == 'Modify Ship-To'}">
+                                    <div class="slds-grid slds-grid--vertical slds-size_6-of-12">
+                                        <lightning:inputField fieldName="SAP_S_4_No_Ship_To__c" value="{!v.sapRecord.SAP_S_4_No_Ship_To__c}" class="slds-hide"/>
+                                        <lightning:inputField fieldName="Ship_To_Company_Name__c" value="{!v.sapRecord.Ship_To_Company_Name__c}" disabled="{!v.existingSapRecord.Customer_Information_Status__c == 'Customer Submitted'}"/>
+                                        <lightning:inputField fieldName="Ship_To_Street__c" value="{!v.sapRecord.Ship_To_Street__c}" disabled="{!v.existingSapRecord.Customer_Information_Status__c == 'Customer Submitted'}"/>
+                                        <lightning:inputField fieldName="Ship_To_Street_2__c" value="{!v.sapRecord.Ship_To_Street_2__c  }" disabled="{!v.existingSapRecord.Customer_Information_Status__c == 'Customer Submitted'}"/>
+                                        <lightning:inputField fieldName="Ship_To_City__c" value="{!v.sapRecord.Ship_To_City__c}" disabled="{!v.existingSapRecord.Customer_Information_Status__c == 'Customer Submitted'}"/>
+                                        <lightning:inputField fieldName="Ship_To_State_Province__c" value="{!v.sapRecord.Ship_To_State_Province__c}" disabled="{!v.existingSapRecord.Customer_Information_Status__c == 'Customer Submitted'}"/>
+                                        <lightning:inputField fieldName="Ship_To_Postal_Code__c" value="{!v.sapRecord.Ship_To_Postal_Code__c}" disabled="{!v.existingSapRecord.Customer_Information_Status__c == 'Customer Submitted'}"/>
+                                        <lightning:inputField fieldName="Ship_To_Country__c" value="{!v.sapRecord.Ship_To_Country__c}" disabled="{!v.existingSapRecord.Customer_Information_Status__c == 'Customer Submitted'}"/>
+                                    </div>
+                                </aura:if>
+                            </div>
+                        </div>
+                    </div>
+                    <aura:if isTrue="{!or(v.sapType == 'New Sold-To w/ Ship-to &amp; Product', v.creditType == 'Full')}">
+                        <div class="slds-section slds-is-open">
+                            <h3 class="slds-section__title sectionHeader">
+                                Contacts
+                            </h3>
+                            <div class="slds-section__content">
+                                <div class="slds-grid slds-wrap">
+                                    <div class="slds-grid slds-grid--vertical slds-size_6-of-12">
+                                        <lightning:select label="Order Placement | Contact" aura:id="Order_Placement_Contact__c"  class="slds-p-left_xx-small slds-p-right_xx-small" onchange="{!c.handleValueChange}" disabled="{!v.existingSapRecord.Customer_Information_Status__c == 'Customer Submitted'}">
+                                            <option value="">--None--</option>
+                                            <aura:iteration items="{!v.relatedContacts}" var="con">
+                                                <option selected ="{!con.Id == v.sapRecord.Order_Placement_Contact__c}" value="{!con.Id}">{!con.Name} ({!con.Email != null ? con.Email : 'Email is missing'})</option>
+                                            </aura:iteration>
+                                        </lightning:select>
+                                        <lightning:inputField fieldName="Order_Placement_Contact__c" value="{!v.sapRecord.Order_Placement_Contact__c}" class="slds-hide"/>
+                                        <lightning:inputField fieldName="Order_Placement_First_Name__c" value="{!v.sapRecord.Order_Placement_First_Name__c}" disabled="{!v.existingSapRecord.Customer_Information_Status__c == 'Customer Submitted'}"/>
+                                        <lightning:inputField fieldName="Order_Placement_Last_Name__c" value="{!v.sapRecord.Order_Placement_Last_Name__c}" disabled="{!v.existingSapRecord.Customer_Information_Status__c == 'Customer Submitted'}"/>
+                                        <lightning:inputField fieldName="Order_Placement_Title__c" value="{!v.sapRecord.Order_Placement_Title__c}" disabled="{!v.existingSapRecord.Customer_Information_Status__c == 'Customer Submitted'}"/>
+                                        <lightning:inputField fieldName="Order_Placement_Email__c" value="{!v.sapRecord.Order_Placement_Email__c}" disabled="{!v.existingSapRecord.Customer_Information_Status__c == 'Customer Submitted'}"/>
+                                        <lightning:inputField fieldName="Order_Placement_Phone__c" value="{!v.sapRecord.Order_Placement_Phone__c}" disabled="{!v.existingSapRecord.Customer_Information_Status__c == 'Customer Submitted'}"/>
+                                    </div>
+                                    <div class="slds-grid slds-grid--vertical slds-size_6-of-12">
+                                        <lightning:select label="Contract Notification | Contact" aura:id="Contract_Notification_Contact__c"  class="slds-p-left_xx-small slds-p-right_xx-small" onchange="{!c.handleValueChange}" disabled="{!v.existingSapRecord.Customer_Information_Status__c == 'Customer Submitted'}">
+                                            <option value="">--None--</option>
+                                            <aura:iteration items="{!v.relatedContacts}" var="con">
+                                                <option selected ="{!con.Id == v.sapRecord.Contract_Notification_Contact__c}" value="{!con.Id}">{!con.Name} ({!con.Email != null ? con.Email : 'Email is missing'})</option>
+                                            </aura:iteration>
+                                        </lightning:select>
+                                        <lightning:inputField fieldName="Contract_Notification_Contact__c" value="{!v.sapRecord.Contract_Notification_Contact__c}" class="slds-hide"/>
+                                        <lightning:inputField fieldName="Contract_Notification_First_Name__c" value="{!v.sapRecord.Contract_Notification_First_Name__c}" disabled="{!v.existingSapRecord.Customer_Information_Status__c == 'Customer Submitted'}"/>
+                                        <lightning:inputField fieldName="Contract_Notification_Last_Name__c" value="{!v.sapRecord.Contract_Notification_Last_Name__c}" disabled="{!v.existingSapRecord.Customer_Information_Status__c == 'Customer Submitted'}"/>
+                                        <lightning:inputField fieldName="Contract_Notification_Title__c" value="{!v.sapRecord.Contract_Notification_Title__c}" disabled="{!v.existingSapRecord.Customer_Information_Status__c == 'Customer Submitted'}"/>
+                                        <lightning:inputField fieldName="Contract_Notification_Email__c" value="{!v.sapRecord.Contract_Notification_Email__c}" disabled="{!v.existingSapRecord.Customer_Information_Status__c == 'Customer Submitted'}"/>
+                                        <lightning:inputField fieldName="Contract_Notification_Phone__c" value="{!v.sapRecord.Contract_Notification_Phone__c}" disabled="{!v.existingSapRecord.Customer_Information_Status__c == 'Customer Submitted'}"/>
+                                    </div>
+                                </div>
+                                <div class="slds-grid slds-wrap slds-m-top_medium">
+                                    <div class="slds-grid slds-grid--vertical slds-size_6-of-12">
+                                        <lightning:select label="Account Payable | Contact" aura:id="Account_Payable_Contact__c"  class="slds-p-left_xx-small slds-p-right_xx-small" onchange="{!c.handleValueChange}" disabled="{!v.existingSapRecord.Customer_Information_Status__c == 'Customer Submitted'}">
+                                            <option value="">--None--</option>
+                                            <aura:iteration items="{!v.relatedContacts}" var="con">
+                                                <option selected ="{!con.Id == v.sapRecord.Account_Payable_Contact__c}" value="{!con.Id}">{!con.Name} ({!con.Email != null ? con.Email : 'Email is missing'})</option>
+                                            </aura:iteration>
+                                        </lightning:select>
+                                        <lightning:inputField fieldName="Account_Payable_Contact__c" value="{!v.sapRecord.Account_Payable_Contact__c}" class="slds-hide"/>
+                                        <lightning:inputField fieldName="Account_Payable_First_Name__c" value="{!v.sapRecord.Account_Payable_First_Name__c}" disabled="{!v.existingSapRecord.Customer_Information_Status__c == 'Customer Submitted'}"/>
+                                        <lightning:inputField fieldName="Account_Payable_Last_Name__c" value="{!v.sapRecord.Account_Payable_Last_Name__c}" disabled="{!v.existingSapRecord.Customer_Information_Status__c == 'Customer Submitted'}"/>
+                                        <lightning:inputField fieldName="Account_Payable_Title__c" value="{!v.sapRecord.Account_Payable_Title__c}" disabled="{!v.existingSapRecord.Customer_Information_Status__c == 'Customer Submitted'}"/>
+                                        <lightning:inputField fieldName="Account_Payable_Email__c" value="{!v.sapRecord.Account_Payable_Email__c}" disabled="{!v.existingSapRecord.Customer_Information_Status__c == 'Customer Submitted'}"/>
+                                        <lightning:inputField fieldName="Account_Payable_Phone__c" value="{!v.sapRecord.Account_Payable_Phone__c}" disabled="{!v.existingSapRecord.Customer_Information_Status__c == 'Customer Submitted'}"/>
+                                    </div>
+                                    <div class="slds-grid slds-grid--vertical slds-size_6-of-12">
+                                        <lightning:select label="Email Invoice | Contact" aura:id="Email_Invoice_Contact__c"  class="slds-p-left_xx-small slds-p-right_xx-small" onchange="{!c.handleValueChange}" disabled="{!v.existingSapRecord.Customer_Information_Status__c == 'Customer Submitted'}">
+                                            <option value="">--None--</option>
+                                            <aura:iteration items="{!v.relatedContacts}" var="con">
+                                                <option selected ="{!con.Id == v.sapRecord.Email_Invoice_Contact__c}" value="{!con.Id}">{!con.Name} ({!con.Email != null ? con.Email : 'Email is missing'})</option>
+                                            </aura:iteration>
+                                        </lightning:select>
+                                        <lightning:inputField fieldName="Email_Invoice_Contact__c" value="{!v.sapRecord.Email_Invoice_Contact__c}" class="slds-hide"/>
+                                        <lightning:inputField fieldName="Email_Invoice_First_Name__c" value="{!v.sapRecord.Email_Invoice_First_Name__c}" disabled="{!v.existingSapRecord.Customer_Information_Status__c == 'Customer Submitted'}"/>
+                                        <lightning:inputField fieldName="Email_Invoice_Last_Name__c" value="{!v.sapRecord.Email_Invoice_Last_Name__c}" disabled="{!v.existingSapRecord.Customer_Information_Status__c == 'Customer Submitted'}"/>
+                                        <lightning:inputField fieldName="Email_Invoice_Title__c" value="{!v.sapRecord.Email_Invoice_Title__c}" disabled="{!v.existingSapRecord.Customer_Information_Status__c == 'Customer Submitted'}"/>
+                                        <lightning:inputField fieldName="Email_Invoice_Email_Address__c" value="{!v.sapRecord.Email_Invoice_Email_Address__c}" disabled="{!v.existingSapRecord.Customer_Information_Status__c == 'Customer Submitted'}"/>
+                                        <lightning:inputField fieldName="Email_Invoice_Phone__c" value="{!v.sapRecord.Email_Invoice_Phone__c}" disabled="{!v.existingSapRecord.Customer_Information_Status__c == 'Customer Submitted'}"/>
+                                    </div>
+                                </div>
+                                
+                                <div class="slds-grid slds-wrap slds-m-top_medium">
+                                    <div class="slds-grid slds-grid--vertical slds-size_6-of-12">
+                                        <lightning:select label="Credit | Contact" aura:id="Credit_Contact__c"  class="slds-p-left_xx-small slds-p-right_xx-small" onchange="{!c.handleValueChange}" disabled="{!v.existingSapRecord.Customer_Information_Status__c == 'Customer Submitted'}">
+                                            <option value="">--None--</option>
+                                            <aura:iteration items="{!v.relatedContacts}" var="con">
+                                                <option selected ="{!con.Id == v.sapRecord.Credit_Contact__c}" value="{!con.Id}">{!con.Name} ({!con.Email != null ? con.Email : 'Email is missing'})</option>
+                                            </aura:iteration>
+                                        </lightning:select>
+                                        <lightning:inputField fieldName="Credit_Contact__c" value="{!v.sapRecord.Credit_Contact__c}" class="slds-hide"/>
+                                        <lightning:inputField fieldName="Credit_First_Name__c" value="{!v.sapRecord.Credit_First_Name__c}" disabled="{!v.existingSapRecord.Customer_Information_Status__c == 'Customer Submitted'}"/>
+                                        <lightning:inputField fieldName="Credit_Last_Name__c" value="{!v.sapRecord.Credit_Last_Name__c}" disabled="{!v.existingSapRecord.Customer_Information_Status__c == 'Customer Submitted'}"/>
+                                        <lightning:inputField fieldName="Credit_Title__c" value="{!v.sapRecord.Credit_Title__c}" disabled="{!v.existingSapRecord.Customer_Information_Status__c == 'Customer Submitted'}"/>
+                                        <lightning:inputField fieldName="Credit_Email__c" value="{!v.sapRecord.Credit_Email__c}" disabled="{!v.existingSapRecord.Customer_Information_Status__c == 'Customer Submitted'}"/>
+                                        <lightning:inputField fieldName="Credit_Phone__c" value="{!v.sapRecord.Credit_Phone__c}" disabled="{!v.existingSapRecord.Customer_Information_Status__c == 'Customer Submitted'}"/>
+                                    </div>
+                                    <div class="slds-grid slds-grid--vertical slds-size_6-of-12">
+                                        <lightning:select label="CFO (Officer) | Contact" aura:id="CXO_Officer_Contact__c"  class="slds-p-left_xx-small slds-p-right_xx-small" onchange="{!c.handleValueChange}" disabled="{!v.existingSapRecord.Customer_Information_Status__c == 'Customer Submitted'}">
+                                            <option value="">--None--</option>
+                                            <aura:iteration items="{!v.relatedContacts}" var="con">
+                                                <option selected ="{!con.Id == v.sapRecord.CXO_Officer_Contact__c}" value="{!con.Id}">{!con.Name} ({!con.Email != null ? con.Email : 'Email is missing'})</option>
+                                            </aura:iteration>
+                                        </lightning:select>
+                                        <lightning:inputField fieldName="CXO_Officer_Contact__c" value="{!v.sapRecord.CXO_Officer_Contact__c}" class="slds-hide"/>
+                                        <lightning:inputField fieldName="CXO_Officer_First_Name__c" value="{!v.sapRecord.CXO_Officer_First_Name__c}" disabled="{!v.existingSapRecord.Customer_Information_Status__c == 'Customer Submitted'}"/>
+                                        <lightning:inputField fieldName="CXO_Officer_Last_Name__c" value="{!v.sapRecord.CXO_Officer_Last_Name__c}" disabled="{!v.existingSapRecord.Customer_Information_Status__c == 'Customer Submitted'}"/>
+                                        <lightning:inputField fieldName="CXO_Officer_Title__c" value="{!v.sapRecord.CXO_Officer_Title__c}" disabled="{!v.existingSapRecord.Customer_Information_Status__c == 'Customer Submitted'}"/>
+                                        <lightning:inputField fieldName="CXO_Officer_Email__c" value="{!v.sapRecord.CXO_Officer_Email__c}" disabled="{!v.existingSapRecord.Customer_Information_Status__c == 'Customer Submitted'}"/>
+                                        <lightning:inputField fieldName="CXO_Officer_Phone__c" value="{!v.sapRecord.CXO_Officer_Phone__c}" disabled="{!v.existingSapRecord.Customer_Information_Status__c == 'Customer Submitted'}"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </aura:if>
+                </aura:if>
+                <div class="slds-size_12-of-12 slds-text-align_right">
+                    <aura:if isTrue="{!v.existingSapRecord.Customer_Information_Status__c != 'Customer Submitted'}" >
+                        <lightning:button label="Save" variant="brand" type="submit"/>
+                    </aura:if>
+                    <aura:if isTrue="{!and(v.sapType != 'Modify Sold-To', v.sapType != 'Modify Ship-To')}">
+                        <lightning:button label="Go To Ship To's" variant="brand" disabled="{!or(v.sapId == '', v.oldCreditType != v.creditType)}" onclick="{!c.openShipTos}"/>
+                    </aura:if>
+                </div>
+            </lightning:recordEditForm>
+            <aura:if isTrue="{!v.showAppUser}">
+                <div class="slds-section slds-is-open slds-hide">
+                    <h3 class="slds-section__title sectionHeader">
+                        Application User
+                    </h3>
+                    <div class="slds-section__content">
+                        <lightning:recordEditForm onsubmit="{!c.handleSubmit}" onerror="{!c.handleError}" objectApiName="Application_User__c" aura:id="ApplicationUser1"
+                                                  onsuccess="{!c.handleApplicationUserSuccess}">
+                            <lightning:messages />
+                            <div class="slds-grid slds-wrap slds-gutters slds-var-p-vertical_medium slds-var-p-horizontal_xx-large">
+                                <div class="slds-size_1-of-2 slds-var-m-top_small slds-var-p-left_medium">
+                                    <lightning:inputField fieldName="Contact__c" aura:id="AU_Contact__c" onchange="{!c.handleOnChange}" value="{!v.mainOnboardContact}"/>
+                                </div>
+                                <div class="slds-size_1-of-2 slds-var-m-top_small slds-var-p-left_medium">
+                                    <lightning:inputField fieldName="First_Name__c" aura:id="AU_First_Name__c" value="{!v.conRecord.FirstName}" required="true"/>
+                                </div>
+                                <div class="slds-size_1-of-2 slds-var-m-top_small slds-var-p-left_medium">
+                                    <div class="slds-hide">
+                                        <lightning:inputField fieldName="SAP_Onboarding__c" aura:id="AU_SAP_Onboarding__c" value="{!v.sapId}"/>
+                                    </div>
+                                </div>
+                                <div class="slds-size_1-of-2 slds-var-p-left_medium">
+                                    <lightning:inputField fieldName="Last_Name__c" aura:id="AU_Last_Name__c" required="true" value="{!v.conRecord.LastName}"/>
+                                </div>
+                                <div class="slds-size_1-of-2 slds-var-m-top_small slds-var-p-left_medium">
+                                </div>
+                                <div class="slds-size_1-of-2 slds-var-p-left_medium">
+                                    <lightning:inputField fieldName="Title__c" aura:id="AU_Title__c" value="{!v.conRecord.Title}" required="true"/>
+                                </div>
+                                <div class="slds-size_1-of-2 slds-var-m-top_small slds-var-p-left_medium">
+                                </div>
+                                <div class="slds-size_1-of-2 slds-var-p-left_medium">
+                                    <lightning:inputField fieldName="Email__c" aura:id="AU_Email__c" required="true" value="{!v.conRecord.Email}"/>
+                                </div>
+                                <div class="slds-size_1-of-2 slds-var-m-top_small slds-var-p-left_medium">
+                                </div>
+                                <div class="slds-size_1-of-2 slds-var-p-left_medium">
+                                    <lightning:inputField fieldName="Mobile_Phone__c" aura:id="AU_Mobile_Phone__c" value="{!v.conRecord.Phone}"/>
+                                </div>
+                            </div>
+                        </lightning:recordEditForm>
+                    </div>
+                </div>
+            </aura:if>
+             <div class="slds-m-top_medium slds-text-align_center"><b>Please scroll back up to the top.</b></div>
+        </div>
+        <aura:set attribute="else">
+            <c:OCO_Seller_CustomerSapOnboardingShipTo shipToAccIds="{!v.selectedShipToAccounts}" sapId="{!v.sapId}"
+                                              recordId="{!v.recordId}" relatedProducts="{!v.relatedProducts}"
+                                              mainAccount="{!v.mainAccount}" estDate="{!v.estDate}" sapType="{!v.sapType}"/>
+        </aura:set>
+    </aura:if>    
+</aura:component>

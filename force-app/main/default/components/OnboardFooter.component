@@ -1,0 +1,16 @@
+<apex:component controller="OnboardFooterController">
+    <apex:attribute name="myValue" type="Object" description=" " required="true" assignTo="{!languageMap}"/>
+    <head>
+        <meta name="viewport" content="width=device-width,intial-scale=1.0"/>
+        <style>
+            .footer {background:linear-gradient(to bottom, #3e3d3d 5% , black 95%);color:white;position:fixed;left:0;bottom:0;width:100%;z-index:2; }
+        </style>
+    </head>
+    <div class="footer slds-grid slds-wrap" style="">
+        <div class="slds-col slds-large-size_1-of-12 slds-medium-size_1-of-12 slds-small-size_0-of-12"></div>
+        <div class="slds-col--padded slds-large-size_1-of-12 slds-medium-size_1-of-12 slds-max-medium-size_2-of-12 slds-var-p-vertical_medium"><a href="https://www.olin.com/privacy/" style="color:white;" target="_blank">{!languageMap['VF_14']}</a></div>
+        <div class="slds-col slds-large-size_2-of-12 slds-medium-size_3-of-12 slds-max-medium-size_4-of-12 slds-var-p-around_medium"><a href="https://www.olin.com/terms-conditions/" style="color:white;" target="_blank">{!languageMap['VF_16']}</a></div>
+        <div class="slds-col slds-large-size_6-of-12 slds-medium-size_6-of-12 slds-max-medium-size_6-of-12 slds-align_absolute-center">&copy; {!languageMap['VF_15']}</div>
+        <div class="slds-col slds-large-size_2-of-12 slds-max-medium-size_0-of-12"></div>
+    </div>
+</apex:component>

@@ -1,0 +1,20 @@
+@media only screen and (max-width: 600px) {
+   .THIS .headerText{padding-left:0 !important; text-align:center;font-size: 1.3rem !important;padding-top: 10px;}
+    .THIS .helpBtns{width:100%;} 
+    .THIS .slds-m-bottom_large[id="headerDiv"]{margin-bottom :0 !important;}
+   .THIS .homePageImg{width:80% !important;}
+    .THIS .homeText{padding : 0 !important; margin: 0 !important;}
+}
+.THIS .headerText{padding-left:9%;font-size:2rem;}
+.THIS .homePageImg{width:550px;}
+.THIS .buttonImg{
+    color: grey !important;
+    padding-left: 5px !important;
+    text-align: left !important;
+    font-size: 15px !important;
+}
+.THIS .helpButton{
+    width: 80px !important;
+    padding: 0 !important;
+    box-shadow: 1px 3px 5px -3px grey !important;
+}

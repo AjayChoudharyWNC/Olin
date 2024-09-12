@@ -1,0 +1,297 @@
+<aura:component controller="SimplusGridController" implements="flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:appHostable,force:lightningQuickActionWithoutHeader" access="global" >
+    
+    <aura:attribute name="recordId" 			type="String"/>
+    <aura:attribute name="sObjectName" 			type="String"       default="sbaa__Approval__c"/>
+    <aura:attribute name="fieldSets" 		    type="String"/>
+    <aura:attribute name="fieldSetValues" 		type="List"/>
+    <aura:attribute name="fieldSetValues1" 		type="List"/>
+    <aura:attribute name="fieldSetValues2" 	    type="List"/>
+    <aura:attribute name="sortingOrderResult"   type="String"/>
+    <aura:attribute name="filteringOrderResult" type="String"/>
+    <aura:attribute name="parentFieldName" 		type="String"       default="Quote__c"/>
+    <aura:attribute name="parentRecordId" 		type="String" />
+    <aura:attribute name="tableRecords" 		type="List"/>
+    <aura:attribute name="tableRecordsUpdated" 	type="List"/>
+    <aura:attribute name="quoteId"			    type="String"/>
+    <aura:attribute name="colDragElement"       type="Object"/>
+    <aura:attribute name="colDragElementSub"    type="Object"/>
+    <aura:attribute name="mouseIsDragging"      type="Boolean"      default="false"/>
+    
+    <aura:attribute name="hasPendingMassChange" type="Boolean"      default="false"/>
+    <aura:attribute name="isLoadingList"        type="Boolean"      default="false"/>
+    
+    <aura:attribute name="checkedIndex"         type="Decimal[]"    default="[]"/>
+    <aura:attribute name="allItemsChecked"      type="Boolean"      default="false"/>
+    <aura:attribute name="checkRepaint"         type="Boolean"      default="true"/>
+    <aura:attribute name="mainListSource"       type="String"       default="SimplusApprovals"/>
+    <aura:attribute name="disableControls"      type="Boolean"      default="false"/>
+    <aura:attribute name="noOfColumns"          type="Integer"/>
+    <aura:attribute name="page"                 type="Integer"      default="1"/>
+    <aura:attribute name="pageMax"              type="Integer"      default="1"/>
+    <aura:attribute name="isBeyond"             type="Boolean"      default="false"/>
+    <aura:attribute name="selections"           type="List" />
+    <aura:attribute name="hasSelections"        type="Boolean"      default="false"/>
+    
+    <aura:attribute name="quoteLineIdForListView"           type="String" />
+    <aura:attribute name="soldToName"           type="String" />
+    <aura:attribute name="approvalId"           type="String" />
+    <aura:attribute name="showRejectModal"           type="Boolean" default="false" />
+    <aura:attribute name="rejectionComments"           type="String" default="" />
+    
+    <aura:handler name="init" 	value="{!this}" action="{!c.doInit}"/>
+    <aura:handler name="render" value="{!this}" action="{!c.onRender}"/>
+    <aura:handler event="c:SimplusGrid_GridControlFieldPushChanges" action="{!c.catchMassChange}"/>
+    <aura:method name="doGridRepaint" description="" action="{!c.doGridRepaint}" />
+    <aura:method name="getSelections" description="" action="{!c.doGetSelections}" />
+    
+    <aura:registerEvent name="columnToggleEdit" type="c:SimplusGrid_ColumnToggleEdit"/>
+    
+    <aura:if isTrue="{!v.showRejectModal}">
+        <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open slds-modal_small" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1">
+            <div class="slds-modal__container">
+                <header class="slds-modal__header">
+                    <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close" onclick="{!c.closeRejectReasonDialog}">
+                        <lightning:icon iconName="utility:close" alternativeText="Close" title="Close" size="large"/>
+                        <span class="slds-assistive-text">Close</span>
+                    </button>
+                    <h2 id="modal-heading-01" class="slds-modal__title slds-hyphenate">Confirmation</h2>
+                </header>
+                <div class="slds-modal__content slds-var-p-around_medium" id="modal-content-id-1">                    
+                    <lightning:textarea name="input1" label="Add a comment here for rejection reason:" value="{!v.rejectionComments}"/>
+                </div>
+                <footer class="slds-modal__footer">
+                    <button class="slds-button slds-button_neutral" onclick="{!c.closeRejectReasonDialog}">Cancel</button>
+                    <lightning:button variant="brand" name="reject" onclick="{!c.doMassApproveReject}" label="Continue"/>
+                </footer>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </aura:if>
+
+    <div>
+        <aura:if isTrue="{!not(v.disableControls)}">
+            <div class="topLevelControls" style="display: flex;">
+                <div style="width: 40px;">
+                    <ui:inputText value="{!v.noOfColumns}" change="{!c.fieldChange}" label="Lock"/>
+                </div>
+                <div style="flex: 1;" />                
+            </div>
+            <aura:if isTrue="{!v.hasSelections}">
+                <div class="slds-align_absolute-center" >
+                    <lightning:button label="Approve" variant="brand" class="approvalButton" name="approve" onclick="{!c.doMassApproveReject}"/>                    
+                    <lightning:button label="Reject" variant="destructive" class="approvalButton" name="reject" onclick="{!c.openRejectReasonDialog}"/>                    
+                </div>
+            </aura:if>
+        </aura:if>
+    </div>  
+    <aura:if isTrue="{!v.quoteLineIdForListView}">
+        <c:SimplusApprovalsQuoteLines pushClose="{!c.closeHistoryWindow}" quoteLineId="{!v.quoteLineIdForListView}" soldToName="{!v.soldToName}" approvalId="{!v.approvalId}" />
+    </aura:if>
+    
+    <div class="paginationController" style="display: flex; margin: 10px 0;">
+        <aura:if isTrue="{!v.isBeyond}">
+            <div style="font-size: 8pt; color: #a7a7a7;">The selected filters returned too many records, only the first 20 pages will be shown...</div>
+        </aura:if>
+        <div style="flex: 1;" />
+        <div style="display: flex;">
+            <lightning:buttonIcon disabled="{!v.page eq 1}" iconName="utility:back" size="small" onclick="{! c.firstPage }" alternativeText="First Page" />
+            <lightning:buttonIcon disabled="{!v.page eq 1}" iconName="utility:chevronleft" size="small" onclick="{! c.prevPage }" alternativeText="Previous Page" />
+            <div style="margin: 0 5px; font-size: 12pt;">Page {!v.page} of {!v.pageMax}</div>
+            <lightning:buttonIcon disabled="{!v.page == v.pageMax}" iconName="utility:chevronright" size="small" onclick="{! c.nextPage }" alternativeText="Next Page" />
+            <lightning:buttonIcon disabled="{!v.page == v.pageMax}" iconName="utility:forward" size="small" onclick="{! c.lastPage }" alternativeText="Last Page" />
+        </div>
+    </div>
+    <div id="app_floatersContainers" style="position: fixed; z-index: 31; display: flex;">
+        <div id="app_floatersPositioner" style="display: flex;width: 100%; position: relative;">
+            <table id="app_fixedColumnsTableFloating" class="slds-table slds-table--bordered">
+                <thead>
+                    <tr>
+                        <aura:if isTrue="{!not(v.disableControls)}">
+                            <th class="slds-text-title_caps staticTableHeader app_leftThFloat" style="padding-left: 8px; padding-right: 8px;" id="app_staticSelectAll"  data-column-header="true">
+                                <aura:if isTrue="{!v.checkRepaint}">
+                                    <div class="slds-form-element">
+                                        <div class="slds-form-element__control">
+                                            <div class="slds-checkbox">
+                                                <input type="checkbox" disabled="{!v.hasPendingMassChange}" name="toggleAll" id="toggleAll" value="{!v.allItemsChecked}" onchange="{!c.checkUncheckAll}"/>
+                                                <label class="slds-checkbox__label" for="toggleAll">
+                                                    <span class="slds-checkbox_faux"></span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </aura:if>
+                            </th>
+                            <th class="slds-text-title_caps staticTableHeader app_leftThFloat">
+                                <div style="width: 16px;">
+                                    <lightning:helptext iconName="utility:list" content="Show Line Details" />
+                                </div>
+                            </th>
+                        </aura:if>
+                        <aura:iteration items="{!v.fieldSetValues1}" var="field" indexVar="idx">
+                            <th id="{!'col_' + idx}" class="slds-text-title_caps app_staticTableHeader " data-column-header="true" data-isfloat="false" data-idx="{!idx}" style="height: 42px;">
+                                <div style="display: flex;" class="app_leftThFloat1">
+                                    <span style="flex: 1;" class="{!'colNameSpan ' + (field.fieldEditable ? 'hasedt' : '')}">{!field.fieldLabel}</span>
+                                    <aura:if isTrue="{!and(field.fieldEditable, !v.hasPendingMassChange)}">
+                                        <lightning:button name="{!field.fieldName}" iconName="utility:edit" class="columnControlButton slds-button slds-button_icon slds-button_icon-container" onclick="{!c.toggleAllEditMode}" />
+                                    </aura:if>
+                                </div>
+                            </th>
+                        </aura:iteration>
+                    </tr>
+                </thead>
+            </table>
+            <div id="app_rightTableFloatContainer" style="overflow: hidden;left:1px;">
+                <table id="app_rightTableFloat" class="slds-table slds-table--bordered" style="position: relative;">
+                    <thead>
+                        <tr>
+                            <aura:iteration items="{!v.fieldSetValues2}" var="field" indexVar="idx">
+                                <th id="{!'col_' + idx}" class="slds-text-title_caps app_staticTableHeader app_rightColumnFloat" data-column-header="true" data-isfloat="false" data-idx="{!idx}">
+                                    <div style="display: flex;padding: 6.5px">
+                                        <span style="flex: 1;" class="{!'colNameSpan ' + (field.fieldEditable ? 'hasedt' : '')}">{!field.fieldLabel}</span>
+                                        <aura:if isTrue="{!and(field.fieldEditable, !v.hasPendingMassChange)}">
+                                            <lightning:button name="{!field.fieldName}" iconName="utility:edit" class="columnControlButton slds-button slds-button_icon slds-button_icon-container" onclick="{!c.toggleAllEditMode}" />
+                                        </aura:if>
+                                    </div>
+                                </th>
+                            </aura:iteration>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+            <div class="scrollAdjust" style="min-width: 10px; background: white;border: 1px solid rgb(221, 219, 218);" />
+        </div>
+    </div>
+    
+    <div id="app_fullTableContainer" class="slds slds-grid slds-wrap app_fullTableContainer" style="height: 500px; overflow: scroll; display: flex;" onscroll="{!c.handleScroll}"> 
+        <div class="slds-grid slds-gutters">
+            <div id="app_fixedColumns">
+                <table class="slds-table slds-table--bordered slds-no-row-hover" id="app_staticTable">
+                    <thead>
+                        <tr>
+                            <th class="slds-text-title_caps staticTableHeader app_leftTh">
+                                <div class="slds-form-element">
+                                    <div class="slds-form-element__control">
+                                        <div class="slds-form-element">
+                                            <div class="slds-form-element__control">
+                                                <div class="slds-checkbox">
+                                                    <input type="checkbox" disabled="{!v.hasPendingMassChange}" name="toggleAll" id="toggleAll" value="{!v.allItemsChecked}" onchange="{!c.checkUncheckAll}"/>
+                                                    <label class="slds-checkbox__label" for="toggleAll">
+                                                        <span class="slds-checkbox_faux"></span>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </th>
+                            <th class="slds-text-title_caps staticTableHeader app_leftTh">
+                                <div style="width: 16px;">
+                                    <lightning:helptext iconName="utility:list" content="Show Line Details" />
+                                </div>
+                            </th>
+                            <aura:iteration items="{!v.fieldSetValues1}" var="field" indexVar="idx">
+                                <th id="{!'col_' + idx}" class="slds-text-title_caps staticTableHeader app_leftTh1" data-column-header="true" data-isfloat="false" data-idx="{!idx}">
+                                    <div style="display: flex; ">
+                                        <span style="flex: 1;" class="{!'colNameSpan ' + (field.fieldEditable ? 'hasedt' : '')}">{!field.fieldLabel}</span>
+                                        <aura:if isTrue="{!and(field.fieldEditable, !v.hasPendingMassChange)}">
+                                            <lightning:button name="{!field.fieldName}" iconName="utility:edit" class="columnControlButton slds-button slds-button_icon slds-button_icon-container" onclick="{!c.toggleAllEditMode}" />
+                                        </aura:if>
+                                    </div>
+                                </th>
+                            </aura:iteration>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <aura:iteration items="{!v.tableRecordsUpdated}" var="row" indexVar="r">
+                            <tr class="{!v.hasPendingMassChange ? (row.util.hasChange ? 'editRow' : 'disableRow') : ''}">
+                                <aura:if isTrue="{!not(v.disableControls)}">
+                                    <td>
+                                        <div class="slds-form-element">
+                                            <div class="slds-form-element__control">
+                                                <div class="slds-checkbox">
+                                                    <input type="checkbox" disabled="{!or(row.Is_Locked__c, v.hasPendingMassChange)}" name="{!r}" id="{!r}" value="{!row.util.isSelected}" checked="{!row.util.isSelected}" onchange="{!c.checkUncheckLineItem}"/>
+                                                    <label class="slds-checkbox__label" for="{!r}">
+                                                        <span class="slds-checkbox_faux"></span>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                    	<lightning:buttonIcon iconName="utility:drag_and_drop" name="{!r}" variant="bare" onclick="{! c.quoteLineDataView }" alternativeText="View Quote Lines" title="View Quote Lines"/>
+                                    </td>
+                                </aura:if>
+                                <aura:iteration items="{!v.fieldSetValues1}" var="field">
+                                    <td>
+                                        <aura:if isTrue="{!v.checkRepaint}">
+                                            <c:SimplusApprovals_GridFields currency="{!row.GMID_Currency__c}" record="{!row}" isLocked="{!row.Is_Locked__c || not(row.QuoteSentToSAP__c)}" field="{!field}" isLineSelected="{!row.util.isSelected}" hasPendingMassChange="{!v.hasPendingMassChange}" />
+                                        </aura:if>
+                                    </td>
+                                </aura:iteration>
+                            </tr>
+                        </aura:iteration>
+                    </tbody>
+                </table>
+                
+            </div>
+            <div class="borderAdjust" style="width: 3px;background: transparent;margin-left: 10px;" />
+            <div id="app_scrollableColumns">
+                <table class="slds-table slds-table--bordered slds-no-row-hover" id="app_rightTable">
+                    <thead>
+                        <tr>
+                            <aura:iteration items="{!v.fieldSetValues2}" var="field" indexVar="idx">
+                                <th id="{!'col_' + idx}" class="slds-text-title_caps staticTableHeader app_rightColumn" data-column-header="true" data-isfloat="false" data-idx="{!idx}">
+                                    <div style="display: flex;padding: 6.5px 15px;">
+                                        <span style="flex: 1;" class="{!'colNameSpan ' + (field.fieldEditable ? 'hasedt' : '')}">{!field.fieldLabel}</span>
+                                        <aura:if isTrue="{!and(field.fieldEditable, !v.hasPendingMassChange)}">
+                                            <lightning:button name="{!field.fieldName}" iconName="utility:edit" class="columnControlButton slds-button slds-button_icon slds-button_icon-container" onclick="{!c.toggleAllEditMode}" />
+                                        </aura:if>
+                                    </div>
+                                </th>
+                            </aura:iteration>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <aura:iteration items="{!v.tableRecordsUpdated}" var="row" indexVar="r">
+                            <tr class="{!v.hasPendingMassChange ? (row.util.hasChange ? 'editRow' : 'disableRow') : ''}">
+                                <aura:iteration items="{!v.fieldSetValues2}" var="field">
+                                    <td>
+                                        <aura:if isTrue="{!v.checkRepaint}">
+                                            <c:SimplusApprovals_GridFields currency="{!row.GMID_Currency__c}" record="{!row}" isLocked="{!row.Is_Locked__c || not(row.QuoteSentToSAP__c)}" field="{!field}" isLineSelected="{!row.util.isSelected}" hasPendingMassChange="{!v.hasPendingMassChange}" />
+                                        </aura:if>
+                                    </td>
+                                </aura:iteration>
+                            </tr>
+                        </aura:iteration>
+                    </tbody>
+                </table>
+                
+            </div>
+        </div>
+        <aura:if isTrue="{!v.isLoadingList}">
+            <div class="loaderBackdrop">
+                <div class="demo-only" style="height: 6rem;">
+                    <div role="status" class="slds-spinner slds-spinner_large slds-spinner_brand">
+                        <span class="slds-assistive-text">Loading</span>
+                        <div class="slds-spinner__dot-a"></div>
+                        <div class="slds-spinner__dot-b"></div>
+                    </div>
+                </div>
+            </div>
+        </aura:if>
+    </div>
+    <div class="paginationController" style="display: flex; margin: 10px 0;">
+        <aura:if isTrue="{!v.isBeyond}">
+            <div style="font-size: 8pt; color: #a7a7a7;">The selected filters returned too many records, only the first 20 pages will be shown...</div>
+        </aura:if>
+        <div style="flex: 1;" />
+        <div style="display: flex;">
+            <lightning:buttonIcon disabled="{!v.page eq 1}" iconName="utility:back" size="small" onclick="{! c.firstPage }" alternativeText="First Page" />
+            <lightning:buttonIcon disabled="{!v.page eq 1}" iconName="utility:chevronleft" size="small" onclick="{! c.prevPage }" alternativeText="Previous Page" />
+            <div style="margin: 0 5px; font-size: 12pt;">Page {!v.page} of {!v.pageMax}</div>
+            <lightning:buttonIcon disabled="{!v.page == v.pageMax}" iconName="utility:chevronright" size="small" onclick="{! c.nextPage }" alternativeText="Next Page" />
+            <lightning:buttonIcon disabled="{!v.page == v.pageMax}" iconName="utility:forward" size="small" onclick="{! c.lastPage }" alternativeText="Last Page" />
+        </div>
+    </div>
+    
+</aura:component>

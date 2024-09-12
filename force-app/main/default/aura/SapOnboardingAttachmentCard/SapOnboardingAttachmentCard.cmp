@@ -1,0 +1,30 @@
+<aura:component controller="SapOnboardingAttachmentCard">
+    <aura:attribute name="type" type="String"/>
+    <aura:attribute name="recId" type="String"/>
+    <aura:attribute name="emptyListMsg" type="String"/>
+    <aura:attribute name="fileList" type="List"/>
+    
+    <aura:handler name="init" value="this" action="{!c.doInit}"/>
+    
+    <div>
+        <aura:if isTrue="{!v.fileList.length > 0}">
+            <aura:iteration items="{!v.fileList}" var="f">
+                <article class="slds-tile">
+                    <h3 class="slds-tile__title slds-truncate" title="{!f.name}">
+                        <a href="{!f.link}">{!f.name}</a>
+                    </h3>
+                    <div class="slds-tile__detail">
+                        <p><lightning:formattedDateTime value="{!f.createdDate}" year="numeric" month="short" day="2-digit" hour="numeric" weekday="long"/></p>
+                        <ul class="slds-list_horizontal slds-has-dividers_right">
+                            <li class="slds-item">Related To</li>
+                            <li class="slds-item"><a href="{!'/'+f.relatedToId}">{!f.relatedToName}</a></li>
+                        </ul>
+                    </div>
+                </article>
+            </aura:iteration>
+            <aura:set attribute="else">
+            	<span class="slds-text-align_center">{!v.emptyListMsg}</span>
+            </aura:set>
+        </aura:if>
+    </div>
+</aura:component>

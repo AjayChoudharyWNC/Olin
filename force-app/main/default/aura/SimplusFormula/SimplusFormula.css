@@ -1,0 +1,105 @@
+.THIS .select-auto-width > .slds-form-element__control > .slds-select_container{
+    display: inline-block;
+    width: 100%;
+}
+.THIS .dynamicFormulaBuilder {
+    width: 100%;
+    margin-top: 15px;
+    border-top: 1px solid #b9b9b9;
+}
+.THIS .dynamicFormulaBuilder .filler {
+    max-height: 300px;
+    overflow-y: auto;
+}
+.THIS .formulaPreviewDiv {
+    min-width: 60%;
+    flex: 1;
+    margin-top: 5px;
+}
+.THIS .formulaPreviewDiv .slds-textarea[disabled], .THIS .formulaPreviewDiv .slds-textarea.slds-is-disabled {
+    padding-left: 0;
+    background-color: transparent;
+    border-color: transparent;
+    cursor: initial;
+    resize: none;
+    font-size: 7.5pt;
+}
+.THIS .formulaItemContainer {
+    margin-top: 10px;
+}
+.THIS .formulaItemContainer .slds-form-element label {
+    display: none;
+}
+.THIS .formulaItemContainer > label.slds-form-element__label {
+    width: calc(100% - 18px);
+}
+
+
+.THIS .fullFormulaContainer textarea, .THIS .fullFormulaContainer div.editable {
+    height: 250px;
+    resize: none;
+}
+.THIS .errorMessages {
+    padding-top: 6px;
+}
+.THIS span.highlight {
+    background-color: rgba(21, 137, 238, 0.25);
+}
+.THIS .hidden {
+    display: none;
+    height: 0px;
+}
+@keyframes blink {
+    0% {opacity: 0;}
+    100% {opacity: 1;}
+}
+.THIS .cursor {
+    height: 17px;
+    vertical-align: middle;
+    display: inline-block;
+    border-left: 1px solid black;
+    animation-name: blink;
+    animation-duration: 1s;
+    animation-iteration-count: infinite;
+}
+.THIS .autoGroupButton, .THIS .autoGroupButton#autoGroupButton button {
+    border-radius: 00 0 0 0;
+    border-right: 0;
+}
+.THIS .breakLine, .THIS .breakLine#breakLine button {
+    border-radius: .25rem 0 0 .25rem;
+    border-right: 0;
+    transform: rotateX(180deg);
+}
+.THIS .breakLine#breakLine button svg{
+    transform: rotateY(180deg);
+}
+.THIS .formulaBuilder {
+    z-index: 9002;
+    position: fixed;
+    padding: 10px;
+    background: white;
+    border-radius: 3px;    
+    box-shadow: 0 0 5px 1px #a0a0a0;
+    width: 240px;
+    display: none;
+}
+.THIS .formulaPointer {
+    width: 10px;
+    height: 10px;
+    position: relative;
+    display: block;
+    top: -16px;
+    transform: rotateZ(45deg);
+    background: white;
+    border-left: 1px solid #cccccc;
+    border-top: 1px solid #cccccc;
+    float: right;
+}
+.THIS .slds-badge.green {
+    background-color: rgb(9, 139, 85);
+    color: white;
+}
+.THIS .slds-badge.green svg {
+    fill: white;
+}

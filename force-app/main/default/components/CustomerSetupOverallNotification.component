@@ -1,0 +1,29 @@
+<apex:component access="global" controller="CustomerSetupNotification">
+    
+    <style>
+        th{
+        font-weight :bold;
+        padding:5px;
+        }
+        td{
+        padding : 5px;
+        }
+        
+    </style>
+    <apex:attribute name="sapId" type="String" description="This is Sap Id" assignTo="{!sapRecordId}" access="global"/>
+    
+    <div>
+        <span>Please be informed that each responsible department has marked their Final Setup for Order Entry field as complete. CSR please perform final review of the customer setup form and mark it complete.</span>
+    </div>
+    
+   
+     <div style="margin-top:20px;">
+        <span><b>Type: </b>{!sapRecord.On_boarding_Request_Type__c}</span><br/>
+        <span><b>Customer: </b>{!sapRecord.Sold_To_Company_Name__c}</span><br/>
+        <span><b>Link: </b> <a href="{!sfBaseUrl+'/'+sapRecordId}">Click Here</a></span><br/>
+    </div>
+    <div style="margin-top:20px;">
+        <span>Do not reply to this email. This is a system generated email and replies are not monitored.</span>
+    </div>
+    
+</apex:component>

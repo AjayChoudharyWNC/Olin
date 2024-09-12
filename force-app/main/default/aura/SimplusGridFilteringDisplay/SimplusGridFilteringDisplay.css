@@ -1,0 +1,8 @@
+.THIS {
+    margin-top: 10px;
+    margin-bottom: 10px;
+    font-size: 8pt;
+}
+.THIS .filterItem:first-child::before {
+  content: "Active Filters: ";
+}

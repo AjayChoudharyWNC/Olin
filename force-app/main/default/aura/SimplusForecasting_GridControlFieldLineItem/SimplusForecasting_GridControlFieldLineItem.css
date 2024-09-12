@@ -1,0 +1,11 @@
+.THIS .uiInputRadio.uiInput--radio {
+    padding-top: 25px;
+}
+.THIS .uiInputRadio.uiInput--radio .uiLabel-left.uiLabel {
+    padding-right: 5px;
+}
+.THIS label span {
+    white-space: nowrap; 
+    overflow: hidden;
+    text-overflow: ellipsis;
+}

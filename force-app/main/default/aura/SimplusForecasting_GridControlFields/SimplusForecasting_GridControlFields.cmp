@@ -1,0 +1,32 @@
+<aura:component controller="ForecastingGridController">
+    <aura:attribute name="fieldSets" type="String" />
+    <aura:attribute type="Object[]" name="fieldsList" />
+    <aura:attribute type="String" name="mainListSource" />
+    <aura:attribute type="Boolean" name="showEdit" default="false"/>
+
+    <aura:handler value="{!this}" name="init" action="{!c.init}" />
+    <aura:registerEvent name="pushUpdate" type="c:SimplusGrid_PushUp"/>
+    <aura:registerEvent name="pushSave" type="c:SimplusGrid_PushUp"/>
+    <aura:registerEvent name="pushCancel" type="c:SimplusGrid_PushUp"/>
+    <aura:registerEvent name="pushClone" type="c:SimplusGrid_PushUp"/>
+
+    <div style="display: flex; margin-bottom: 10px;">
+        <div style="flex: 1;" />
+        <aura:iteration items="{!v.fieldsList}" var="fl">
+            <c:SimplusForecasting_GridControlFieldLineItem field="{!fl}" />
+        </aura:iteration>
+        <aura:if isTrue="{!v.fieldsList}">
+            <div class="button">
+                <aura:if isTrue="{!v.showEdit}"> 
+                    <lightning:button label="Save" onclick="{!c.saveClicked}" variant="brand" class="button-fixed"/>
+                    <lightning:button label="Cancel" onclick="{!c.cancelClicked}" variant="destructive" class="button-fixed"/>
+                    <aura:set attribute="else">
+                        <lightning:button label="Apply" onclick="{!c.applyChangesClick}" variant="brand" class="button-fixed"/>
+                        <lightning:button label="Clear" onclick="{!c.clearAllClick}" variant="destructive" class="button-fixed"/>
+                    </aura:set>
+                </aura:if>
+                <lightning:button label="Clone" onclick="{!c.cloneClicked}" variant="brand" class="button-fixed"/>
+            </div>
+        </aura:if>
+    </div>
+</aura:component>

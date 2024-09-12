@@ -1,0 +1,255 @@
+<aura:component controller="SimplusGridController" implements="flexipage:availableForAllPageTypes,force:appHostable">
+    
+    <aura:attribute name="sObjectName" 		        type="String"   default="sbaa__Approval__c"/>
+    <aura:attribute name="mainListSource"           type="String"   default="SimplusApprovals" />
+    <aura:attribute name="fieldSets" 		        type="String"   default="[
+                                                                        {'name': 'SimplusApprovals', 'type': 'display'},
+                                                                        {'name': 'SimplusApprovals_Filter', 'type': 'filter'}
+                                                                        ]"/>
+    <aura:attribute name="columnSorting" 		    type="List"/>
+    <aura:attribute name="directionSorting" 	    type="List"     default="[
+                                                                        {'label': 'Ascending', 'value': 'ASC'},
+                                                                        {'label': 'Descending', 'value': 'DESC'},
+                                                                        ]"/>
+    <aura:attribute name="columnFiltering"          type="List"/>
+    <aura:attribute name="filterCompareSTRING"      type="List"     default="[
+                                                                        {'label': 'starts with', 'value': 'starts with'},
+                                                                        {'label': 'ends with', 'value': 'ends with'},
+                                                                        {'label': 'contains', 'value': 'contains'},
+                                                                        {'label': 'equals', 'value': 'equals'},
+                                                                        {'label': 'not equals', 'value': 'not equals'},
+                                                                        {'label': 'is null', 'value': 'is null'},
+                                                                        {'label': 'not null', 'value': 'not null'}
+                                                                        ]"/>
+    <aura:attribute name="filterCompareDOUBLE"      type="List"     default="[
+                                                                        {'label': 'greater than', 'value': 'gt'},
+                                                                        {'label': 'less than', 'value': 'lt'},
+                                                                        {'label': 'equal', 'value': 'eq'},
+                                                                        ]"/>
+
+    <aura:attribute name="filterComparePICKLIST"    type="List"     default="[
+                                                                        {'label': 'equals', 'value': 'equals'},
+                                                                        {'label': 'not equals', 'value': 'not equals'},
+                                                                        {'label': 'is null', 'value': 'is null'},
+                                                                        {'label': 'not null', 'value': 'not null'}
+                                                                        ]"/>
+    <aura:attribute name="filterCompareDATE"        type="List"     default="[
+                                                                        {'label': 'before', 'value': 'before'},
+                                                                        {'label': 'after', 'value': 'after'},
+                                                                        {'label': 'equal', 'value': 'equal'}
+                                                                        ]"/>
+    <aura:attribute name="filterCompareDATETIME"    type="List"     default="[
+                                                                        {'label': 'before', 'value': 'before'},
+                                                                        {'label': 'after', 'value': 'after'},
+                                                                        {'label': 'equal', 'value': 'equal'}
+                                                                        ]"/>
+    <aura:attribute name="filterCompareCURRENCY"    type="List"     default="[
+                                                                        {'label': 'greater than', 'value': 'gt'},
+                                                                        {'label': 'less than', 'value': 'lt'},
+                                                                        {'label': 'equal', 'value': 'eq'}
+                                                                        ]"/>
+    <aura:attribute name="filterCompareREFERENCE"  type="List"      default="[
+                                                                        {'label': 'contains', 'value': 'eq'}
+                                                                        ]"/>
+    <aura:attribute name="filterCompareBOOLEAN"  type="List"      default="[
+                                                                        {'label': 'True', 'value': 'true'},
+                                                                        {'label': 'False', 'value': 'false'}
+                                                                        ]"/>
+    <aura:attribute name="filterShown" type="Boolean" default="false" />
+    <aura:attribute name="sortShown" type="Boolean" default="false" />
+    <aura:attribute name="selectedFilter"           type="List" />
+    <aura:attribute name="selectedSortColumn"       type="String" />
+    <aura:attribute name="selectedSortColumnName"   type="String" />
+    <aura:attribute name="selectedFilterColumn"     type="String" />
+    <aura:attribute name="selectedFilterColumnName" type="String" />
+    <aura:attribute name="selectedFilterColumnType" type="String" />
+    <aura:attribute name="userInfo"                 type="User" />
+    <aura:attribute name="currentList"              type="Object[]" />
+    <aura:attribute name="currentListFilter"        type="Object[]" />
+    <aura:attribute name="sortingOrderResult"       type="String" />
+    <aura:attribute name="filteringOrderResult"     type="String" />
+    <aura:attribute name="objectWrapper"            type="Object" />
+    <aura:attribute name="hasPendingChange"         type="Boolean"  default="false"/>
+    <aura:attribute name="onloadSorting"            type="Boolean"  default="false"/>
+    <aura:attribute name="onloadFiltering"          type="Boolean"  default="false"/>
+    <aura:attribute name="dragSort"                 type="String" />
+    <aura:attribute name="dragFilter"               type="String" />
+    <aura:attribute name="inputField"               type="String" />
+    <aura:attribute name="tableRecords" 		    type="List"/>
+    <aura:attribute name="sidebarHidden" 		    type="Boolean" default="true"/>
+    <aura:attribute name="isLoading" 		    type="Boolean" default="false"/>
+    
+    <aura:handler   name="init" 	value="{!this}" action="{!c.doInit}"/>
+    
+    <aura:if isTrue="{!v.isLoading}">
+        <div class="loaderBackdrop">
+            <div class="demo-only" style="height: 6rem;">
+                <div role="status" class="slds-spinner slds-spinner_large slds-spinner_brand">
+                    <span class="slds-assistive-text">Loading</span>
+                    <div class="slds-spinner__dot-a"></div>
+                    <div class="slds-spinner__dot-b"></div>
+                </div>
+            </div>
+        </div>
+    </aura:if>
+    <div class="slds-grid slds-gutters">
+        <div class="slds-col slds-size_6-of-6">
+            <lightning:tabset variant="scoped">
+                <lightning:tab label="Approvals" id="firstTab">
+                    <div>
+                        <c:SimplusGridFilteringDisplay filterSet="{!v.currentListFilter}" />
+                    </div>
+                    <div>
+                        <c:SimplusApprovals aura:id="gridTable" mainListSource="{!v.mainListSource}" fieldSets="{!v.fieldSets}" sortingOrderResult="{!v.sortingOrderResult}" tableRecordsUpdated="{!v.tableRecords}"/>
+                    </div>
+                </lightning:tab>
+            </lightning:tabset>
+        </div>
+    </div>
+    <div class="{!'controlsButton' + (v.sidebarHidden ? ' hidden' : ' shown')}" onclick="{!c.toggleControls}">
+        <div class="buttonText">
+            <lightning:icon iconName="{!v.sidebarHidden ? 'utility:down' : 'utility:up'}" size="xx-small"/> controls
+        </div>
+    </div>
+    <div class="{!'rightPanelContainer' + (v.sidebarHidden ? ' hidden' : ' shown')}">
+        <h3 class="slds-accordion__summary-heading" onclick="{!c.sortToggle}">
+            <lightning:icon iconName="utility:sort" size="small"/><span class="spacer" />
+            Sorting
+            <div class="flexer" />
+            <aura:if isTrue="{!v.sortShown}">
+                <lightning:icon iconName="utility:down" size="small"/>
+                <aura:set attribute="else">
+                    <lightning:icon iconName="utility:left" size="small"/>
+                </aura:set>
+            </aura:if>
+        </h3>
+        <div class="{!'sortFilterTable ' + (v.sortShown ? '' : 'fold')}">
+            <!-- SORTING CONTENT HERE -->
+            <div class="dropdown">
+                <div class="slds-grid slds-gutters">
+                    <div class="slds-col">
+                        <lightning:select name="sortColumn" label="Column" onchange="{! c.handleSortChange }" aura:id="selectedColumnSorting">
+                            <option value=""> Choose Column </option>
+                            <aura:iteration items="{!v.columnSorting}" var="sort">
+                                <option value="{!sort.value}">{!sort.fieldLabel}</option>
+                            </aura:iteration>
+                        </lightning:select>
+                    </div>
+                    
+                    <div class="slds-col">
+                        <lightning:select name="sortDirection" label="Direction" onchange="{! c.handleSortChange }" aura:id="selectedDirectionSorting">
+                            <option value=""> Choose Direction </option>
+                            <aura:iteration items="{!v.directionSorting}" var="sort">
+                                <option value="{!sort.value}">{!sort.label}</option>
+                            </aura:iteration>
+                        </lightning:select>
+                    </div>
+                </div>
+                <div class="button">
+                    <lightning:button label="Add" onclick="{!c.createButton}" variant="brand" class="button-fixed"/>
+                    <lightning:button label="Clear" onclick="{!c.removeAllButton}" variant="destructive" class="button-fixed"/>
+                    <lightning:button label="Save" onclick="{!c.saveChanges}" variant="brand" class="button-fixed"/>
+                </div>
+            </div>
+            <br/>
+            <div class="slds slds-grid slds-wrap">
+                <table class="slds-table slds-table--bordered">
+                    <thead>
+                        <tr>
+                            <th class="slds-text-title_caps" data-column-header="true">Active</th>
+                            <th class="slds-text-title_caps" data-column-header="true">Field</th>
+                            <th class="slds-text-title_caps" data-column-header="true">Direction</th>
+                            <th class="slds-text-title_caps" data-column-header="true">Priority</th>
+                            <th class="slds-text-title_caps sortFilterActionColumns" data-column-header="true">Delete</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <aura:iteration items="{!v.currentList}" var="f" indexVar="idx">
+                            <c:SimplusApprovals_SortLineItem lineItem="{!f}" listIndex="{!idx}" startLoading="{!c.catchStartLoading}" pushUpdate="{!c.repaintSort}" drag="{!c.dragRowSort}" drop="{!c.dropRowSort}"/>
+                        </aura:iteration>
+                    </tbody>
+                </table>
+            </div>
+            
+        </div>
+        <br /> <br />
+        <h3 class="slds-accordion__summary-heading" onclick="{!c.filterToggle}">
+            <lightning:icon iconName="utility:filterList" size="small"/><span class="spacer" />
+            Filtering
+            <div class="flexer" />
+            <aura:if isTrue="{!v.filterShown}">
+                <lightning:icon iconName="utility:down" size="small"/>
+                <aura:set attribute="else">
+                    <lightning:icon iconName="utility:left" size="small"/>
+                </aura:set>
+            </aura:if>
+        </h3>
+        <div class="{!'sortFilterTable ' + (v.filterShown ? '' : 'fold')}">
+            <!-- FILTERING CONTENT HERE -->
+            <div class="dropdown">
+                <div class="slds-grid slds-gutters">
+                    <div class="slds-col">
+                        <lightning:select name="filterColumn" label="Column" onchange="{! c.handleFilterChange }" aura:id="selectedColumnFiltering">
+                            <option value=""> Column </option>
+                            <aura:iteration items="{!v.columnFiltering}" var="filter">
+                                <option class="{!filter.fieldType}" value="{!filter.value}" aura:id="{!filter.fieldName}">{!filter.fieldLabel}</option>
+                            </aura:iteration>
+                        </lightning:select>
+                    </div>
+                    
+                    <div class="slds-col">
+                        <lightning:select name="filterOperation" label="Operation" onchange="{! c.handleFilterOperationChange }" aura:id="selectedFilterOperation">
+                            <option value=""> Operation </option>
+                            <aura:iteration items="{!v.selectedFilter}" var="filter">
+                                <option value="{!filter.value}">{!filter.label}</option>
+                            </aura:iteration>
+                        </lightning:select>
+                    </div>
+                    
+                    <div class="slds-col">
+                        <aura:if isTrue="{!v.inputField == 'String' || v.inputField == 'Picklist'}">
+                            <lightning:input maxlength="255" name="input1" label="Value" aura:id="inputText"/>
+                        </aura:if>
+                        <aura:if isTrue="{!v.inputField == 'Date'}">
+                            <lightning:input type="date" name="input1" label="Value" aura:id="inputDate"/>
+                        </aura:if>
+                        <aura:if isTrue="{!v.inputField == 'DateTime'}">
+                            <lightning:input type="datetime" name="input1" label="Value" aura:id="inputDateTime"/>
+                        </aura:if>
+                        <aura:if isTrue="{!v.inputField == 'Currency' || v.inputField == 'Double'}">
+                            <lightning:input type="number" name="input1" label="Value" aura:id="inputCurrency" step="0.01"/>
+                        </aura:if>
+                        <aura:if isTrue="{!v.inputField == 'Boolean'}">
+                            <!-- lightning:input type="checkbox" name="input1" aura:id="inputCheckbox"/-->
+                        </aura:if>
+                    </div>
+                </div>
+                <div class="button">
+                    <lightning:button label="Add" onclick="{!c.createButton2}" variant="brand" class="button-fixed"/>
+                    <lightning:button label="Clear" onclick="{!c.removeAllButton2}" variant="destructive" class="button-fixed"/>
+                    <lightning:button label="Save" onclick="{!c.saveChanges2}" variant="brand" class="button-fixed"/>
+                </div>
+            </div>
+            <br/>
+            <div class="slds slds-grid slds-wrap">
+                <table class="slds-table slds-table--bordered">
+                    <thead>
+                        <tr>
+                            <th class="slds-text-title_caps" data-column-header="true">Active</th>
+                            <th class="slds-text-title_caps" data-column-header="true">Field</th>
+                            <th class="slds-text-title_caps" data-column-header="true">Operation</th>
+                            <th class="slds-text-title_caps" data-column-header="true">Value</th>
+                            <th class="slds-text-title_caps sortFilterActionColumns" data-column-header="true">Delete</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <aura:iteration items="{!v.currentListFilter}" var="f" indexVar="idx">
+                            <c:SimplusApprovals_FilterLineItem lineItem="{!f}" listIndex="{!idx}" startLoading="{!c.catchStartLoading}" pushUpdate="{!c.repaintFilter}" dragFilter="{!c.dragRowFilter}" dropFilter="{!c.dropRowFilter}" />
+                        </aura:iteration>
+                    </tbody>
+                </table>
+            </div>
+            
+        </div>
+    </div>
+</aura:component>

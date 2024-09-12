@@ -1,0 +1,89 @@
+<aura:component  controller="ManageProductsConfidentials" implements="force:appHostable,flexipage:availableForAllPageTypes,force:hasRecordId,force:lightningQuickActionWithoutHeader" access="global">
+    <aura:handler value="this" name="init" action="{!c.doInit}"/>
+    <aura:attribute name="data" type="Object"/>
+    <aura:attribute name="columns" type="List"/>
+    <aura:attribute name="data1" type="Object"/>
+    <aura:attribute name="columns1" type="List"/>
+    <aura:attribute name="datatsPaginated" type="Object"/>
+    <aura:attribute name="lobTypes" type="List" />
+    <aura:attribute name="allfiltertypes" type="List" />
+    <aura:attribute name="Pname" type="String"  default=""/>
+    <aura:attribute name="LOB" type="String"  default=""/>
+    <aura:attribute name="Filters" type="String"  default="Purchased Products"/>
+    <aura:attribute name="selectedObject" type="String" />
+    <aura:attribute name="selectedObject1" type="String" />
+    <aura:attribute name="selectedRows" type="List" />
+    <aura:attribute name="showSpinner" type="boolean"/>
+    <aura:attribute type="Integer" name="pageNumber" default="1" />
+    <aura:attribute type="Integer" name="pageSize" default="20" />
+    <aura:handler name="change" value="{!v.pageNumber}" action="{!c.renderList}" />
+    <aura:attribute name="totalPages" type="Integer"/>
+    <ltng:require styles="{!$Resource.IncreasePopUpWidth}"/>
+    
+    <aura:html tag="style">
+        .slds-p-around–medium {
+        padding: 0rem !important;
+        }
+        .slds-modal__content{
+        overflow-y:hidden !important;
+        height:unset !important;
+        max-height:unset !important;
+        }
+        .cuf-content {
+        padding: 0 0rem !important;
+        }
+    </aura:html>
+    <aura:if isTrue="{!v.showSpinner}">
+        <lightning:spinner alternativeText="Loading" size="large"/>
+    </aura:if>
+    <div class="modal-header slds-modal__header slds-m-bottom_xx-large" style="margin-bottom: 4px">
+        <span>
+            <span class="title slds-text-heading--medium slds-hyphenate">Manage Products</span>
+            <lightning:button variant="Brand" class="slds-float_right" label="Finish" onclick="{! c.handleExit }"/>
+        </span>
+    </div>
+    <div style="width:100%;margin:auto;height:100%" >
+        <div class="slds-p-top_medium">
+            <lightning:datatable keyField="Id"
+                                 data="{! v.data }" 
+                                 columns="{! v.columns }"
+                                 hideCheckboxColumn="true"
+                                 onrowselection="{!c.handleSelectedRow}"
+                                 onrowaction="{! c.handleRowAction1 }"/>
+        </div> 
+        
+        <div class="slds-card slds-grid slds-wrap slds-gutters slds-p-around_small slds-m-left_small slds-m-right_small">
+            <div class="slds-col slds-size_2-of-12 ">
+                <span class="slds-text-heading_medium" style="font-size:14pt;">Search For Products</span>
+            </div>
+            <div class="slds-col slds-size_4-of-12 " style="margin-left: 6%;">
+                <lightning:input name="Pname" label="Product Name" value="{!v.Pname}" onchange="{!c.handlePnameChange}"/>
+            </div>
+            <div class="slds-col slds-size_4-of-12 ">
+                <lightning:select name="LOB" label="Line Of Business"  value="{!v.LOB}" onchange="{!c.handlesLOBChange}" >
+                    <aura:iteration items="{!v.lobTypes}" var="option" >
+                        <option text="{!option}" value="{!option}" selected="{!option == v.selectedObject1}"/>
+                    </aura:iteration>
+                </lightning:select>
+                <lightning:select name="types" label="Product Filter Type"  value="{!v.Filters}" onchange="{!c.handlesfiltertypeChange}" >
+                    <aura:iteration items="{!v.allfiltertypes}" var="option" >
+                        <option text="{!option}" value="{!option}" selected="{!option == v.selectedObject}"/>
+                    </aura:iteration>
+                </lightning:select>
+            </div>
+        </div>
+        <div class="slds-p-top_medium">
+            <lightning:datatable keyField="Id" 
+                                 data="{! v.datatsPaginated }" 
+                                 columns="{! v.columns1 }" 
+                                 hideCheckboxColumn="true"
+                                 onrowaction="{! c.handleRowAction }"/>
+        </div>
+        <div>
+            <footer class="slds-card__footer">
+                <c:Pagination currentPageNumber="{!v.pageNumber}" maxPageNumber="{!v.totalPages}" />
+            </footer>
+        </div>
+        <lightning:button variant="Brand" class="slds-float_right" label="Finish" onclick="{! c.handleExit }"/>
+    </div>
+</aura:component>

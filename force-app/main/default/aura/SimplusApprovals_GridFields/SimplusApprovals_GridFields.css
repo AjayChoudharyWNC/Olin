@@ -1,0 +1,25 @@
+.THIS .detailView  {
+    display: flex;
+    font-size: 8pt;
+    height: 25px;
+}
+.THIS .detailView .inlineEditToggle{
+    float: right;
+    opacity: .1;
+    width: 15px;
+    height: 15px;
+}
+.THIS .detailView:hover .inlineEditToggle {
+    opacity: 1;
+}
+.THIS .flexer {
+    flex: 1;
+}
+
+.THIS.pendingChange.has-update {
+    font-weight: 600;
+    color: rgb(14, 187, 14);
+}
+.THIS.noRecordChange.pendingChange {
+    color: gray;
+}

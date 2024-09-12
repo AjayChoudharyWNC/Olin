@@ -1,0 +1,133 @@
+<apex:page standardController="sbaa__Approval__c" extensions="sbaa.ApprovalExtController" showQuickActionVfHeader="false" showHeader="false" standardStylesheets="false" sidebar="false" applyHtmlTag="false" applyBodyTag="false" docType="html-5.0">
+    <html xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" lang="en">
+        <head>
+            <meta charset="utf-8" />
+            <meta http-equiv="x-ua-compatible" content="ie=edge" />
+            <meta name="viewport" content="width=device-width, initial-scale=1" />
+            <apex:stylesheet value="{!URLFOR($Resource.sbaa__SLDS214, 'assets/styles/salesforce-lightning-design-system-vf.min.css')}" />
+            
+            <style>
+                #aa {
+                margin: 0;
+                }
+                .approveApp {
+                padding: 8px;
+                }
+                .msgIcon {
+                display: none!important
+                }
+                .customMessage * {
+                color: #fff!important
+                }
+                .customMessage {
+                margin: 5px 0!important;
+                opacity: 1!important;
+                width: 100%;
+                font-size: 12px;
+                border: 0px;
+                padding-left: 10px;
+                }
+                .message {
+                opacity: .1
+                }
+                .buttonToRight {
+                text-align: right;
+                }
+            </style>
+            
+            
+        </head>
+        
+        <body id="aa">
+            
+            
+            
+            <!-- REQUIRED SLDS WRAPPER -->
+            <div class="sbaa">
+                <div class="approveApp">
+                    <apex:form id="pageForm">
+                        
+                        <apex:pageMessages id="pageMess" />
+                        
+                        <apex:pageBlock rendered="{!isApprovalRequested == false}">
+                            <div class="buttonToRight">
+                                <!-- apex:commandButton styleClass="slds-button slds-button--neutral" action="{!onReturn}" value="Cancel" onclick="disableOnSubmit(this);"/ -->
+                                <button class="slds-button slds-button--neutral" onclick="sendClose(); return null;">Cancel</button>
+                            </div>
+                        </apex:pageBlock>
+                        <apex:pageBlock rendered="{!isApprovalRequested}">
+                            <apex:outputPanel id="scriptBox">
+                                <apex:actionFunction action="{!onApprove}" name="runApprove" onbeforedomupdate="sendClose" oncomplete="sendClose" />
+                                <script>
+                                function overridePageMessages(){
+                                    //$('.errorM3').addClass('slds-notify slds-notify slds-notify--toast slds-notify--alert slds-theme--error customMessage');
+                                    //$('.errorM3').removeClass('errorM3');
+                                }
+                                
+                                function disableOnSubmit(input) {
+                                    var btn = input;
+                                    setTimeout(function(){
+                                        btn.disabled = 'disabled';
+                                        btn.className = 'slds-button slds-button--neutral';
+                                    }, 50);
+                                }
+                                
+                                
+                                var lexOrigin = "{!$Label.SimplusApprovalURL}";
+                                
+                                function sendClose() {
+                                    console.log("sending close")
+                                    var message = {
+                                        isFromPage : true,
+                                        retMessage : 'Successfully approved',
+                                        close : true,
+                                        source : "{!id}",
+                                        isApprove : true,
+                                        isReload : true
+                                    };
+                                    
+                                    var ret = window.parent.postMessage(JSON.stringify(message), lexOrigin);
+                                }
+                                function sendCancel() {
+                                    var message = {
+                                        isFromPage : true,
+                                        retMessage : 'Successfully approved',
+                                        close : true,
+                                        source : "{!id}",
+                                        isApprove : true,
+                                        isReload : false
+                                    };
+                                    
+                                    var ret = window.parent.postMessage(JSON.stringify(message), lexOrigin);
+                                }
+                                
+                                approveClicked = false;
+                                function reloadPage() {
+                                    window.location.reload();
+                                }
+                                function runApproval(buttonFrom) {
+                                    buttonFrom.disabled = true;
+                                    console.log("running approval");
+                                    runApprove();
+                                    //window.setTimeout(runApprove(), 2000);
+                                    console.log("done approval");
+                                }
+                                
+                                </script>
+                            </apex:outputPanel>
+                            
+                            <apex:outputLabel styleClass="slds-form-element__label" for="textarea-input-01" value="Approval Comments"/>
+                            <apex:inputTextarea id="textarea-input-01" styleClass="slds-textarea" value="{!comments}" rows="5" style="resize: none;"/>
+                            <div class="buttonToRight">
+                                <apex:commandButton value="Approve" styleClass="slds-button slds-button--brand" onclick="runApproval(this)" oncomplete="sendClose()"  ></apex:commandButton>
+                                <apex:commandButton value="Cancel" styleClass="slds-button slds-button--neutral" onclick="sendCancel(); return null;" reRender=""></apex:commandButton>
+                            </div>
+                        </apex:pageBlock>
+                    </apex:form>
+                </div>
+            </div>
+        </body>
+        
+        
+    </html>
+</apex:page>

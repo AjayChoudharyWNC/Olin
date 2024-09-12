@@ -1,0 +1,40 @@
+<aura:component controller="ForecastingGridController">
+    <aura:attribute type="Object" name="lineItem" />
+    <aura:attribute type="Decimal" name="listIndex" />
+    <aura:attribute name="dragid" type="Integer" />
+
+    <aura:registerEvent name="pushUpdate" type="c:SimplusGrid_PushUp"/>
+    <aura:registerEvent name="startLoading" type="c:SimplusGrid_PushUp"/>
+    <aura:registerEvent name="drag" type="c:SimplusGrid_PushUp"/>
+    <aura:registerEvent name="drop" type="c:SimplusGrid_PushUp"/>
+
+    <tr 
+        draggable="true"
+        ondragstart="{!c.dragstart}"
+        data-drag-id="{!v.listIndex}"
+        ondragover="{!c.cancel}" 
+        ondragenter="{!c.cancel}"
+        ondrop="{!c.drop}">
+            <td>
+                <div class="slds-form-element">
+                    <div class="slds-form-element__control">
+                        <div class="slds-checkbox">
+                            <input type="checkbox" name="{!v.lineItem.Id}" id="{!v.lineItem.id}" checked="{!v.lineItem.isActive}" value="{!v.lineItem.isActive}" onchange="{!c.toggleButtonClick}"/>
+                            <label class="slds-checkbox__label" for="{!v.lineItem.id}">
+                                <span class="slds-checkbox_faux"></span>
+                                <span class="slds-form-element__label" />
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <!-- lightning:buttonIcon iconName="{!v.lineItem.isActive ? 'utility:check' : 'utility:steps'}" alternativeText="{!v.lineItem.isActive ? 'Deactivate' : 'Activate'}"  onclick="{!c.toggleButtonClick}"/ -->
+            </td>
+            <td>{!v.lineItem.sortColumnName}</td>
+            <td>{!v.lineItem.sortOrder}</td>
+            <td>{!v.lineItem.sortPriority}</td>
+            <td class="actions">
+                <lightning:buttonIcon iconName="utility:delete"  variant="bare" alternativeText="Delete"  onclick="{!c.deleteButtonClick}"/>
+            </td>
+    </tr>
+    
+</aura:component>

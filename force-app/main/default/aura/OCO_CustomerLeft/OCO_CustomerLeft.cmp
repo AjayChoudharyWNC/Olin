@@ -1,0 +1,50 @@
+<aura:component controller="OCO_CustomerController" implements="flexipage:availableForAllPageTypes,forceCommunity:availableForAllPageTypes" access="global">
+    <aura:attribute name="email" type="String"/>
+    <aura:attribute name="mainAccount" type="Account"/>
+    <aura:attribute name="sapId" type="String"/>
+    <aura:attribute name="sapRecord" type="SAP_Onboarding__c"/>
+    <aura:attribute name="selectedItem" type="String" default="Instructions"/>
+    <aura:attribute name="languageLabelMap" type="Object"/>
+    <aura:handler name="init" value="{!this}" action="{!c.init}" />
+    <aura:method name="handleLanguageChange" action="{!c.handleLanguageFromParent}" access="PUBLIC"/> 
+    <aura:attribute name="items" type="Object"/>
+    <aura:registerEvent name="treeNodeClickEvent" type="c:OCO_CustomerTreeClick"/>
+    <aura:registerEvent name="shareWithColleagueEvt" type="c:OCO_CustomerOnboardingShareEvt"/>
+    <aura:handler event="c:OCO_TreeRefreshEvt" action="{!c.init}"/>
+    <aura:handler event="c:OCO_Customer_RefreshSapRecord" action="{!c.fetchSapRecord}"/>
+    <aura:handler event="c:OCO_SectionCompletedEvt" action="{!c.handleAllSectionCompleted}"/>
+    <aura:handler event="c:OCO_CustomerTreeClick" action="{!c.handleTreeNodeClickEvt}"/>
+    
+    <div class="slds-grid slds-wrap" style="min-height:100vh;background:#fff;">
+        <div class="slds-col slds-size_1-of-1 slds-text-align_center" style="padding: 10px;border-bottom: 2px solid #f5f6f8;">
+            <img src="https://www.olin.com/wp-content/uploads/olin-logo.png" class="olinLogo" style="width:100px;margin-bottom: 16px;"/>
+            <span style="font-size:26px;color:grey;font-weight:bold;" class="mainHeader">&nbsp;|&nbsp; {!v.languageLabelMap.HP_54}</span>
+        </div>
+        <div class="slds-col slds-size_1-of-1 slds-grid" style="padding: 20px;border-bottom:2px solid #f5f6f8;">
+            
+            <div class="slds-col slds-size_3-of-4">
+                <span>{!v.sapRecord.Sold_To_Company_Name__c}</span><br/>
+                <span style="color:#bfc8d6;font-size:12px">{!v.sapRecord.Sold_To_Street__c}, {!v.sapRecord.Sold_To_Street_2__c}<br/>{!v.sapRecord.Sold_To_City__c}, {!v.sapRecord.Sold_To_State_Province__c}<br/>{!v.sapRecord.Sold_To_Country__c} - {!v.sapRecord.Sold_To_Postal_Code__c}</span>
+            </div>
+        </div>
+        <div class="slds-col slds-size_1-of-1" style="padding: 20px;">
+            <aura:if isTrue="{!v.selectedItem != 'Instructions'}">
+                <div class="slds-p-around_medium">
+                    <p class="slds-p-top_small slds-p-bottom_small"><b>{!v.languageLabelMap.HP_63}&nbsp;{!v.languageLabelMap.HP_64}</b></p>
+                    <button class="slds-button slds-button_neutral btn" type="button" onclick="{!c.handleShareWithColleague}" disabled="{!or(and(v.sapRecord.Customer_Information_Status__c != 'Sent To Customer', v.sapRecord.Customer_Information_Status__c != 'Customer In Progress'),v.isDisabledForProfile)}">
+                        <lightning:icon iconName="utility:socialshare" size="x-small" class="shareIcon" style="margin-right:5px;"/>{!v.languageLabelMap.CI_4}
+                    </button>
+                </div>
+            </aura:if>
+            <lightning:tree items="{! v.items }" onselect="{! c.handleSelect }" selectedItem="{!v.selectedItem}"/>
+        </div>
+        <div class="slds-col slds-size_1-of-1" style="padding: 20px;border-top: 2px solid #f5f6f8;">
+            <!--<span style="font-size:18px;">Color Key</span>
+            <ul>
+                <li class="open">Open / In Progress</li>
+                <li class="submit">Customer Submitted</li>
+                <li class="notReq">Not Requested</li>
+            </ul>--><br/><br/><br/><br/><br/><br/><br/>
+        </div>
+    </div>
+</aura:component>

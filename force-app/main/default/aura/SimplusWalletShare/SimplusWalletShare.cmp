@@ -1,0 +1,93 @@
+<aura:component controller="SimplusWalletShareController" implements="flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:appHostable,force:lightningQuickActionWithoutHeader" access="global" >
+	<aura:attribute name="recordId" 			type="String" />
+    <aura:attribute name="sObjectName" 			type="String"       default="Consumption_Share__c"/>
+	<aura:attribute name="fieldSetName" 		type="String"       default="SimplusWalletShare"/>
+    <aura:attribute name="fieldSetValues" 		type="List"/>
+    <aura:attribute name="parentFieldName" 		type="String"       default="Consumption_ShareOfWallet__c"/>
+	<aura:attribute name="tableRecords" 		type="List"/>
+    <aura:attribute name="tableRecordsUpdated" 	type="List"/>
+    <aura:attribute name="totalConsumptionList" type="List" />
+    <aura:attribute name="deletedRecords" 	type="List" default="[]"/>
+    <aura:attribute name="originalYear"         type="String" />
+    <aura:attribute name="currentYear"          type="String" />
+    <aura:attribute name="years"                type="List" />
+    <aura:attribute name="yearNow"          type="String" />
+    <aura:attribute name="allowNew"                type="Boolean" />
+
+    <aura:attribute name="hasPendingMassChange" type="Boolean"      default="false"/>
+    <aura:attribute name="checkedIndex"         type="Decimal[]"    default="[]"/>
+    <aura:attribute name="allItemsChecked"      type="Boolean"      default="false"/>
+    <aura:attribute name="addToggle"            type="Boolean"      default="false"/>
+    <aura:attribute name="checkRepaint"         type="Boolean"      default="true"/>
+    <aura:attribute name="consumptionValue"     type="Integer" />
+
+    <aura:attribute name="unknownAmountEdit"     type="Boolean" />
+    <aura:attribute name="unknownPercentEdit"     type="Boolean" />
+
+    <aura:attribute name="entityVal"     type="Decimal" />
+    <aura:attribute name="entityPercentage"     type="Decimal" />
+
+    <aura:attribute name="newObjPush"     type="Object" default='{"consumptionShare" : {}, isSelected : false}' />
+
+    <aura:attribute name="allowEdit" 			type="Boolean"      default="true"/>
+    <aura:attribute name="nextYear"             type="String" />
+
+    <aura:registerEvent name="pushUpdate" type="c:SimplusWalletShare_PushEvent"/>
+    <aura:registerEvent name="pushTotalAmount" type="c:SimplusWalletShare_PushEvent"/>
+    <aura:registerEvent name="pushTotalPercent" type="c:SimplusWalletShare_PushEvent"/>
+    <aura:handler name="init" 	value="{!this}" action="{!c.doInit}"/>
+
+    <aura:method name="catchConsumptionVal" action="{!c.catchConsumption}"     description="Method with Parameters" >
+        <aura:attribute name="consumptionField" type="Integer"/>
+    </aura:method>
+    <aura:method name="addNewLine" action="{!c.catchNewVal}"     description="Method with Parameters" >
+        <aura:attribute name="entityStageName" type="String"/>
+        <aura:attribute name="entityStageId" type="String"/>
+    </aura:method>
+    <aura:method name="getDeleted" action="{!c.returnDeleted}"     description="Method with Parameters" />
+
+    <!-- div class="slds slds-grid slds-wrap">
+        <table class="slds-table slds-table_bordered">
+            <thead>
+				<tr>
+                    <th class="slds-text-title_caps" style="width: 55%;">Entity</th>
+					<aura:iteration items="{!v.fieldSetValues}" var="field" indexVar="idx">
+                        <th class="slds-text-title_caps width20" > {!field.label}</th>
+					</aura:iteration>
+                    <th class="slds-text-title_caps width5" >Delete</th>
+				</tr>
+            </thead -->
+            <!-- tbody -->
+                <aura:iteration items="{!v.totalConsumptionList}" var="totalConsump" indexVar="total">
+                    <aura:if isTrue="{!v.currentYear == totalConsump.totalConsumption.Year__c}">
+                        <aura:iteration items="{!totalConsump.lstConsumptionShare}" var="row" indexVar="r">
+                            <tr class="{! 'rRow ' + (row.hasError ? 'error' : '') }">
+                                <td>
+                                    <div style="line-height: 2;">
+                                        {!row.consumptionShare.Seller_Account_SOW__r.Name}
+                                        <aura:if isTrue="{!row.consumptionShare.Seller_Account_SOW__r.Name == 'UNKNOWN'}">
+                                            <span style="padding-left: 10px;" /><lightning:helptext content="Any Consumption amount not distributed goes here" />
+                                        </aura:if>
+                                    </div>
+                                </td>
+                                <aura:iteration items="{!v.fieldSetValues}" var="field">
+                                    <td>
+                                        <c:SimplusWalletShareFields record="{!row.consumptionShare}" field="{!field}" consumptionValue="{!v.consumptionValue}" pushConsumptionAmount="{!c.catchConsumptionAmount}" pushConsumptionPercent="{!c.catchConsumptionPercent}" isEditable="{!and(not(and(row.consumptionShare.Annual_Actuals_Updated__c, totalConsump.totalConsumption.Year__c != v.originalYear)) &amp;&amp; not(and(row.consumptionShare.Seller_Account_SOW__r.Name == 'UNKNOWN',field.label != 'Contract Expiration Date')) &amp;&amp; !row.consumptionShare.ReadOnly__c, or(v.originalYear eq v.currentYear, and(v.originalYear eq v.nextYear, v.allowEdit)))}" />
+                                    </td>
+                                </aura:iteration>
+                                <td style="text-align: center;">
+                                    <aura:if isTrue="{! not(row.consumptionShare.ReadOnly__c) &amp;&amp; not(row.consumptionShare.Seller_Account_SOW__r.Name == 'Olin Corporation') &amp;&amp; not(row.consumptionShare.Seller_Account_SOW__r.Name == 'UNKNOWN')}">
+                                        <lightning:button name="{!r}" iconName="utility:delete" variant="bare" onclick="{!c.deleteLine}" class="inlineEditToggle slds-button slds-button_icon slds-button_icon-container" disabled="{!!or(v.originalYear eq v.currentYear, and(v.originalYear eq v.nextYear, v.allowEdit))}"/>
+                                    </aura:if>
+                                </td>
+                            </tr>
+                        </aura:iteration>
+                        
+                    </aura:if>
+                    
+                </aura:iteration>
+            <!-- /tbody -->
+        <!-- /table>
+    </div -->
+
+</aura:component>

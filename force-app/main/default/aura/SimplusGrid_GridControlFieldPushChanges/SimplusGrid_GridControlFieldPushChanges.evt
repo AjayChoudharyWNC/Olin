@@ -1,0 +1,6 @@
+<aura:event type="APPLICATION" description="Event template">
+    <aura:attribute type="String" name="fieldApi" />
+    <aura:attribute type="Object" name="newValue" />
+    <aura:attribute type="Object" name="formula" />
+    <aura:attribute type="String" name="multiDecision" />
+</aura:event>

@@ -1,0 +1,6 @@
+.THIS .detailView .inlineEditToggle{
+    opacity: .3;
+}
+.THIS .detailView:hover .inlineEditToggle{
+    opacity: 1;
+}

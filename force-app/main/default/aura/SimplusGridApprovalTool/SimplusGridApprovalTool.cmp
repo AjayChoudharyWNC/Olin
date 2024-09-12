@@ -1,0 +1,94 @@
+<aura:component implements="force:lightningQuickActionWithoutHeader,flexipage:availableForRecordHome,force:hasRecordId" controller="QuoteApprovalActionController">
+
+	<aura:attribute type="List" name="rows" />
+	<aura:attribute type="List" name="columns" />
+	<aura:attribute type="Boolean" name="isLoading" default="false" />
+    <aura:handler name="init" value="{!this}" action="{!c.onInit}" />
+
+	<!--Custom Styles for Modal Header and Footer--> 
+    <aura:html tag="style">
+        .slds-p-around--medium {
+            padding: 0rem !important;
+        }   
+        .slds-modal__content{
+            overflow-y:hidden !important;
+            height:unset !important;
+            max-height:unset !important;
+        }
+        .cuf-content {
+            padding: 0 0rem !important;
+        }
+    </aura:html>
+     
+    <!--Modal Header-->  
+    <div class="modal-header slds-modal__header slds-size_1-of-1">
+        <h4 class="title slds-text-heading--medium">Mass Approval</h4>
+    </div>
+    <!--End Modal Header-->  
+     
+    <!--Modal Body-->   
+    <div class="slds-modal__content slds-p-around--x-small slds-align_absolute-center slds-size_1-of-1 slds-is-relative">
+		<aura:if isTrue="{v.isLoading}">
+			<div class="slds-spinner_container">
+				<div class="slds-spinner--brand slds-spinner slds-spinner--small" role="alert">
+					<span class="slds-assistive-text">Loading...</span>
+					<div class="slds-spinner__dot-a"></div>
+					<div class="slds-spinner__dot-b"></div>
+				</div>
+			</div>
+		</aura:if>
+		<div class="modalQuoteLineList">
+			<div class="quoteLineItem">
+				<table class="slds-table">
+					<thead>
+						<tr>
+							<th></th>
+							<th>Validation</th>
+							<aura:iteration items="{!v.columns}" var="column">
+
+							</aura:iteration>
+							<th>Quote Number</th>
+							<th>Quote Line Name</th>
+							<th>Sold To</th>
+							<th>Ship To</th>
+							<th>Product</th>
+							<th>Current Price</th>
+							<th>New Price</th>
+							<th>New Price Start Date</th>
+							<th>New Price Expiration Date</th>
+						</tr>
+					</thead>
+					<tbody>
+						<aura:iteration items="{!v.rows}" var="q" indexVar="qIdx">
+							<tr class="lineItem">
+								<td>
+									<div class="slds-form-element" style="display: inline-block;">
+										<div class="slds-form-element__control">
+											<div class="slds-checkbox">
+												<input type="checkbox" name="{!q.line.Name}" value="{!q.isSelected}" checked="{!q.isSelected}"/>
+												<label class="slds-checkbox__label" for="{!q.line.Name}">
+													<span class="slds-checkbox_faux" data-idx="{!qIdx}" onclick="{!c.updateSelect}"></span>
+												</label>
+											</div>
+										</div>
+									</div>
+								</td>
+								<td>
+									<lightning:helptext iconName="{!q.icon}" content="{!q.validationMsg}" iconVariant="{!q.variant}"/>
+								</td>
+							</tr>
+						</aura:iteration>
+					</tbody>
+				</table>    
+			</div>
+		</div>
+	</div>
+    <!--End of Modal Body--> 
+     
+    <!--Modal Footer-->
+    <div class="modal-footer slds-modal__footer slds-size_1-of-1">
+        <lightning:button variant="Brand" class="slds-button" aura:id="btnSubmit" label="Submit" onclick="{!c.handleSubmit}"/>
+        <lightning:button variant="Neutral" class="slds-button" label="Cancel" onclick="{!c.handleExit}"/>
+    </div>
+    <!--End of Modal Footer-->
+</aura:component>

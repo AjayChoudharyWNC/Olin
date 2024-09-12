@@ -1,0 +1,20 @@
+.THIS .heading {	
+    font-weight: bold;	
+}	
+	
+.THIS .anchor {	
+	color: rgb(62, 62, 60);
+}	
+	
+.THIS .blankSpace {	
+    	
+    height: 40px;	
+    width:100%;	
+    background:transparent;	
+}	
+.THIS .tableHeader {	
+    	
+    	
+    height: 2rem;	
+    font-weight: bold;	
+}

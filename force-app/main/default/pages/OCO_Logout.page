@@ -1,0 +1,8 @@
+<apex:page showHeader="false" sidebar="false">
+    
+    <script>
+    	window.top.location.href = '/secur/logout.jsp';
+
+    </script>
+ 
+</apex:page>

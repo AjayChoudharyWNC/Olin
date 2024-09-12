@@ -1,0 +1,690 @@
+<apex:page showHeader="false" sidebar="false" applyBodyTag="false" applyHtmlTag="false" standardController="SAP_Onboarding__c" renderAs="pdf" extensions="CreditApplicationPDFController">
+    <html>
+        <head>
+            <style>
+                @page {
+                margin : 2em;
+                }
+                html *
+                {
+                color: #000 !important;
+                font-family: Verdana, Arial, sans-serif !important;
+                }
+                .detailHeader{
+                border-bottom : 2px solid black;
+                margin-top :2em;
+                }
+                .fieldHeader{
+                font-size: 12px;
+                background-color:#d8d8d8;
+                }
+                .fieldValue{
+                font-size:15px;
+                font-weight:bold;
+                }
+                #content-details{
+                padding-left : 10px;
+                padding-right : 10px;
+                margin-top:10px;
+                }
+                #content-details-child{
+                padding-left : 10px;
+                padding-right : 10px;
+                margin-top:50px;
+                }
+                th{font-weight:bold;background-color:#d8d8d8;}
+            </style>
+        </head>
+        <body>
+            <div id="container">
+                <div id="header">
+                    <div style="float:left">
+                        <img src="{!$Resource.CreditApplicationLogo}" style="width:150px;"/>
+                    </div>
+                    <div style="text-align:right;">
+                        <span style="font-size:15px;font-weight:bold;">INTERNAL DOCUMENT<br/></span>
+                    </div>
+                    <div style="text-align:right;">
+                        <span style="font-size:15px;font-weight:bold;">CUSTOMER SETUP NO. {!sapRecord.Name}<br/></span>
+                    </div>
+                </div>
+            </div>
+            <div id="content" style="margin-top:3em;page-break-after:always;">
+                <div style="text-align:center;font-size:20px;font-weight:bold;">
+                    CREDIT INFORMATION
+                </div>
+                <div class="detailHeader">
+                    Company Details
+                </div>
+                <table border="1px solid black" style="border-collapse:collapse;margin-top:20px;" cellpadding="5" cellspacing="4" width="100%">
+                    <tr>
+                        <th width= "50%"><b>Company Name</b></th>
+                        <th width= "50%"><b>DUNS No.</b></th>
+                    </tr>
+                     <tr>
+                    	<td width= "50%">{!sapRecord.Full_Legal_Name__c}</td>
+                        <td width= "50%">{!sapRecord.DUNS_No__c}</td>
+                    </tr>
+                    <tr>
+                        <th width= "50%"><b>Sold-To Company Name</b></th>
+                        <th width= "50%"><b>Sold-To Street</b></th>
+                    </tr>
+                     <tr>
+                    	<td width= "50%">{!sapRecord.Sold_To_Company_Name__c}</td>
+                        <td width= "50%">{!sapRecord.Sold_To_Street__c}</td>
+                    </tr>
+                     <tr>
+                        <th width= "50%"><b>Sold-To Street 2</b></th>
+                        <th width= "50%"><b>Sold-To City</b></th>
+                    </tr>
+                     <tr>
+                    	<td width= "50%">{!sapRecord.Sold_To_Street_2__c}</td>
+                        <td width= "50%">{!sapRecord.Sold_To_City__c}</td>
+                    </tr>
+                     <tr>
+                        <th width= "50%"><b>Sold-To State/Province</b></th>
+                        <th width= "50%"><b>Sold-To Postal Code</b></th>
+                    </tr>
+                     <tr>
+                    	<td width= "50%">{!sapRecord.Sold_To_State_Province__c}</td>
+                        <td width= "50%">{!sapRecord.Sold_To_Postal_Code__c}</td>
+                    </tr>
+                     <tr>
+                        <th width= "50%"><b>Sold-To Country</b></th>
+                        <th width= "50%"><b></b></th>
+                    </tr>
+                     <tr>
+                    	<td width= "50%">{!sapRecord.Sold_To_Country__c}</td>
+                        <td width= "50%"></td>
+                    </tr>
+                </table>
+                
+                
+                <div id="content" style="margin-top:3em;">
+                    <div class="detailHeader">
+                        Bill-To Details
+                    </div>
+                    <table border="1px solid black" style="border-collapse:collapse;margin-top:20px;" cellpadding="5" cellspacing="4" width="100%">
+                    <tr>
+                        <th width= "50%"><b>Bill-To Company Name</b></th>
+                        <th width= "50%"><b>Bill-To Street</b></th>
+                    </tr>
+                     <tr>
+                    	<td width= "50%">{!sapRecord.Bill_To_Company_Name__c}</td>
+                        <td width= "50%">{!sapRecord.Bill_To_Street__c}</td>
+                    </tr>
+                    <tr>
+                        <th width= "50%"><b>Bill-To Street 2</b></th>
+                        <th width= "50%"><b>Bill-To City</b></th>
+                    </tr>
+                     <tr>
+                    	<td width= "50%">{!sapRecord.Bill_To_Street_2__c}</td>
+                        <td width= "50%">{!sapRecord.Bill_To_City__c}</td>
+                    </tr>
+                     <tr>
+                        <th width= "50%"><b>Bill-To State/Province</b></th>
+                        <th width= "50%"><b>Bill-To Postal Code</b></th>
+                    </tr>
+                     <tr>
+                    	<td width= "50%">{!sapRecord.Bill_To_State_Province__c}</td>
+                        <td width= "50%">{!sapRecord.Bill_To_Postal_Code__c}</td>
+                    </tr>
+                     <tr>
+                        <th width= "50%"><b>Bill-To Country</b></th>
+                        <th width= "50%"><b></b></th>
+                    </tr>
+                     <tr>
+                    	<td width= "50%">{!sapRecord.Bill_To_Country__c}</td>
+                        <td width= "50%"></td>
+                    </tr>
+                </table>
+                </div>
+                
+                <div id="content" style="margin-top:3em;">
+                    <div class="detailHeader">
+                        Credit Information
+                    </div>
+                    <table border="1px solid black" style="border-collapse:collapse;margin-top:20px;" cellpadding="5" cellspacing="4" width="100%">
+                    <tr>
+                        <th width= "50%"><b>DUNS No.</b></th>
+                        <th width= "50%"><b>Requested Payment Terms</b></th>
+                    </tr>
+                     <tr>
+                    	<td width= "50%">{!SAP_Onboarding__c.DUNS_No__c}</td>
+                        <td width= "50%">{!SAP_Onboarding__c.Requested_Payment_Terms__c}</td>
+                    </tr>
+                    <tr>
+                        <th width= "50%"><b>Is Customer a Publicly Traded Company?</b></th>
+                        <th width= "50%"><b>Estimated Date of First Shipment</b></th>
+                    </tr>
+                     <tr>
+                    	<td width= "50%">{!SAP_Onboarding__c.Is_Customer_a_Publically_Traded_Company__c}</td>
+                        <td width= "50%"> <apex:outputText value="{0, date, MMMM d','  yyyy}">  <apex:param value="{!SAP_Onboarding__c.Estimated_Date_of_First_Shipment__c}" /> </apex:outputText></td>
+                    </tr>
+                     <tr>
+                         <th width= "50%"><b>Stock/Ticker Symbol</b></th>
+                        <th width= "50%"><b>Estimated Annual Sales</b></th>
+                    </tr>
+                     <tr>
+                    	<td width= "50%">{!SAP_Onboarding__c.Stock_Ticker_Symbol__c}</td>
+                        <td width= "50%"><apex:outputText value="{0, Number, Currency}"><apex:param value="{!SAP_Onboarding__c.Estimated_Annual_Sales__c}"/></apex:outputText></td>
+                    </tr>
+                     <tr>
+                        <th width= "50%"><b>Describe Special Billing Procedures Req.</b></th>
+                        <th width= "50%"><b>Estimated First Order Value</b></th>
+                    </tr>
+                     <tr>
+                    	<td width= "50%">{!SAP_Onboarding__c.Non_Standard_Billing_Procedure_Details__c}</td>
+                        <td width= "50%"><apex:outputText value="{0, Number, Currency}"><apex:param value="{!SAP_Onboarding__c.Estimated_First_Order_Amount__c}" /></apex:outputText></td>
+                    </tr>
+                        <tr>
+                        <th width= "50%"><b>Additional Information</b></th>
+                        <th width= "50%"><b></b></th>
+                    </tr>
+                     <tr>
+                    	<td width= "50%">{!SAP_Onboarding__c.Additional_Information__c}</td>
+                        <td width= "50%"></td>
+                    </tr>
+                </table>
+                </div>
+                
+                <div id="content" style="margin-top:3em;">
+                    <div class="detailHeader">
+                        Contacts
+                    </div>
+                    <table border="1px solid black" style="border-collapse:collapse;margin-top:20px;" cellpadding="5" cellspacing="4" width="100%">
+                        <tr>
+                            <th width= "50%"><b>Order Placement | First Name</b></th>
+                            <th width= "50%"><b>Contract Notification | First Name</b></th>
+                        </tr>
+                        <tr>
+                            <td width= "50%">{!sapRecord.Order_Placement_First_Name__c}</td>
+                            <td width= "50%">{!sapRecord.Contract_Notification_First_Name__c}</td>
+                        </tr>
+                        <tr>
+                            <th width= "50%"><b>Order Placement | Last Name</b></th>
+                            <th width= "50%"><b>Contract Notification | Last Name</b></th>
+                        </tr>
+                        <tr>
+                            <td width= "50%">{!sapRecord.Order_Placement_Last_Name__c}</td>
+                            <td width= "50%">{!sapRecord.Contract_Notification_Last_Name__c}</td>
+                        </tr>
+                        <tr>
+                            <th width= "50%"><b>Order Placement | Title</b></th>
+                            <th width= "50%"><b>Contract Notification | Title</b></th>
+                        </tr>
+                        <tr>
+                            <td width= "50%">{!sapRecord.Order_Placement_Title__c}</td>
+                            <td width= "50%">{!sapRecord.Contract_Notification_Title__c}</td>
+                        </tr>
+                        <tr>
+                            <th width= "50%"><b>Order Placement | Phone</b></th>
+                            <th width= "50%"><b>Contract Notification | Phone</b></th>
+                        </tr>
+                        <tr>
+                            <td width= "50%">{!sapRecord.Order_Placement_Phone__c}</td>
+                            <td width= "50%">{!sapRecord.Contract_Notification_Phone__c}</td>
+                        </tr>
+                        <tr>
+                            <th width= "50%"><b>Order Placement | Email</b></th>
+                            <th width= "50%"><b>Contract Notification | Email</b></th>
+                        </tr>
+                        <tr>
+                            <td width= "50%">{!sapRecord.Order_Placement_Email__c}</td>
+                            <td width= "50%">{!sapRecord.Contract_Notification_Email__c}</td>
+                        </tr>
+                        
+                    </table>
+                </div>
+            </div>
+            
+            <!--div id="content" style="margin-top:2em;page-break-after:always;">
+<div style="text-align:center;font-size:20px;font-weight:bold;">
+DOCUMENT DEIVERY
+</div>
+<div class="detailHeader">
+Email Invoice Customer Contact
+</div>
+<div id="content-details">
+<div style="width:50%; float:left;">
+<span class="fieldHeader">Email Invoice | First Name</span><br/>
+<span class="fieldValue">{!sapRecord.Email_Invoice_First_Name__c}</span>
+</div>
+<div style="width:50%;float:right;">
+<span class="fieldHeader">Email Invoice | Last Name</span><br/>
+<span class="fieldValue">{!sapRecord.Email_Invoice_Last_Name__c}</span>
+</div>
+</div>
+<div id="content-details-child">
+<div style="width:50%; float:left;">
+<span class="fieldHeader">Email Invoice | Title</span><br/>
+<span class="fieldValue">{!sapRecord.Email_Invoice_Title__c}</span>
+</div>
+<div style="width:50%;float:right;">
+<span class="fieldHeader">Email Invoice | Phone</span><br/>
+<span class="fieldValue">{!sapRecord.Email_Invoice_Phone__c}</span>
+</div>
+</div>
+
+<div id="content-details-child">
+<div style="width:50%; float:left;">
+<span class="fieldHeader">Email Invoice | Email</span><br/>
+<span class="fieldValue">{!sapRecord.Email_Invoice_Email_Address__c}</span>
+</div>
+<div style="width:50%;float:right;">
+
+</div>
+</div>
+<br/>
+
+<div class="detailHeader">
+Document Delivery Details
+</div>
+<div id="content-details">
+<div style="width:50%; float:left;">
+<span class="fieldHeader">Preferred Method of SDS Delivery</span><br/>
+<span class="fieldValue">{!sapRecord.Preferred_Method_of_MSDS_Delivery__c}</span>
+</div>
+<div style="width:50%;float:right;">
+<span class="fieldHeader">SDS Delivery Email/Fax</span><br/>
+<span class="fieldValue">{!sapRecord.SDS_Delivery_Email_Fax__c}</span>
+</div>
+</div>
+<div id="content-details-child">
+<div style="width:50%; float:left;">
+<span class="fieldHeader">Preferred Method of Order Confirmation</span><br/>
+<span class="fieldValue">{!sapRecord.Preferred_Method_of_Order_Confirmation__c}</span>
+</div>
+<div style="width:50%;float:right;">
+<span class="fieldHeader">Order Confirmation Email/Fax</span><br/>
+<span class="fieldValue">{!sapRecord.Order_Confirmation_Email_Fax__c}</span>
+</div>
+</div>
+
+<div id="content-details-child">
+<div style="width:50%; float:left;">
+<span class="fieldHeader">Preferred Method of Bill of Lading</span><br/>
+<span class="fieldValue">{!sapRecord.Preferred_Method_of_Bill_of_Lading__c}</span>
+</div>
+<div style="width:50%;float:right;">
+<span class="fieldHeader">Bill of Lading Email/Fax</span><br/>
+<span class="fieldValue">{!sapRecord.Bill_of_Lading_Email_Fax__c}</span>
+</div>
+</div>
+<div id="content-details-child">
+<div style="width:50%; float:left;">
+<span class="fieldHeader">Preferred Method of Certifi. of Analysis</span><br/>
+<span class="fieldValue">{!sapRecord.Preferred_Method_of_Certifi_of_Analysis__c}</span>
+</div>
+<div style="width:50%;float:right;">
+<span class="fieldHeader">Certificate of Analysis Email/Fax</span><br/>
+<span class="fieldValue">{!sapRecord.Certificate_of_Analysis_Email_Fax__c}</span>
+</div>
+</div>
+</div-->
+            
+            <div id="content" style="margin-top:2em;page-break-after:always;">
+                <div style="text-align:center;font-size:20px;font-weight:bold;">
+                    CREDIT APPLICATION
+                </div>
+                <apex:variable var="rowNum" value="{!1}" /> 
+                <apex:repeat value="{!vatList}" var="vat" >
+                    <div class="detailHeader">
+                        Tax/VAT Details {!rowNum}
+                    </div>
+                    <table border="1px solid black" style="border-collapse:collapse;margin-top:20px;" cellpadding="5" cellspacing="4" width="100%">
+                        <tr>
+                            <th width= "50%"><b>Country</b></th>
+                            <th width= "50%"><b>Tax Type</b></th>
+                        </tr>
+                        <tr>
+                            <td width= "50%">{!vat.Country__c}</td>
+                            <td width= "50%">{!vat.Tax_Type__c}</td>
+                        </tr>
+                        <tr>
+                            <th width= "50%"><b>Tax/VAT Exempt</b></th>
+                            <th width= "50%"><b>Tax/Vat number</b></th>
+                        </tr>
+                        <tr>
+                            <td width= "50%">{!vat.Tax_VAT1_Exempt__c}</td>
+                            <td width= "50%">{!vat.VAT_Tax_Number__c}</td>
+                        </tr>
+                    </table>
+                    <apex:variable var="rowNum" value="{!rowNum+1}"/>
+                </apex:repeat>
+                <div style="page-break-after:always;">
+                    <div class="detailHeader">
+                        Contacts
+                    </div>
+                    <table border="1px solid black" style="border-collapse:collapse;margin-top:20px;" cellpadding="5" cellspacing="4" width="100%">
+                        <tr>
+                            <th width= "50%"><b>Accounts Payable | First Name</b></th>
+                            <th width= "50%"><b>Accounts Payable | Last Name </b></th>
+                        </tr>
+                        <tr>
+                            <td width= "50%">{!sapRecord.Account_Payable_First_Name__c}</td>
+                            <td width= "50%">{!sapRecord.Account_Payable_Last_Name__c}</td>
+                        </tr>
+                        <tr>
+                            <th width= "50%"><b>Accounts Payable | Title</b></th>
+                            <th width= "50%"><b>Accounts Payable | Phone</b></th>
+                        </tr>
+                        <tr>
+                            <td width= "50%">{!sapRecord.Account_Payable_Title__c}</td>
+                            <td width= "50%">{!sapRecord.Account_Payable_Phone__c}</td>
+                        </tr>
+                         <tr>
+                            <th width= "50%"><b>Accounts Payable | Email</b></th>
+                            <th width= "50%"><b></b></th>
+                        </tr>
+                        <tr>
+                            <td width= "50%">{!sapRecord.Account_Payable_Email__c}</td>
+                            <td width= "50%"></td>
+                        </tr>
+                        <tr>
+                            <th width= "50%"><b>Credit | First Name</b></th> 
+                            <th width= "50%"><b>Credit | Last Name</b></th>  
+                        </tr>
+                        <tr>
+                            <td width= "50%">{!sapRecord.Credit_First_Name__c}</td>   
+                            <td width= "50%">{!sapRecord.Credit_Last_Name__c}</td>
+                        </tr>
+                        <tr>
+                            <th width= "50%"><b>Credit | Title</b></th>
+                            <th width= "50%"><b>Credit | Phone</b></th> 
+                        </tr>
+                        <tr>
+                            <td width= "50%">{!sapRecord.Credit_Title__c}</td>
+                            <td width= "50%">{!sapRecord.Credit_Phone__c}</td>
+                        </tr>
+                         <tr>
+                            <th width= "50%"><b>Credit | Email</b></th>
+                            <th width= "50%"><b></b></th> 
+                        </tr>
+                        <tr>
+                            <td width= "50%">{!sapRecord.Credit_Email__c}</td>
+                            <td width= "50%"></td>
+                        </tr>
+                         <tr>
+                            <th width= "50%"><b>CFO (Officer) | First Name</b></th> 
+                            <th width= "50%"><b>CFO (Officer) | Last Name</b></th>  
+                        </tr>
+                        <tr>
+                            <td width= "50%">{!sapRecord.CXO_Officer_First_Name__c}</td>   
+                            <td width= "50%">{!sapRecord.CXO_Officer_Last_Name__c}</td>
+                        </tr>
+                        <tr>
+                            <th width= "50%"><b>CFO (Officer) | Title</b></th>
+                            <th width= "50%"><b>CFO (Officer) | Phone</b></th> 
+                        </tr>
+                        <tr>
+                            <td width= "50%">{!sapRecord.CXO_Officer_Title__c}</td>
+                            <td width= "50%">{!sapRecord.CXO_Officer_Phone__c}</td>
+                        </tr>
+                         <tr>
+                            <th width= "50%"><b>CFO (Officer) | Email</b></th>
+                            <th width= "50%"><b></b></th> 
+                        </tr>
+                        <tr>
+                            <td width= "50%">{!sapRecord.CXO_Officer_Email__c}</td>
+                            <td width= "50%"></td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="detailHeader">
+                    <b>Bank References (Bank Reference attachments are optional, Please make sure to check attachments for additional references)</b>
+                </div>
+                <div id="content-details" style="display:{!if(bankRefFiles.size > 0, 'block', 'none')}">
+                    <apex:repeat value="{!bankRefFiles}" var="f" >
+                        <table border="1px solid black" style="border-collapse:collapse;margin-top:20px;" cellpadding="5" cellspacing="4" width="100%">
+                            <tr>
+                                <td >File : {!f.Name}</td>
+                            </tr>
+                        </table>
+                    </apex:repeat>
+                </div>
+                <div style="display:{!if(bankRefFiles.size > 0, 'none', 'block')}">
+                    <div class="detailHeader">Bank Reference</div>
+                    <table border="1px solid black" style="border-collapse:collapse;margin-top:20px;" cellpadding="5" cellspacing="4" width="100%">
+                        <tr>
+                            <th width= "50%">Bank / Institution Name</th>
+                            <th width= "50%">Type of Account</th>
+                        </tr>
+                         <tr>
+                            <td width= "50%">{!sapRecord.Bank_Institution_Name_1__c}</td>
+                            <td width= "50%">{!sapRecord.Type_of_Account_1__c}</td>
+                        </tr>
+                         <tr>
+                            <th width= "50%">Account No.</th>
+                            <th width= "50%">Bank / Institution Address</th>
+                        </tr>
+                         <tr>
+                            <td width= "50%">{!sapRecord.Account_No_1__c}</td>
+                            <td width= "50%">{!sapRecord.Bank_Institution_Address_1__c}</td>
+                        </tr>
+                          <tr>
+                            <th width= "50%">Bank / Institution Contact</th>
+                            <th width= "50%">Phone</th>
+                        </tr>
+                         <tr>
+                            <td width= "50%">{!sapRecord.Bank_Institution_Contact_1__c}</td>
+                            <td width= "50%">{!sapRecord.Phone_1__c}</td>
+                        </tr>
+                    </table>
+                    
+                    <!--div style="display:{!if(sapRecord.Bank_Institution_Name_2__c == null, 'none', 'block')}">
+                        <div class="detailHeader">Bank Reference 2</div>
+                        <table border="1px solid black" style="border-collapse:collapse;margin-top:20px;" cellpadding="5" cellspacing="4" width="100%">
+                        <tr>
+                            <th width= "50%">Bank / Institution Name</th>
+                            <th width= "50%">Type of Account</th>
+                        </tr>
+                         <tr>
+                            <td width= "50%">{!sapRecord.Bank_Institution_Name_2__c}</td>
+                            <td width= "50%">{!sapRecord.Type_of_Account_2__c}</td>
+                        </tr>
+                         <tr>
+                            <th width= "50%">Account No.</th>
+                            <th width= "50%">Bank / Institution Address</th>
+                        </tr>
+                         <tr>
+                            <td width= "50%">{!sapRecord.Account_No_2__c}</td>
+                            <td width= "50%">{!sapRecord.Bank_Institution_Address_2__c}</td>
+                        </tr>
+                          <tr>
+                            <th width= "50%">Bank / Institution Contact</th>
+                            <th width= "50%">Phone</th>
+                        </tr>
+                         <tr>
+                            <td width= "50%">{!sapRecord.Bank_Institution_Contact_2__c}</td>
+                            <td width= "50%">{!sapRecord.Phone_2__c}</td>
+                        </tr>
+                    </table>
+                    </div>
+                    <div style="display:{!if(sapRecord.Bank_Institution_Name_3__c == null, 'none', 'block')}">
+                      <div class="detailHeader">Bank Reference 3</div>
+                        <table border="1px solid black" style="border-collapse:collapse;margin-top:20px;" cellpadding="5" cellspacing="4" width="100%">
+                        <tr>
+                            <th width= "50%">Bank / Institution Name</th>
+                            <th width= "50%">Type of Account</th>
+                        </tr>
+                         <tr>
+                            <td width= "50%">{!sapRecord.Bank_Institution_Name_3__c}</td>
+                            <td width= "50%">{!sapRecord.Type_of_Account_3__c}</td>
+                        </tr>
+                         <tr>
+                            <th width= "50%">Account No.</th>
+                            <th width= "50%">Bank / Institution Address</th>
+                        </tr>
+                         <tr>
+                            <td width= "50%">{!sapRecord.Account_No_3__c}</td>
+                            <td width= "50%">{!sapRecord.Bank_Institution_Address_3__c}</td>
+                        </tr>
+                          <tr>
+                            <th width= "50%">Bank / Institution Contact</th>
+                            <th width= "50%">Phone</th>
+                        </tr>
+                         <tr>
+                            <td width= "50%">{!sapRecord.Bank_Institution_Contact_3__c}</td>
+                            <td width= "50%">{!sapRecord.Phone_3__c}</td>
+                        </tr>
+                    </table>
+                    </div-->
+                </div>
+                
+                <div class="detailHeader">
+                    <b>Trade References</b>
+                </div>
+                <div id="content-details" style="display:{!if(tradeRefFiles.size > 0, 'block', 'none')}">
+                    <span>
+                        Your customer has attached references instead of filling in the online fields. Please go to Customer Setup Form to download the Trade References attachment(s).
+                    </span>
+                    <br/>
+                    <br/>
+                    <apex:repeat value="{!tradeRefFiles}" var="f" >
+                       <table border="1px solid black" style="border-collapse:collapse;margin-top:20px;" cellpadding="5" cellspacing="4" width="100%">
+                            <tr>
+                                <td >File : {!f.Name}</td>
+                            </tr>
+                        </table>
+                    </apex:repeat>
+                </div>
+                <div style="display:{!if(tradeRefFiles.size > 0, 'none', 'block')}">
+                    <div class="detailHeader">Trade Reference 1</div>
+                    <table border="1px solid black" style="border-collapse:collapse;margin-top:20px;" cellpadding="5" cellspacing="4" width="100%">
+                        <tr>
+                            <th width= "50%">Company Name</th>
+                            <th width= "50%">Address</th>
+                        </tr>
+                         <tr>
+                            <td width= "50%">{!sapRecord.Company_Name_1__c}</td>
+                            <td width= "50%">{!sapRecord.Address_1__c}</td>
+                        </tr>
+                         <tr>
+                            <th width= "50%">Account No.</th>
+                            <th width= "50%">Trade Phone</th>
+                        </tr>
+                         <tr>
+                            <td width= "50%">{!sapRecord.Account_No_1__c}</td>
+                            <td width= "50%">{!sapRecord.Trade_Phone_1__c}</td>
+                        </tr>
+                          <tr>
+                            <th width= "50%">Account Opened Since</th>
+                            <th width= "50%"></th>
+                        </tr>
+                         <tr>
+                            <td width= "50%">{!sapRecord.Account_Opened_Since_1__c}</td>
+                            <td width= "50%"></td>
+                        </tr>
+                    </table>
+                     <div class="detailHeader">Trade Reference 2</div>
+                    <table border="1px solid black" style="border-collapse:collapse;margin-top:20px;" cellpadding="5" cellspacing="4" width="100%">
+                        <tr>
+                            <th width= "50%">Company Name</th>
+                            <th width= "50%">Address</th>
+                        </tr>
+                         <tr>
+                            <td width= "50%">{!sapRecord.Company_Name_2__c}</td>
+                            <td width= "50%">{!sapRecord.Address_2__c}</td>
+                        </tr>
+                         <tr>
+                            <th width= "50%">Account No.</th>
+                            <th width= "50%">Trade Phone</th>
+                        </tr>
+                         <tr>
+                            <td width= "50%">{!sapRecord.Account_No_2__c}</td>
+                            <td width= "50%">{!sapRecord.Trade_Phone_2__c}</td>
+                        </tr>
+                          <tr>
+                            <th width= "50%">Account Opened Since</th>
+                            <th width= "50%"></th>
+                        </tr>
+                         <tr>
+                            <td width= "50%">{!sapRecord.Account_Opened_Since_2__c}</td>
+                            <td width= "50%"></td>
+                        </tr>
+                    </table>
+                     <div class="detailHeader">Trade Reference 3</div>
+                    <table border="1px solid black" style="border-collapse:collapse;margin-top:20px;" cellpadding="5" cellspacing="4" width="100%">
+                        <tr>
+                            <th width= "50%">Company Name</th>
+                            <th width= "50%">Address</th>
+                        </tr>
+                         <tr>
+                            <td width= "50%">{!sapRecord.Company_Name_3__c}</td>
+                            <td width= "50%">{!sapRecord.Address_3__c}</td>
+                        </tr>
+                         <tr>
+                            <th width= "50%">Account No.</th>
+                            <th width= "50%">Trade Phone</th>
+                        </tr>
+                         <tr>
+                            <td width= "50%">{!sapRecord.Account_No_3__c}</td>
+                            <td width= "50%">{!sapRecord.Trade_Phone_3__c}</td>
+                        </tr>
+                          <tr>
+                            <th width= "50%">Account Opened Since</th>
+                            <th width= "50%"></th>
+                        </tr>
+                         <tr>
+                            <td width= "50%">{!sapRecord.Account_Opened_Since_3__c}</td>
+                            <td width= "50%"></td>
+                        </tr>
+                    </table>
+                  
+                    <div id="content-details-child">
+                        <span>
+                            Your customer has attached Financial Statements. Please go to Customer Setup Form to download the Financial Statements attachment(s).
+                        </span>
+                    </div>
+                </div>
+                
+                <div style="page-break-before:always;">
+                    <div style="text-align:center;font-size:20px;font-weight:bold;">
+                        PRODUCT(S) INFORMATION
+                    </div>
+                    <apex:variable value="{!0}" var="rowNum"/>
+                    <table style="width:100%;">
+                        <apex:repeat value="{!prodList}" var="prod">
+                            <apex:variable var="rowNum" value="{!rowNum + 1}"/>
+                            <tr>
+                                <td>
+                                    
+                                    <div class="detailHeader">
+                                        Product {!rowNum}
+                                    </div>
+                                    <table border="1px solid black" style="border-collapse:collapse;margin-top:20px;" cellpadding="5" cellspacing="4" width="100%">
+                                        <tr>
+                                            <th width= "50%">Product Name</th>
+                                            <th width= "50%">Business Unit</th>
+                                        </tr>
+                                        <tr>
+                                            <td width= "50%">{!prod.Purchased_Product__r.Product_R1__r.Name}</td>
+                                            <td width= "50%">{!prod.Purchased_Product__r.Product_R1__r.Business_Group__c}</td>
+                                        </tr>
+                                        <tr>
+                                            <th width= "50%">Ship Mode</th>
+                                            <th width= "50%">Volume Period</th>
+                                        </tr>
+                                        <tr>
+                                            <td width= "50%">{!prod.New_Customer_Ship_Mode__c}</td>
+                                            <td width= "50%">{!prod.Volume_Period__c}</td>
+                                        </tr>
+                                        <tr>
+                                            <th width= "50%">Estimated Volume</th>
+                                            <th width= "50%"></th>
+                                        </tr>
+                                        <tr>
+                                            <td width= "50%">{!prod.Volume_Period__c}</td>
+                                            <td width= "50%"></td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                        </apex:repeat>
+                    </table>
+                </div>
+            </div>
+        </body>
+    </html>
+</apex:page>

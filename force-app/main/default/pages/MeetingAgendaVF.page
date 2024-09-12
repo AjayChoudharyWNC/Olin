@@ -1,0 +1,152 @@
+<apex:page standardController="Meeting_Agenda__c" extensions="MeetingAgendaVFController" title="Meeting Agenda PDF" applyBodyTag="false" applyHtmlTag="false" contenttype="application/pdf#{!pdfFileName}.pdf" showHeader="false" sidebar="false" standardStylesheets="false"  renderAs="pdf">
+    <head>
+        <title>Meeting Agenda PDF</title>
+        <style>
+            .leadTable{
+                margin: 0px !important;
+                }  
+                @page {size:12in 12in;
+                padding:0px;
+                margin-bottom: 90px;
+                margin-top:80px;
+                @top-left {
+                content: element(header);
+                
+                }                           
+                @bottom-left {   
+                content: element(footer);
+                } 
+                }  
+                div.header {
+                margin-top:0px;
+                padding-bottom: 10px;
+                position: running(header);
+                width: 1140px;
+                margin-right: 0px;
+                margin-left: -35px;
+                }
+                #rich1 .sfdc_richtext img {
+                width:300px !important;
+                height: 80px !important;
+                }
+                div.footer {      
+                position: running(footer);
+                width: 1140px;
+                margin-left: -48px;
+                }
+                table{-fs-table-paginate: paginate;}
+                .pagenumber:before {
+                content: counter(page);
+                }
+        </style>
+    </head>
+    <body style="font-family:SansSerif !important;margin-left:0px;margin-right:0px;">
+        <div class="header">
+            <apex:image url="{!$Resource.Account_Plan_PDF_Header}" width="100%" height="100%" />
+            <div style="font-family: Arial Unicode MS; font-size: 15pt; color:white; position:absolute;margin-top:-40px;margin-left:300px;">
+                {!accPlan.Account__r.Name} | {!meAgendaRecords.Name} | <span style="font-size: 12pt;">{!accPlanCreDate}</span>
+            </div>
+        </div>        
+            <div class="footer" style="background-color:#F2F4F4; color:#B2BABB;  padding: 9px; padding-left: 30px; font-family: Arial Unicode MS; font-size: 11pt;">
+                <span>For Internal Use Only</span>
+                <span style="margin-left: 200px;" >&copy; 2018 Olin Corporation. All rights reserved.</span>
+                <span style="margin-left: 250px;">Page <span class="pagenumber"/> </span>
+            </div>
+        <div class="leadTable">
+            <div>
+                <table  Style=" width:100%;  border: 1px solid #696969; background-color:#696969">
+                    <tr>
+                        <td style="color:white; padding: 3px; padding-left: 20px; font-family: Arial Unicode MS; font-size: 12pt; " colspan="2">Account Details</td>
+                    </tr>
+                </table>
+                <table  style="width:100%;  border: 1px solid #D3D3D3;">
+                    <tr>
+                        <td style="color: #808080; padding: 10px; padding-top: 20px; padding-left: 20px; padding-bottom: 20px; font-family: Arial Unicode MS; font-size: 12pt; width:50%;">
+                                Account Name : {!accPlan.Account__r.Name}<br/>
+                                Address : {!accPlan.Account__r.BillingStreet}<br/> 
+                                            <span style="margin-left: 73px;"> {!accPlan.Account__r.BillingCity}, {!accPlan.Account__r.BillingState} </span><br/> 
+                                            <span style="margin-left: 73px;">{!accPlan.Account__r.BillingCountry}</span><br/>
+                                Olin Account Number : {!accPlan.Account__r.AccountNumber_R1__c}<br/>
+                                Planning Year : {!accPlan.Planning_Year__c}<br/>
+                                Account Plan Owner : {!accPlan.Owner.Name}<br/>
+                            </td>
+                        <td style="width:50%; padding: 15px;"  id="rich1"><apex:outputField value="{!accPlan.Logo__c}" styleClass="" /><br/><br/><br/><br/><br/><br/><br/><br/>
+                        </td> 
+                    </tr> 
+                </table>
+            </div>
+        <apex:outputPanel rendered="{!if(accPlan.Executive_Summary__c != null,True,False)}"><br/></apex:outputPanel>
+            <apex:outputPanel rendered="{!if(accPlan.Executive_Summary__c != null,True,False)}"> 
+                <table  Style="width:100%;">
+                    <tr >
+                        <td style="background-color:#696969; color:white; padding: 5px; padding-left: 20px; font-family: Arial Unicode MS; font-size: 12pt;">Executive Summary</td>
+                    </tr>
+                    <tr>
+                        <td style="color: #808080;"> 
+                            
+                            <div style="padding: 10px; padding-top: 10px; padding-left: 20px;  font-family:Arial Unicode MS; font-size: 12pt; ">
+                            <apex:outputField value="{!accPlan.Executive_Summary__c}"/> <br/> 
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </apex:outputPanel> 
+            <apex:outputPanel rendered="{!if(accPlan.Account_Strategies_Goals__c != null,True,False)}"><br/></apex:outputPanel>
+                <apex:outputPanel rendered="{!if(accPlan.Account_Strategies_Goals__c != null,True,False)}">
+                    <table  Style="width:100%;">
+                        <tr >
+                            <td style="background-color:#696969; color:white; padding: 5px; padding-left: 20px; font-family: Arial Unicode MS; font-size: 12pt;">Account Strategies &amp; Goals</td>
+                        </tr>
+                        <tr style="border-bottom:1pt solid black;">
+                            <td style="color: #666666;">
+                                <div style="padding: 10px; padding-top: 10px; padding-left: 20px; font-family: Arial Unicode MS; font-size: 12pt;">
+                                    <apex:outputField value="{!accPlan.Account_Strategies_Goals__c}"/>
+                                </div>
+                            </td>
+                        </tr>
+                    </table><br/>
+                </apex:outputPanel>
+            <apex:outputPanel >
+                <table  Style="width:100%;">
+                    <tr >
+                        <td style="background-color:#696969; color:white; padding: 5px; padding-left: 20px; font-family: Arial Unicode MS; font-size: 12pt;">Meeting Agenda</td>
+                    </tr>
+                    <tr>
+                        <td style="color: #808080; padding: 10px; padding-top: 10px; padding-left: 20px; padding-bottom: 20px; font-family: Arial Unicode MS; font-size: 12pt; width:50%;"> 
+                            Type : {!meAgendaRecords.Type__c}<br/>
+                            <!--Meeting Date : {!meetingAgendaDate}<br/><br/>-->
+                            Meeting Date :&nbsp;<apex:outputText value="{0,date,MMMM dd, yyyy}"> <apex:param value="{!meAgendaRecords.Meeting_Date__c}" /> </apex:outputText><br/>
+                            Meeting Location : {!meAgendaRecords.Meeting_Location__c}<br/>
+                            Topics to Discuss : <br/>{!meAgendaRecords.Topics_to_Discuss__c}<br/>
+                            Topics to Avoid : <br/>{!meAgendaRecords.Topics_to_Avoid__c}<br/> 
+                        </td>
+                    </tr>
+                </table>
+            </apex:outputPanel>
+            <apex:outputPanel >
+                <table  Style="width:100%;">
+                    <tr >
+                        <td style="background-color:#696969; color:white; padding: 5px; padding-left: 20px; font-family: Arial Unicode MS; font-size: 12pt;">Meeting Attendees</td>
+                    </tr>
+                    <tr>
+                        <td style="color: #808080; padding: 10px; padding-top: 20px; padding-left: 20px; padding-bottom: 20px; font-family: Arial Unicode MS; font-size: 12pt; width:50%;"> 
+                            <apex:outputField value="{!meAgendaRecords.Meeting_Attendees__c}"/><br/>
+                        </td>
+                    </tr>
+                </table>
+            </apex:outputPanel>
+            <apex:outputPanel >
+                <table  Style="width:100%;">
+                    <tr >
+                        <td style="background-color:#696969; color:white; padding: 5px; padding-left: 20px; font-family: Arial Unicode MS; font-size: 12pt;">Sales Data</td>
+                    </tr>
+                    <tr>
+                        <td style="color: #808080; padding: 10px; padding-top: 20px; padding-left: 20px; padding-bottom: 20px; font-family: Arial Unicode MS; font-size: 12pt; width:50%;"> 
+                            <apex:outputField value="{!meAgendaRecords.Sales_Data__c}"/><br/> 
+                        </td>
+                    </tr>
+                </table>
+            </apex:outputPanel>
+        </div>
+    </body>
+</apex:page>

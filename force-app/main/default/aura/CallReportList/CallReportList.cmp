@@ -1,0 +1,151 @@
+<!--
+    Component Name      :       CallReportList.cmp
+    Class Name 			: 		CallReportList.cls
+    Description         :       Component to display Call Report records
+-->  
+<aura:component controller="CallReportList" implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome" access="global">   
+    <aura:attribute name="displayText" type="String"/>
+    <aura:attribute name="myCallReports" type="List"/>
+    <aura:attribute name="myCallReportsPaginated" type="List"/>
+    <aura:attribute name="myTeamCallReports" type="List"/>
+    <aura:attribute name="myAccChecked" type="boolean" default="true"/>
+    <aura:attribute name="totalPages" type="Integer"/>
+    
+    <!--================PAGINATION Attributes======================-->
+    <aura:attribute type="Integer" name="pageNumber" default="1" />
+    <aura:attribute type="Integer" name="pageSize" default="10" />
+    <aura:handler name="change" value="{!v.pageNumber}" action="{!c.renderList}" />
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    
+    <!--================Interval Edit======================-->
+    <aura:attribute name="editMode" type="String" default="123"/>
+    <aura:attribute name="savebtn" type="boolean" default="false"/>
+    
+    <div class="slds">
+        <div class="slds-card">
+            <div class="slds-card__header slds-grid">
+                <header class="slds-media slds-media_center slds-has-flexi-truncate">
+                    <div class="slds-media__body slds-grid slds-wrap">
+                        <div class="slds-col">
+                            <span class="slds-text-heading_medium" style="margin-left:10px;float: left;font-size: 1.1rem;font-weight: bold;">{!v.displayText}</span>
+                            <div style="position: relative;float:left;">
+                                <div class="slds-form-element">
+                                    <div class="slds-form-element__icon slds-align-middle">
+                                        <lightning:buttonIcon iconName="utility:info" alternativeText="Click to show/hide the tooltip." size="large" class="slds-m-left_small" variant="bare" onclick="{!c.showToolTip}" onblur="{!c.hideToolTip}"/>
+                                    </div>
+                                </div>
+                                <div class="slds-popover slds-popover_tooltip slds-nubbin_bottom-left slds-hidden" role="tooltip" id="help" style="position: absolute; top:-40px;width:300px;">
+                                    <div class="slds-popover__body">Assists in prioritizing sales call scheduling</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="slds-col">
+                            <div class="slds-button-group" role="group">
+                                <button class="slds-button blueBtn" onclick="{!c.overdue}">Overdue</button>
+                                <button class="slds-button yellowBtn" onclick="{!c.upcoming}">Next Two Weeks</button>
+                                <button class="slds-button slds-button_success" onclick="{!c.noAction}">Next Four Weeks</button>
+                                <button class="slds-button slds-button_neutral" onclick="{!c.doInit}">Remove Filter</button>
+                            </div>
+                        </div>
+                    </div>
+                </header>
+                <div class="slds-no-flex">
+                    <div class="slds-dropdown-trigger slds-dropdown-trigger_click ToggleDivCSS">
+                        <lightning:buttonMenu alternativeText="Toggle menu" onselect="{!c.handleMenuSelect}" iconName="utility:filter" variant="bare-inverse" menuAlignment="right">
+                            <lightning:menuItem label="My Accounts" value="MyList" title="My Accounts" checked="{!v.myAccChecked}"/>
+                            <lightning:menuItem label="My Team's Accounts" value="TeamList" title="My Team's Accounts" checked="{!!v.myAccChecked}"/>
+                        </lightning:buttonMenu>					
+                    </div>
+                </div>
+            </div>
+            <div class="slds-card__body slds-card__body_inner slds-grid slds-wrap slds-size--1-of-1">
+                <table class="slds-table">
+                    <thead>
+                        <tr class="slds-text-title_caps headerBackground">
+                            <th scope="col">
+                                <div class="slds-truncate slds-cell-wrap" title="Account">Account</div>
+                            </th>
+                            <th scope="col" class="slds-cell-wrap">
+                                <div class="slds-truncate slds-cell-wrap" title="City">City</div>
+                            </th>
+                            <th scope="col">
+                                <div class="slds-truncate slds-cell-wrap" title="Account Number">Account Number</div>
+                            </th>
+                            <th scope="col">
+                                <div class="slds-truncate slds-cell-wrap" title="Status" style="width: 120px;">Status</div>
+                            </th>
+                            <th scope="col">
+                                <div class="slds-truncate slds-cell-wrap" title="Last Visit Report">Last Call Report</div>
+                            </th>
+                            <th scope="col" style="padding: 0.1px;">
+                                <div class="slds-truncate" title="Interval">Interval</div>
+                            </th>
+                            <th scope="col">
+                                <div class="slds-truncate slds-cell-wrap" title="Interval">Last Call Report By</div>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <aura:if isTrue="{!v.myCallReportsPaginated.length > 0}">
+                            <aura:iteration items="{!v.myCallReportsPaginated}" var="acc">
+                                <tr>
+                                    <th scope="row" data-label="Name">
+                                        <div class="slds-truncate slds-cell-wrap" title="{!acc.Name}">
+                                            <a href="{!'/'+acc.Id}" target="_blank">{!acc.Name}</a>
+                                        </div>
+                                    </th> 
+                                    <td data-label="City" class="slds-cell-wrap">
+                                        <div class="slds-truncate slds-cell-wrap" style="max-width: 85%;">
+                                            {!acc.BillingCity}
+                                        </div>
+                                    </td>
+                                    <td data-label="AccountNumber">
+                                        <div class="slds-truncate slds-cell-wrap" title="{!acc.AccountNumber_R1__c}" style="max-width: 85%;">{!acc.AccountNumber_R1__c}</div>
+                                    </td>
+                                    <td data-label="Status">
+                                        <div class="slds-truncate slds-cell-wrap" title="{!acc.Interval_Status__c}">
+                                            <span class="BodyDataFontCSS">
+                                                <aura:unescapedHtml value="{!acc.Interval_Status__c}"/>
+                                            </span>
+                                        </div>
+                                    </td>
+                                    <td data-label="LastVisitReport">	
+                                        <div class="slds-truncate slds-cell-wrap" title="{!acc.MostRecentCallReport_R1__c}">
+                                            <span><ui:outputDate value="{!acc.MostRecentCallReport_R1__c}" format="{!$Locale.dateFormat}"/></span>
+                                        </div>	
+                                    </td>
+                                    <td data-label="Interval">
+                                        <aura:if isTrue="{!v.editMode == acc.Id}">
+                                            <input type="text" class="slds-input" size="5" value="{!acc.Interval_Days__c}" onchange="{!c.valueEdit}"/>
+                                            <aura:set attribute="else">
+                                                <div class="slds-truncate" title="{!acc.Interval_Days__c}" style="position:absolute;">{!acc.Interval_Days__c}</div>
+                                                <div class="slds-truncate" title="Edit"  id="{!acc.Id}" onclick="{!c.intervalEdit}" style="cursor:pointer;">
+                                                    <lightning:icon iconName="utility:edit" size="xx-small" alternativeText="edit"  style="float:right;"/>
+                                                </div>
+                                            </aura:set>
+                                        </aura:if>
+                                    </td>
+                                    <td data-label="Interval">
+                                        <div class="slds-truncate slds-cell-wrap" title="{!acc.Last_Call_Report_Owner__r.Name}">
+                                            <a href="{!'/'+acc.Last_Call_Report_Owner__c}" target="_blank">{!acc.Last_Call_Report_Owner__r.Name}</a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </aura:iteration>
+                            <aura:set attribute="else">
+                                <div class="slds-text-align_center">There are no accounts in this view.</div>
+                            </aura:set>
+                        </aura:if>
+                    </tbody>
+                </table>
+            </div>
+            <footer class="slds-card__footer">
+                <c:Pagination currentPageNumber="{!v.pageNumber}" maxPageNumber="{!v.totalPages}" />
+                <aura:if isTrue="{!v.savebtn}">
+                    <lightning:button class="slds-float_right" variant="brand" label="Save" title="Save" onclick="{!c.saveRecord}" />
+                    <lightning:button class="slds-float_right"  label="Cancel" title="Cancel" onclick="{!c.intervalEditCancel}" />
+                </aura:if>
+            </footer>
+        </div>
+    </div>	
+</aura:component>

@@ -1,0 +1,145 @@
+<aura:component >
+    <aura:attribute name="showVideo" type="Boolean"/>
+    <aura:attribute name="showInstruction" type="Boolean"/>
+    <aura:attribute name="sapNo" type="String"/>
+    <aura:attribute name="node" type="String"/>
+    <aura:attribute name="allSectionCompleted" type="boolean"/>
+    <aura:attribute name="selectedPageLanguage" type="String"/>
+    <aura:attribute name="languageLabelMap" type="Object"/>
+    <div class="slds-grid slds-wrap " style="height:100%;">
+        <div class="body slds-col slds-large-size_10-of-12 slds-small-size_12-of-12" style="width:100%;" >
+            <div class="slds-box slds-grid slds-wrap" style="padding:2rem;padding-top:0;">
+                <div class="slds-col slds-size_12-of-12">
+                    <div class=" slds-grid slds-wrap ">
+                        <div class="slds-col slds-size_12-of-12 slds-text-align_left slds-grid slds-wrap slds-m-bottom_small" id="headerDiv" style="font-size:24px;">
+                            <!--div class="slds-large-size_3-of-12 slds-medium-size_6-of-12 slds-small-size_12-of-12 helpBtns">
+                                <button type="button" class="slds-button slds-button_inverse helpButton" style="width:118px !important;" onclick="{!c.instructClick}">
+                                    <span class="buttonImg">
+                                        <img src="{!$Resource.SapPdfIcon}" style="width:20%;heigth:6%;"/>
+                                        Instruction
+                                    </span>
+                                </button>
+                                <button type="button" class="slds-button slds-button_inverse helpButton" onclick="{!c.videoClick}">
+                                    <span class="buttonImg">
+                                        <img src="{!$Resource.SapVideoIcon}" style="width:32%;heigth:6%;"/>
+                                        Video
+                                    </span>
+                                </button>
+                            </div-->
+                        </div>
+                        <!--div class="slds-col slds-size_12-of-12 slds-align_absolute-center slds-text-align_center slds-m-top_small">
+                            <img src="{!$Resource.OnboardingHomeLogo}" width="60%" id="homePageImg" class="homePageImg"/>
+                        </div-->
+                        
+                      
+                        <aura:if isTrue="{!and(v.allSectionCompleted, v.node != 'Instructions')}">
+                            <div class="slds-col slds-size_12-of-12 slds-align_absolute-center slds-text-align_center slds-p-top_large slds-p-bottom_large" style="color:#cb2026;font-size:1.2rem;">
+                                <b>{!v.languageLabelMap.HP_56}</b>
+                            </div>
+                        </aura:if>
+                        <div class="slds-col slds-size_12-of-12 slds-align_absolute-center slds-text-align_center slds-m-bottom_medium instruction" style="{!if(v.node != 'Instructions', 'color:#2596be;font-size: 48px;background-image:url('+$Resource.Onboarding_Home_Logo+');height:300px;position:relative;background-size:cover;background-position: center;', 'height:260px;')}">
+                            <aura:if isTrue="{!v.node == 'Instructions'}">
+                                <b>
+                                    <img src="https://www.olin.com/wp-content/uploads/olin-logo.png" class="olinLogo"/>
+                                    <span style="font-size:3rem;color:grey;font-weight:bold;" class="mainHeader">&nbsp;|&nbsp;{!v.languageLabelMap.HP_54}</span>
+                                </b>
+                                <aura:set attribute="else">
+                                    <b style="position:absolute;bottom:0;">{!v.languageLabelMap.HP_54}: {!v.sapNo}</b>
+                                </aura:set>
+                            </aura:if>
+                        </div>
+                        <div class="slds-col slds-size_1-of-12"></div>
+                        <div style="color:black !important;text-align:justify;font-size:16px;font-weight:bold;" class="text homeText slds-col slds-size_10-of-12 slds-text-align_left slds-m-top_medium slds-align_absolute-center slds-p-left_xx-large slds-p-right_xx-large slds-m-left_medium slds-m-right_medium">
+                            
+                            
+                            <aura:if isTrue="{!v.node != 'Instructions'}">
+                                {!v.languageLabelMap.HP_13}<br/>
+                                {!v.languageLabelMap.HP_14}
+                                <aura:set attribute="else">
+                                    <span id="HP_2">{!v.languageLabelMap.HP_2}</span>
+                                </aura:set>
+                            </aura:if>
+                        </div>
+                        <div class="slds-col slds-size_1-of-12"></div>
+                        <br/>
+                        <!--div class="slds-col slds-size_12-of-12 slds-text-align_center slds-var-p-horizontal_xx-large" style="font-size:16px;font-weight:bold;">
+                            <a href="https://www.olin.com/privacy/customerprivacy-2/" target="_blank"><u>Click here for information on how Olin processes End User customer data</u></a><br/><br/>
+                        </div-->
+                        <aura:if isTrue="{!v.node == 'Instructions'}">
+                            <div class="slds-col slds-grid slds-size_12-of-12 slds-m-top_x-large slds-wrap">
+                                <div class="slds-size_12-of-12 slds-p-left_small slds-p-right_small slds-text-align_center" style="font-size:1.5rem;color:black;"><b>{!v.languageLabelMap.HP_1}</b></div>
+                                <div class="slds-size_12-of-12 slds-p-left_small slds-p-right_small slds-m-top_large slds-text-align_center" style="height:600px;">
+                                    <a href="{!(v.selectedPageLanguage == 'French' ? $Resource.CustomerSetupPdf_French : $Resource.CustomerSetupPdf)}" target="_blank" style="font-size:1.5rem;font-weight:bold;">{!v.languageLabelMap.CI_138}.</a>
+                                   <!--iframe src="{!$Resource.CustomerSetupPdf}" style="width:100%;height:100%"/-->
+                                </div>
+                                <!--div class="slds-large-size_3-of-12 slds-small-size_0-of-12 slds-medium-size_3-of-12"></div>
+                                <div class="slds-large-size_4-of-12 slds-small-size_12-of-12 slds-medium-size_4-of-12 slds-grid slds-gridvertical slds-align_absolute-center helpButtons" onclick="{!c.instructClick}">
+                                    <lightning:icon iconName="doctype:pdf" size="large"/>
+                                    <b>{!v.languageLabelMap.HP_1}</b>
+                                </div>
+                                <div class="slds-large-size_2-of-12 slds-small-size_0-of-12 slds-medium-size_1-of-12"></div>
+                                <div class="slds-large-size_4-of-12 slds-small-size_12-of-12 slds-medium-size_4-of-12 slds-grid slds-gridvertical slds-align_absolute-center helpButtons" onclick="{!c.videoClick}">
+                                    <lightning:icon iconName="utility:play" size="large"/>
+                                    <b>{!v.languageLabelMap.HP_57}</b>
+                                </div-->
+                            </div>
+                            <!--div class="slds-col slds-grid slds-size_12-of-12">
+                                <div class="slds-size_1-of-12"></div>
+                                <div class="slds-size_4-of-12" style="color:black;">
+                                    Please download this PDF for a walkthrough of how to complete this form.
+                                </div>
+                                <div class="slds-size_2-of-12"></div>
+                                <div class="slds-size_4-of-12" style="color:black;">
+                                    Please watch this video to watch a walkthrough process of how to complete this form.
+                                </div>
+                            </div-->
+                        </aura:if>
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+    
+    <aura:if isTrue="{!v.showVideo}">
+        <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+            <div class="slds-modal__container" style="width: 70%;max-width: 70vw;">
+                <header class="slds-modal__header">
+                    <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close" onclick="{!c.cancel}">X
+                        <span class="slds-assistive-text">{!v.languageLabelMap.PS_43}</span>
+                    </button>
+                    <h2 id="modal-heading-01" class="slds-modal__title slds-hyphenate">{!v.languageLabelMap.HP_57}</h2>
+                </header>
+                <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                    <iframe style="width:65vw;height:50vh" src="https://player.cnbc.com/p/gZWlPC/cnbc_global?playertype=synd&amp;byGuid=3000365861" frameborder="0" scrolling="no" allowfullscreen="true" webkitallowfullscreen="true"
+                            mozallowfullscreen="true" oallowfullscreen="true" msallowfullscreen="true">
+                    </iframe>
+                </div>
+                <footer class="slds-modal__footer">
+                    <button class="slds-button slds-button_neutral" onclick="{!c.cancel}">{!v.languageLabelMap.PS_41}</button>
+                </footer>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </aura:if>
+    
+    <aura:if isTrue="{!v.showInstruction}">
+        <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+            <div class="slds-modal__container" style="width: 70%;max-width: 70vw;">
+                <header class="slds-modal__header">
+                    <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close" onclick="{!c.cancel}">X
+                        <span class="slds-assistive-text">{!v.languageLabelMap.PS_43}</span>
+                    </button>
+                    <h2 id="modal-heading-01" class="slds-modal__title slds-hyphenate">{!v.languageLabelMap.HP_1}</h2>
+                </header>
+                <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1" style="height:800px;">
+                    <iframe src="{!$Resource.CustomerSetupPdf}" style="width:100%;height:100%"/>
+                </div>
+                <footer class="slds-modal__footer">
+                    <button class="slds-button slds-button_neutral" onclick="{!c.cancel}">{!v.languageLabelMap.PS_41}</button>
+                </footer>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </aura:if>
+</aura:component>

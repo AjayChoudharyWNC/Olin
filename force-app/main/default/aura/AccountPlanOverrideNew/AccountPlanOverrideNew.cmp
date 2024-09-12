@@ -1,0 +1,45 @@
+<aura:component implements="lightning:actionOverride,force:hasSObjectName,force:LightningQuickAction,flexipage:availableForAllPageTypes,force:hasRecordId" access="global" controller="AccountPlanController" >
+    <aura:handler name="init" value="this" action="{!c.doInit}"/>
+    <aura:attribute name="isSelectAll" type="boolean" default="false"/>
+    <aura:attribute name="parentRecordId" type="String" />
+    <aura:attribute name="SoldToWrapList" type="Object" access="global"/>
+    
+    <div class="slds-modal__container" style="width: 80%; max-width: 63rem; text-align: center;">
+        <div class="slds-modal__header">
+            <h2 class="slds-text-heading--medium">Select Sold To Accounts</h2>
+            <!--<lightning:input type="checkbox"  label="Select all" value="{!v.isAllSelected}"  onchange="{!c.onSelect}"/>-->
+            <ui:inputCheckbox value="{!v.isSelectAll}" change="{!c.handleSelectAllContact}" aura:id="selectAll" label="Select All" labelClass="slds-p-horizontal--small slds-float--left"/>
+            
+        </div>
+        <div class="slds-modal__content slds-p-around--medium slds-grid slds-wrap ">
+            <div class="slds-grid slds-wrap" style="width:100%;">
+                <aura:iteration items="{!v.SoldToWrapList}" var="accs2" >
+                    <div class="slds-col slds-size_1-of-2">
+                        <div class="slds-grid slds-wrap" style="width:100%; margin-top: 20px;">
+                            <div class="slds-col slds-size_1-of-12" style="text-align: right;">
+                                <lightning:input type="checkbox" name="input1" variant="label-hidden" value="{!accs2.acc.Id}"  aura:id="accCheck"/>
+                                <!--  <ui:inputCheckbox aura:id="accCheck" value="{!accs2.acc.Id}" text="{!accs2.acc.Id}"/>-->
+                            </div> 
+                            <div class="slds-col slds-size_4-of-12">
+                                {!accs2.acc.Name}   |
+                            </div>
+                            <div class="slds-col slds-size_7-of-12" style="text-align: left;">
+                                {!accs2.acc.BillingCity} 
+                                <aura:if isTrue="{!if(accs2.acc.BillingCity != null,True,False)}">/</aura:if>
+                                {!accs2.acc.BillingState} 
+                                <aura:if isTrue="{!if(accs2.acc.BillingState != null,True,False)}">/</aura:if>
+                                {!accs2.acc.BillingCountry}<br/>Account # {!accs2.acc.AccountNumber_R1__c}
+                                <br/>Account Owner - {!accs2.acc.Owner.Name}
+                                <br/>Region - {!accs2.acc.Region_R1__c}
+                            </div>
+                        </div>
+                    </div>
+                </aura:iteration> 
+            </div>
+        </div>
+        <div class="slds-modal__footer" >  
+            <lightning:button variant="neutral" label="Cancel" onclick="{!c.onCancel}" />
+            <lightning:button variant="brand" label="Save" onclick="{!c.onSave}" />
+        </div>
+    </div> 
+</aura:component>

@@ -1,0 +1,37 @@
+<aura:component implements="lightning:actionOverride,force:hasSObjectName,force:LightningQuickAction,flexipage:availableForAllPageTypes,force:hasRecordId" controller="NewKeyContactController" access="global">
+    <aura:attribute name="parentRecordId" type="String" />
+    <!--<aura:attribute name="keycontact" type="Key_Contact__c"/>-->
+    <aura:attribute name="disabled" type="Boolean" default="false" />  
+    <aura:attribute name="keycontactname" type="String" default="New Key Contact"  />
+    <aura:handler name="init" value="this" action="{!c.doInit}"/>
+    <lightning:recordEditForm
+                              onload="{!c.handleLoad}"
+                              onsuccess="{!c.handleSuccess}"
+                              objectApiName="Key_Contact__c">
+        <!-- the messages component is for error messages -->
+        <lightning:messages />
+        <div class="slds-modal__container" style="width: 50%; max-width: 50rem; text-align: center;">
+            <div class="slds-modal__header">
+                <h2 class="slds-text-heading--medium">New Key Contact</h2>
+            </div>
+            <div class="slds-modal__content slds-p-around--medium slds-grid slds-wrap">
+                <div class="slds-section slds-is-open" style="width:100%;">
+                    <div class="CreateContact slds-col slds-size_1-of-2">
+                            <div class="slds-p-horizontal--small">
+                                <lightning:inputField fieldName="Name" value="New Key Contact" />
+                                <lightning:inputField fieldName="Account_Plan__c" value="{!v.parentRecordId}" aura:id="accplan"/>
+                                <lightning:inputField fieldName="Key_Contact__c" aura:id="keycon"/>
+                                <lightning:inputField fieldName="Comments__c" aura:id="com"/>
+                            </div>
+                    </div>
+                </div>
+            </div>
+            <div class="slds-modal__footer" >  
+                <lightning:button variant="neutral" label="Cancel" onclick="{!c.onCancel}" />
+                <lightning:button disabled="{!v.disabled}" variant="brand" type="submit" name="save" label="Save" onclick="{!c.onCancel}"/>
+            </div>
+        </div>
+    </lightning:recordEditForm>
+    
+    
+</aura:component>

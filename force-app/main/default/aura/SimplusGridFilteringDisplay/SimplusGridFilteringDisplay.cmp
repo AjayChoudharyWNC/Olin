@@ -1,0 +1,16 @@
+<aura:component >
+    <aura:attribute type="List" name="filterSet" />
+    
+    <div>
+        <aura:iteration items="{!v.filterSet}" var="f" indexVar="i">
+            <aura:if isTrue="{!and(f.isActive, !f.isGlobal)}">
+                <aura:if isTrue="{!i gt 0}">&nbsp;</aura:if>
+                <span class="filterItem">
+                    <b>{!f.filterColumnName}</b>&nbsp;
+                    {!f.filterOperation}&nbsp;
+                    <i>{!f.filterValue}</i>
+                </span>
+            </aura:if>
+        </aura:iteration>
+    </div>
+</aura:component>

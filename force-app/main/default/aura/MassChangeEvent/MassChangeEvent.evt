@@ -1,0 +1,6 @@
+<aura:event type="APPLICATION" description="Event template">
+    <aura:attribute type="String" name="priceChangeBehavior" />
+    <aura:attribute type="Double" name="priceAdjustment" />
+    <aura:attribute type="Date" name="priceStartDate" />
+    <aura:attribute type="Date" name="priceEndDate" />
+</aura:event>

@@ -1,0 +1,32 @@
+<aura:component implements="flexipage:availableForRecordHome,flexipage:availableForAllPageTypes,force:hasRecordId" access="global" controller="SapOnboardingAttachments">
+    <aura:attribute name="recordId" type="String"/>
+    <aura:handler name="init" value="this" action="{!c.doInit}"/>
+                  
+    <article class="slds-card">
+        <div class="slds-card__header slds-grid">
+            <header class="slds-media slds-media--center slds-has-flexi-truncate">
+                <div class="slds-media__figure stencil slds-avatar slds-avatar_small">
+                    <div class="extraSmall forceEntityIcon" style="background-color: #BAAC93" data-aura-class="forceEntityIcon">
+                        <span class="uiImage" data-aura-class="uiImage">
+                            <img src="https://olin--zdev1.my.salesforce.com/img/icon/t4v35/standard/file_120.png" class="icon " alt="Files" title="Files"/>
+                        </span>
+                    </div>
+                </div>
+                <div class="slds-media__body">
+                    <h2 class="slds-card__header-title" id="header_1:702;a">
+                        <a class="slds-card__header-link baseCard__header-title-container" href="/lightning/r/a2y1b00000042hPAAQ/related/AttachedContentDocuments/view?0.source=alohaHeader">
+                            <span class="slds-truncate slds-m-right--xx-small" title="Files">Customer Attachments</span>
+                        </a>
+                    </h2>
+                </div>
+            </header>
+        </div>
+        <div class="slds-card__body slds-card__body_inner">
+            <p class="slds-text-title_caps"><b>Product Specification Documents:</b></p>
+            <c:SapOnboardingAttachmentCard type="Product" recId="{!v.recordId}"/>
+            <div style="margin-top: -20px;"><hr/></div>
+            <p class="slds-text-title_caps" style="margin-top: -20px;"><b>Assessment Documents:</b></p>
+            <c:SapOnboardingAttachmentCard type="Assessment" recId="{!v.recordId}"/>
+        </div>
+    </article>
+</aura:component>

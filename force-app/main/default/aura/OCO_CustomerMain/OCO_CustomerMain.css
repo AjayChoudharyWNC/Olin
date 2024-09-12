@@ -1,0 +1,51 @@
+@media screen and (max-width: 1024px){
+    .THIS .mobileContent{
+        display : flex;
+    }
+    .THIS .pcContent{
+        display : none;
+    }
+}
+.THIS .uiInput .select {
+    width: auto;
+}
+
+.THIS label.uiLabel-left.form-element__label.uiLabel {
+    font-weight: bold;
+}
+@media screen and (min-width: 1025px){
+    .THIS .mobileContent{
+        display : none;
+    }
+    .THIS .pcContent{
+        display : flex;
+    }
+}
+
+.THIS .sidenav {
+    height: 100%; /* 100% Full-height */
+    width: 0; /* 0 width - change this with JavaScript */
+    position: fixed; /* Stay in place */
+    z-index: 1; /* Stay on top */
+    top: 0; /* Stay at the top */
+    left: 0;
+    background-color: #fff; /* Black*/
+    overflow-x: hidden;
+    overflow-y : auto;
+    padding-top: 10px;
+    transition: 0.5s; 
+}
+
+.THIS .sidenav .closebtn {
+    top: 0;
+    right: 25px;
+    font-size: 36px;
+    margin-left: 50px;
+    text-decoration: none;
+    color:black;
+}
+
+@media screen and (max-height: 450px) {
+    .THIS .sidenav {padding-top: 15px;}
+    .THIS .sidenav a {font-size: 18px;}
+}

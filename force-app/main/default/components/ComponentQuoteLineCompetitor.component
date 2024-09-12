@@ -1,0 +1,31 @@
+<apex:component controller="ComponentQuoteLineScaleController" access="global">
+  <apex:attribute name="Qid" type="Id" description="Id of the quoteline" assignTo="{!quotelineId}"/>
+  
+  <apex:outputPanel rendered="{!hasCompetitor}">
+            <table  border = "1" cellspacing = "0">
+                <tr>
+                    <!--<td>PRODUCT NAME</td>-->
+                    <td>COMPETITOR</td>
+                    <!--<td>COMPETITIVE MANUFACTURER</td>-->
+                    <td>COMPETITOR PRODUCT</td>
+                    <td>COMPETITOR PRICE</td>
+                    
+                    
+                    
+                </tr>
+                <apex:repeat value="{!quotelinesCompetitor}" var="ql">
+                    <tr>
+                        <!--<td>{!ql.SBQQ__ProductName__c}</td>-->
+                        <td>{!ql.Competitive_Distributor__r.Name}</td>
+                        <!--<td>{!ql.Competitive_Manufacturer__r.Name}</td>-->
+                        <td>{!ql.Competitor_Product__r.Name}</td>
+                        <td>{!ql.CurrencyIsoCode} {!ql.Competitive_Price__c}</td>
+                        
+                                                
+                    </tr>       
+                </apex:repeat>      
+                
+            </table> 
+    </apex:outputPanel>
+    <br/><br/>
+</apex:component>

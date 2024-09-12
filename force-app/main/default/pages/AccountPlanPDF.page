@@ -1,0 +1,426 @@
+<apex:page standardController="Account_Plan__c" title="Account Plan" extensions="AccountPlanPDFController" applyBodyTag="false" 
+           applyHtmlTag="false" contentType="application/pdf#{!pdfFileName}.pdf" showHeader="false" sidebar="false" standardStylesheets="false"  
+           renderAs="pdf" showQuickActionVfHeader="false" cache="false">
+    <html>
+        <head>
+            <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
+            <title>Account Plan</title>
+            <style type="text/css">
+                .leadTable{margin: 0px !important;}  
+                @page {
+                size: 12in 12in;padding:0px;margin-bottom: 90px;margin-top:80px;
+                @top-left {content: element(header);}                           
+                @bottom-left {content: element(footer);} 
+                }  
+                div.header {
+                margin-top:0px;
+                padding-bottom: 10px;
+                position: running(header);
+                width: 1140px;
+                margin-right: 0px;
+                margin-left: -35px;
+                }
+                div.footer {      
+                position: running(footer);
+                width: 1140px;
+                margin-left: -48px;
+                }
+                table{-fs-table-paginate: paginate;}
+                .pagenumber:before {
+                content: counter(page);
+                }
+                #rich1 .sfdc_richtext img {
+                width:300px !important;
+                height: 80px !important;
+                }
+                .sfdc_richtext img {
+                width: 100% !important;
+                height: 100% !important;
+                }
+                #rich2 .sfdc_richtext img {
+                width: 100% !important;
+                height: 50% !important;
+                } 
+                #rich3 .sfdc_richtext img {
+                width: 80% !important;
+                height: 80% !important;
+                } 
+                .slds-modal__container{
+                max-width: 100rem !important;
+                width:80% !important;
+                }
+            </style>
+            
+        </head>
+        <body style="font-family:SansSerif !important;margin-left:0px;margin-right:0px; ">
+            <div class="header" >
+                <apex:image url="{!$Resource.Account_Plan_PDF_Header}" width="100%" height="100%" /><div  style="font-family: Arial Unicode MS; float:right; font-size: 15pt; color:white; position:absolute;  margin-top:4px; margin-left:300px; margin-right:15px;">{!accPlan.Name} | <span style="font-size: 12pt;">{!accPlanCreDate}</span></div>
+            </div>        
+            <div class="footer" style="background-color:#F2F4F4; color:#B2BABB;  padding: 9px; padding-left: 30px; font-family: Arial Unicode MS; font-size: 11pt;">
+                <span>For Internal Use Only</span>
+                <span style="margin-left: 200px;" >&copy; 2018 Olin Corporation. All rights reserved.</span>
+                <span style="margin-left: 250px;">Page <span class="pagenumber"/> </span>
+            </div>
+            <div class="leadTable">
+                <div>
+                    <table  Style=" width:100%;  border: 1px solid #696969; background-color:#696969">
+                        <tr>
+                            <td style="color:white; padding: 3px; padding-left: 20px; font-family: Arial Unicode MS; font-size: 12pt; " colspan="2">Account Details</td>
+                        </tr>
+                    </table>
+                    <table  style="width:100%;  border: 1px solid #D3D3D3;">
+                        <tr>
+                            <td style="color: #666666; padding: 10px; padding-top: 20px; padding-left: 20px; padding-bottom: 20px; font-family: Arial Unicode MS; font-size: 12pt; width:50%;">
+                                Account Name : {!accPlan.Account__r.Name}<br/>
+                                Address : {!accPlan.Account__r.BillingStreet}<br/><span style="margin-left: 73px;">{!accPlan.Account__r.BillingCity}, {!accPlan.Account__r.BillingState} </span><br/><span style="margin-left: 73px;">{!accPlan.Account__r.BillingCountry}</span><br/>
+                                SIC Code : {!accPlan.Account__r.Sic}<br/>
+                                Stock Symbol : {!accPlan.Account__r.TickerSymbol}<br/>
+                                Olin Account Number : {!accPlan.Account__r.AccountNumber_R1__c}<br/>
+                                Planning Year : {!accPlan.Planning_Year__c}<br/>
+                                Account Plan Owner : {!accPlan.Owner.Name}<br/>
+                            </td>
+                            <td style="width:50%; padding: 15px;"  id="rich1"><apex:outputField value="{!accPlan.Logo__c}" styleClass="" rendered="{!logo || isNormal}"/><br/><br/><br/><br/><br/><br/><br/><br/>
+                            </td> 
+                        </tr> 
+                    </table>
+                </div>
+                <apex:outputPanel rendered="{!if(soldtoAccList != null && (sta || isNormal),True,False)}"><br/></apex:outputPanel>
+                <apex:outputPanel rendered="{!if(soldtoAccList != null && (sta || isNormal),True,False)}">
+                    <table  Style="width:100%;">
+                        <tr >
+                            <td colspan="2" style="background-color:#696969; color:white; padding: 5px; padding-left: 20px; font-family: Arial Unicode MS; font-size: 12pt;">Sold-To Accounts</td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <table>
+                                    <apex:repeat var="s1" value="{!soldtoAccList1}">
+                                        <tr>
+                                            <td style="color: #666666;"> 
+                                                <div style="padding: 10px; padding-top: 20px; padding-left: 20px;  font-family:Arial Unicode MS; font-size: 11pt;  ">
+                                                    {!s1.Name}<br/><br/>
+                                                </div>
+                                            </td>
+                                            <td style="color: #666666; " > 
+                                                <div style=" padding-top: 20px;   font-family:Arial Unicode MS; font-size: 11pt; ">
+                                                    {!s1.BillingStreet},<br/>{!s1.BillingCity}, {!s1.BillingState} {!s1.BillingPostalCode}<br/>{!s1.BillingCountry}<br/>Account # {!s1.AccountNumber_R1__c}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </apex:repeat>
+                                </table>
+                            </td>
+                            <td>
+                                <table>
+                                    <apex:repeat var="s2" value="{!soldtoAccList2}">
+                                        <tr>
+                                            <td style="color: #666666; "> 
+                                                <div style=" padding-top: 20px; padding-left: 1px;  font-family:Arial Unicode MS; font-size: 11pt; ">
+                                                    {!s2.Name}<br/><br/><br/>
+                                                </div>
+                                            </td>
+                                            <td style="color: #666666;  "> 
+                                                <div style="padding-top: 20px; padding-left: 1px;  font-family:Arial Unicode MS; font-size: 11pt; ">
+                                                    {!s2.BillingStreet},<br/> {!s2.BillingCity}, {!s2.BillingState} {!s2.BillingPostalCode}<br/>{!s2.BillingCountry}<br/>Account # {!s2.AccountNumber_R1__c}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </apex:repeat>
+                                </table>
+                            </td>
+                        </tr>
+                    </table>
+                </apex:outputPanel>
+                <apex:outputPanel rendered="{!if(accPlan.Executive_Summary__c != null && (exes || isNormal),True,False)}"><br/></apex:outputPanel>
+                <apex:outputPanel rendered="{!if(accPlan.Executive_Summary__c != null && (exes || isNormal),True,False)}">
+                    <table  Style="width:100%;">
+                        <tr >
+                            <td style="background-color:#696969; color:white; padding: 5px; padding-left: 20px; font-family: Arial Unicode MS; font-size: 12pt;">Executive Summary</td>
+                        </tr>
+                        <tr>
+                            <td style="color: #666666;"> 
+                                
+                                <div style="padding: 10px; padding-top: 20px; padding-left: 20px;  font-family:Arial Unicode MS; font-size: 12pt; ">
+                                    <apex:outputField value="{!accPlan.Executive_Summary__c}"/> <br/> 
+                                </div>
+                                
+                                
+                            </td>
+                        </tr>
+                    </table>
+                </apex:outputPanel>
+                <apex:outputPanel rendered="{!if(accPlan.Account_Profile__c != null && (apro || isNormal),True,False)}"><br/></apex:outputPanel>
+                <apex:outputPanel rendered="{!if(accPlan.Account_Profile__c != null && (apro || isNormal),True,False)}">
+                    <table  Style="width:100%;">
+                        <tr >
+                            <td style="background-color:#696969; color:white; padding: 5px; padding-left: 20px; font-family: Arial Unicode MS; font-size: 12pt;">Account Profile</td>
+                        </tr>
+                        <tr>
+                            <td style="color: #666666;">
+                                <div style="padding: 10px; padding-top: 20px; padding-left: 20px; font-family: Arial Unicode MS; font-size: 12pt;">
+                                    <apex:outputField value="{!accPlan.Account_Profile__c}"/>
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+                </apex:outputPanel>
+                
+                <apex:outputPanel rendered="{!if(accPlan.Account_Strategies_Goals__c != null && (asg || isNormal),True,False)}"><br/></apex:outputPanel>
+                <apex:outputPanel rendered="{!if(accPlan.Account_Strategies_Goals__c != null && (asg || isNormal),True,False)}">
+                    <table  Style="width:100%;">
+                        <tr >
+                            <td style="background-color:#696969; color:white; padding: 5px; padding-left: 20px; font-family: Arial Unicode MS; font-size: 12pt;">Account Strategies &amp; Goals</td>
+                        </tr>
+                        <tr style="border-bottom:1pt solid black;">
+                            <td style="color: #666666;">
+                                <div style="padding: 10px; padding-top: 20px; padding-left: 20px; font-family: Arial Unicode MS; font-size: 12pt;">
+                                    <apex:outputField value="{!accPlan.Account_Strategies_Goals__c}"/>
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+                </apex:outputPanel>
+                <apex:outputPanel rendered="{!if(accPlan.Marketing_Initiatives__c != null && (ets || isNormal),True,False)}"><br/></apex:outputPanel>
+                <apex:outputPanel rendered="{!if(accPlan.Marketing_Initiatives__c != null && (ets || isNormal),True,False)}">
+                    <table  Style="width:100%;">
+                        <tr >
+                            <td style="background-color:#696969; color:white; padding: 5px; padding-left: 20px; font-family: Arial Unicode MS; font-size: 12pt;">Entertainment/Trade Shows/Etc.</td>
+                        </tr>
+                        <tr style="border-bottom:1pt solid black;">
+                            <td style="color: #666666;">
+                                <div style="padding: 10px; padding-top: 20px; padding-left: 20px; font-family: Arial Unicode MS; font-size: 12pt;">
+                                    <apex:outputField value="{!accPlan.Marketing_Initiatives__c}"/>
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+                </apex:outputPanel>
+                <apex:outputPanel rendered="{!if(accPlan.Customer_Purchasing_Strategy__c != null && (cps || isNormal),True,False)}"><br/></apex:outputPanel>
+                <apex:outputPanel rendered="{!if(accPlan.Customer_Purchasing_Strategy__c != null && (cps || isNormal),True,False)}">
+                    <table  Style="width:100%;">
+                        <tr >
+                            <td style="background-color:#696969; color:white; padding: 5px; padding-left: 20px; font-family: Arial Unicode MS; font-size: 12pt;">Customer Purchasing Strategy</td>
+                        </tr>
+                        <tr style="border-bottom:1pt solid black;">
+                            <td style="color: #666666;">
+                                <div style="padding: 10px; padding-top: 20px; padding-left: 20px; font-family: Arial Unicode MS; font-size: 12pt;">
+                                    <apex:outputField value="{!accPlan.Customer_Purchasing_Strategy__c}"/>
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+                </apex:outputPanel>
+                <apex:outputPanel rendered="{!if(accPlan.Customer_Business_Strategy__c != null && (cbs || isNormal),True,False)}"><br/></apex:outputPanel>
+                <apex:outputPanel rendered="{!if(accPlan.Customer_Business_Strategy__c != null && (cbs || isNormal),True,False)}">
+                    <table  Style="width:100%;">
+                        <tr >
+                            <td style="background-color:#696969; color:white; padding: 5px; padding-left: 20px; font-family: Arial Unicode MS; font-size: 12pt;">Customer Business Strategy</td>
+                        </tr>
+                        <tr style="border-bottom:1pt solid black;">
+                            <td style="color: #666666;">
+                                <div style="padding: 10px; padding-top: 20px; padding-left: 20px; font-family: Arial Unicode MS; font-size: 12pt;" id="rich2">
+                                    <apex:outputField value="{!accPlan.Customer_Business_Strategy__c}"/>
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+                </apex:outputPanel>
+                <apex:outputPanel rendered="{!if(accPlan.Consumption_Analysis_Market_View__c != null && (cana || isNormal),True,False)}"><br/></apex:outputPanel>
+                <apex:outputPanel rendered="{!if(accPlan.Consumption_Analysis_Market_View__c != null && (cana || isNormal),True,False)}">
+                    <table  Style="width:100%;">
+                        <tr >
+                            <td style="background-color:#696969; color:white; padding: 5px; padding-left: 20px; font-family: Arial Unicode MS; font-size: 12pt;">Consumption Analysis</td>
+                        </tr>
+                        <tr style="border-bottom:1pt solid black;">
+                            <td style="color: #666666;">
+                                <div style="padding: 10px; padding-top: 20px; padding-left: 20px; font-family: Arial Unicode MS; font-size: 12pt;" id="rich2">
+                                    <!--<apex:outputField  value="{!accPlan.Consumption_Analysis_Market_View__c}"/>-->
+                                    <apex:outputText value="{!accPlan.Consumption_Analysis_Market_View__c}" escape="false"/>
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+                </apex:outputPanel>
+                <apex:outputPanel rendered="{!if(accPlan.Consumption_Analysis_Product_View__c != null && (cana || isNormal),True,False)}"><br/></apex:outputPanel>
+                <apex:outputPanel rendered="{!if(accPlan.Consumption_Analysis_Product_View__c != null && (cana || isNormal),True,False)}">
+                    <table  Style="width:100%;">
+                        <tr >
+                            <td style="background-color:#696969; color:white; padding: 5px; padding-left: 20px; font-family: Arial Unicode MS; font-size: 12pt;">Consumption Analysis - Product View</td>
+                        </tr>
+                        <tr>
+                            <td style="color: #666666;">
+                                <div style="padding: 10px; padding-top: 20px; padding-left: 20px; font-family: Arial Unicode MS; font-size: 12pt;">
+                                    <apex:outputField value="{!accPlan.Consumption_Analysis_Product_View__c}"/>
+                                </div>
+                            </td>
+                            
+                        </tr>
+                    </table>
+                </apex:outputPanel>
+                <apex:outputPanel rendered="{!if(AND(accPlan.Strengths__c != null,accPlan.Weaknesses__c != null,accPlan.Opportunities__c != null,accPlan.Threats__c != null && (swot || isNormal)),True,False)}"><br/></apex:outputPanel>
+                <apex:outputPanel rendered="{!if(AND(accPlan.Strengths__c != null,accPlan.Weaknesses__c != null,accPlan.Opportunities__c != null,accPlan.Threats__c != null && (swot || isNormal)),True,False)}">
+                    <table  Style="width:100%;">
+                        <tr >
+                            <td style="background-color:#696969; color:white; padding: 5px; padding-left: 20px; font-family: Arial Unicode MS; font-size: 12pt;" colspan="3">SWOT Analysis</td><br/>
+                        </tr>
+                        <tr>
+                            <th style="color: #696969; font-family: Arial Unicode MS; font-size: 10pt;padding: 10px; width:25%;"></th>
+                            <th style="color: #696969; font-family: Arial Unicode MS; font-size: 10pt; padding: 10px; width:37%;"><center>Helpful<br/>(to achieving the objective)</center></th>
+                            <th style="color: #696969; font-family: Arial Unicode MS; font-size: 10pt; padding: 10px; width:38%;"><center>Harmful<br/>(to achieving the objective)</center></th>
+                        </tr>
+                        <tr>
+                            <td style="color: #696969; font-family: Arial Unicode MS; font-size: 10pt; padding: 15px;  border-bottom: 2px solid #D3D3D3; border-left: 2px solid #D3D3D3;  border-top: 2px solid #D3D3D3; " rowspan="2"><strong><center>Internal Origin <br/>(attributes of the organization)</center></strong></td>
+                            <td style="color: #666666; font-family: Arial Unicode MS; font-size: 10pt; padding: 15px; border-top: 2px solid #D3D3D3; border-left: 2px solid #D3D3D3;">
+                                <apex:outputField value="{!accPlan.Strengths__c}"/><br/>
+                            </td>
+                            <td style="color: #666666; font-family: Arial Unicode MS; font-size: 10pt; padding: 15px; border-left: 2px solid #D3D3D3;  border-top: 2px solid #D3D3D3; border-right: 2px solid #D3D3D3; ">
+                                <apex:outputField value="{!accPlan.Weaknesses__c}"/><br/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="color: #696969; border-bottom: 2px solid #D3D3D3; border-left: 2px solid #D3D3D3; "><apex:image url="{!$Resource.Strength}" width="50%" height="40px"  /></td>
+                            <td style="color: #696969; border-bottom: 2px solid #D3D3D3; border-right: 2px solid #D3D3D3; border-left: 2px solid #D3D3D3;"><apex:image url="{!$Resource.Weakness}" width="50%" height="40px"  /></td>
+                        </tr>
+                        <tr>
+                            <td style="color: #696969; font-family: Arial Unicode MS; font-size: 10pt; padding: 15px; border-bottom: 2px solid #D3D3D3; border-left: 2px solid #D3D3D3; " rowspan="2">
+                                <strong><center>External Origin<br/> (attributes of the environment)</center></strong>
+                            </td>
+                            <td style="color: #666666; font-family: Arial Unicode MS; font-size: 10pt;  padding: 15px; border-left: 2px solid #D3D3D3; ">
+                                <apex:outputField value="{!accPlan.Opportunities__c}"/> <br/>  
+                            </td>
+                            <td style="color: #666666; font-family: Arial Unicode MS; font-size: 10pt; padding: 15px; border-right: 2px solid #D3D3D3; border-left: 2px solid #D3D3D3; ">
+                                <apex:outputField value="{!accPlan.Threats__c}"/><br/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="color: #696969; border-bottom: 2px solid #D3D3D3; border-left: 2px solid #D3D3D3;"><apex:image url="{!$Resource.opportunity}" width="50%" height="40px" /></td>
+                            <td style="color: #696969; border-bottom: 2px solid #D3D3D3; border-right: 2px solid #D3D3D3; border-left: 2px solid #D3D3D3;"><apex:image url="{!$Resource.Threat}" width="50%" height="40px" /></td>
+                        </tr>
+                    </table>
+                </apex:outputPanel>
+                <apex:outputPanel rendered="{!if(accPlanTeamList.size > 0 && (apt || isNormal),True,False)}"><br/></apex:outputPanel>
+                <apex:outputPanel rendered="{!if(accPlanTeamList.size > 0 && (apt || isNormal),True,False)}">
+                    <table class="repeatTableHeader" Style="width:100%; table-layout: auto;  border-collapse: collapse; " >
+                        <tr>
+                            <td style="background-color:#696969; color:white; padding: 5px; padding-left: 20px; font-family: Arial Unicode MS;  font-size: 12pt; " >Olin Account Plan Team</td><br/>
+                        </tr>
+                        <div class="olinHeader">
+                            <table  Style="width:100%;">
+                                <thead style="font-size: 70%; color: #696969; display: table-header-group;">
+                                    <th style="border-bottom: 2px solid #D3D3D3; border-left: 2px solid #D3D3D3;  border-top: 2px solid #D3D3D3;  padding: 5px; font-family: Arial Unicode MS;" ><strong>Team Member</strong></th>
+                                    <th style="border-bottom: 2px solid #D3D3D3; border-top: 2px solid #D3D3D3;  padding: 5px; font-family: Arial Unicode MS; "><strong>Member Title</strong></th>
+                                    <th style="border-bottom: 2px solid #D3D3D3; border-top: 2px solid #D3D3D3;  padding: 5px; font-family: Arial Unicode MS; "><strong>Member Role</strong></th>
+                                    <th style="border-bottom: 2px solid #D3D3D3; border-top: 2px solid #D3D3D3; padding: 5px; font-family: Arial Unicode MS; "><strong>Email</strong></th>
+                                    <th style="border-bottom: 2px solid #D3D3D3; border-top: 2px solid #D3D3D3; padding: 5px; font-family: Arial Unicode MS; "><strong>Phone</strong></th>
+                                    <th style="border-bottom: 2px solid #D3D3D3; border-right: 2px solid #D3D3D3; border-top: 2px solid #D3D3D3; padding: 5px; font-family: Arial Unicode MS; width:30%"><strong>Comments</strong></th>
+                                </thead> 
+                                <tbody>
+                                    <apex:repeat var="a" value="{!accPlanTeamList}">
+                                        <tr style="font-size: 60%; color: #666666;">
+                                            <td style="border-bottom: 2px solid #D3D3D3; border-left: 2px solid #D3D3D3; padding-bottom: 7px; padding-top: 7px; font-family: Arial Unicode MS; padding-left: 5px;" >{!a.Team_Member__c}</td>
+                                            <td style="border-bottom: 2px solid #D3D3D3; padding-bottom: 7px; padding-top: 7px; font-family: Arial Unicode MS; padding-left: 5px;">{!a.Title__c}</td>
+                                            <td style="border-bottom: 2px solid #D3D3D3; padding-bottom: 7px; padding-top: 7px; font-family: Arial Unicode MS; padding-left: 5px;">{!a.Account_Plan_Member_Role__c}</td>
+                                            <td style="border-bottom: 2px solid #D3D3D3; padding-bottom: 7px; padding-top: 7px; font-family: Arial Unicode MS; padding-left: 5px;"> {!a.Email__c}</td>
+                                            <td style="border-bottom: 2px solid #D3D3D3; padding-bottom: 7px; padding-top: 7px; font-family: Arial Unicode MS; padding-left: 5px;">{!a.Phone__c}</td>
+                                            <td style="border-bottom: 2px solid #D3D3D3; border-right: 2px solid #D3D3D3; padding-bottom: 7px; padding-top: 7px; font-family: Arial Unicode MS; padding-left: 5px;">{!a.Comments__c}</td>
+                                        </tr>
+                                    </apex:repeat><br/>
+                                </tbody>
+                            </table>
+                        </div>
+                    </table>
+                </apex:outputPanel>
+                <apex:outputPanel rendered="{!if(accPlanKeyConList.size > 0 && (kc || isNormal),True,False)}"><br/></apex:outputPanel>
+                <apex:outputPanel rendered="{!if(accPlanKeyConList.size > 0 && (kc || isNormal),True,False)}">
+                    <table  Style="width:100%; color: #696969;" class="repeatTableHeader">
+                        <tr >
+                            <td style="background-color:#696969; color:white; padding: 5px; padding-left: 20px; font-family: Arial Unicode MS; font-size: 12pt;">Account Plan Key Contacts</td><br/>
+                        </tr>
+                        <div style="">
+                            <table  Style="width:100%;">
+                                <thead>
+                                    <tr style="font-size: 60%; color: #696969;">
+                                        <th style="border-bottom: 2px solid #D3D3D3; border-left: 2px solid #D3D3D3;  border-top: 2px solid #D3D3D3;  padding: 5px; font-family: Arial Unicode MS; padding-left: 5px;">Contact</th> 
+                                        <th style="border-bottom: 2px solid #D3D3D3; border-top: 2px solid #D3D3D3; padding: 5px; font-family: Arial Unicode MS; padding-left: 5px;">Title</th>
+                                        <th style="border-bottom: 2px solid #D3D3D3; border-top: 2px solid #D3D3D3; padding: 5px; font-family: Arial Unicode MS; padding-left: 5px;">City / State / Country</th>
+                                        <th style="border-bottom: 2px solid #D3D3D3; border-top: 2px solid #D3D3D3; padding: 5px; font-family: Arial Unicode MS; padding-left: 5px;">Email &amp; Phone</th>
+                                        <th style="border-bottom: 2px solid #D3D3D3; border-right: 2px solid #D3D3D3; border-top: 2px solid #D3D3D3; padding: 5px; font-family: Arial Unicode MS; padding-left: 5px; width:30%">Comments</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <apex:repeat var="b" value="{!accPlanKeyConList}">
+                                        <tr style="font-size: 60%; color: #666666;">
+                                            <td style="border-bottom: 2px solid #D3D3D3; border-left: 2px solid #D3D3D3; padding-bottom: 7px; padding-top: 7px; font-family: Arial Unicode MS; padding-left: 5px;" >{!b.Key_Contact__r.FirstName} {!b.Key_Contact__r.LastName}</td>
+                                            <td style="border-bottom: 2px solid #D3D3D3; padding-bottom: 7px; padding-top: 7px; font-family: Arial Unicode MS; padding-left: 5px;">{!b.Title__c}</td>
+                                            <td style="border-bottom: 2px solid #D3D3D3; padding-bottom: 7px; padding-top: 7px; font-family: Arial Unicode MS; padding-left: 5px; padding-left: 5px;">{!b.Key_Contact__r.MailingCity} <apex:outputText value="/" rendered="{!if(b.Key_Contact__r.MailingCity != null,True,False)}"/> {!b.Key_Contact__r.MailingState} <apex:outputText value="/" rendered="{!if(b.Key_Contact__r.MailingState != null,True,False)}"/> {!b.Key_Contact__r.MailingCountry}</td>
+                                            <td style="border-bottom: 2px solid #D3D3D3; padding-bottom: 7px; padding-top: 7px; font-family: Arial Unicode MS; padding-left: 5px;">{!b.Key_Contact__r.Email}<br/>{!b.Key_Contact__r.Phone}</td>
+                                            <td style="border-bottom: 2px solid #D3D3D3; border-right: 2px solid #D3D3D3; padding-bottom: 7px; padding-top: 7px; font-family: Arial Unicode MS; padding-left: 5px;">{!b.Comments__c}</td>
+                                        </tr>
+                                    </apex:repeat>
+                                </tbody>
+                            </table>
+                        </div>
+                    </table>
+                </apex:outputPanel>
+                <apex:outputPanel rendered="{!if(accPlanConRelationList.size > 0 && (cr || isNormal),True,False)}"><br/></apex:outputPanel>
+                <apex:outputPanel rendered="{!if(accPlanConRelationList.size > 0 && (cr || isNormal),True,False)}" styleClass="width:100%;">
+                    <table  Style="width:100%;" class="repeatTableHeader">
+                        <tr >
+                            <td style="background-color:#696969; color:white; padding: 5px; padding-left: 20px; font-family: Arial Unicode MS; font-size: 12pt;">Contact Relationships</td><br/>
+                        </tr>
+                        <table  Style="width:100%;">
+                            <thead >
+                                <tr style="font-size: 11pt; color: #696969;">
+                                    <th style="border-bottom: 2px solid #D3D3D3; border-left: 2px solid #D3D3D3;  border-top: 2px solid #D3D3D3;  padding: 5px; font-family: Arial Unicode MS;">Key Contact Name</th>
+                                    <th style="border-bottom: 2px solid #D3D3D3; border-top: 2px solid #D3D3D3; padding: 5px; font-family: Arial Unicode MS;">Contact Title</th>
+                                    <th style="border-bottom: 2px solid #D3D3D3; border-top: 2px solid #D3D3D3; padding: 5px; font-family: Arial Unicode MS;">Olin Team Member</th>
+                                    <th style="border-bottom: 2px solid #D3D3D3; border-top: 2px solid #D3D3D3; padding: 5px; font-family: Arial Unicode MS;">Olin Member Title</th>
+                                    <th style="border-bottom: 2px solid #D3D3D3; border-right: 2px solid #D3D3D3; border-top: 2px solid #D3D3D3; padding: 5px; font-family: Arial Unicode MS; width:30%">Comments</th>
+                                </tr>
+                            </thead>
+                            <tbody >
+                                <apex:repeat var="c" value="{!accPlanConRelationList}">
+                                    <tr style="font-size: 11pt; color: #666666;">
+                                        <td style="border-bottom: 2px solid #D3D3D3; border-left: 2px solid #D3D3D3; padding-bottom: 7px; padding-top: 7px; font-family: Arial Unicode MS; padding-left: 5px;" >{!c.Contact__r.Name}</td>
+                                        <td style="border-bottom: 2px solid #D3D3D3; padding-bottom: 7px; padding-top: 7px; font-family: Arial Unicode MS; padding-left: 5px;">{!c.Contact_Title__c}</td>
+                                        <td style="border-bottom: 2px solid #D3D3D3; padding-bottom: 7px; padding-top: 7px; font-family: Arial Unicode MS; padding-left: 5px;">{!c.Olin_Representative__r.Name}</td>
+                                        <td style="border-bottom: 2px solid #D3D3D3; padding-bottom: 7px; padding-top: 7px; font-family: Arial Unicode MS; padding-left: 5px;">{!c.Oline_Representative_Title__c}</td>
+                                        <td style="border-bottom: 2px solid #D3D3D3; border-right: 2px solid #D3D3D3; padding-bottom: 7px; padding-top: 7px; font-family: Arial Unicode MS; padding-left: 5px;">{!c.Relationship__c}</td>
+                                    </tr>
+                                </apex:repeat>
+                            </tbody>
+                        </table>
+                    </table>
+                </apex:outputPanel>
+                
+                <apex:outputPanel rendered="{!if(accPlanObjectiveList.size > 0 && (mp || isNormal),True,False)}"><br/></apex:outputPanel>
+                <apex:outputPanel rendered="{!if(accPlanObjectiveList.size > 0 && (mp || isNormal),True,False)}">
+                    <table  Style="width:100%;">
+                        <tr >
+                            <td style="background-color:#696969; color:white; padding: 5px; padding-left: 20px; font-family: Arial Unicode MS; font-size: 12pt;">Meeting Preps</td>
+                        </tr>
+                        <apex:repeat var="obj" value="{!accPlanObjectiveList}">
+                            <tr>
+                                <td style="color: #666666;">
+                                    <div style="padding: 10px; padding-top: 20px; padding-left: 20px; font-family: Arial Unicode MS; font-size: 12pt;">
+                                        <div style="margin-top:18px;float:none;">Meeting Prep No. - {!obj.Name}</div>
+                                        <div style="margin-top:18px;">
+                                            Meeting Date - &nbsp;<apex:outputText value="{0,date,MMMM dd, yyyy}"> <apex:param value="{!obj.Meeting_Date__c}" /> </apex:outputText>
+                                        </div>
+                                        <div style="margin-top:18px;float:none;">Meeting Location - {!obj.Meeting_Location__c}</div>
+                                        <div style="margin-top:18px;float:none;">Type - {!obj.Type__c}</div>
+                                        <div style="float:left; margin-top:18px;">Topics to discuss - {!obj.Topics_to_Discuss__c}</div> 
+                                        <div style="float:left; margin-top:18px;">Topics to Avoid - {!obj.Topics_to_Avoid__c}</div>
+                                        <div style="float:left; margin-top:18px;">Meeting Attendees - {!obj.Meeting_Attendees__c}</div>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><div style="margin-top:18px;margin-left:20px;color: #666666; border-bottom:1px solid #d8d8d8;">Sales Data - <apex:outputText value="{!obj.Sales_Data__c}" escape="false"/></div></td>
+                            </tr>
+                        </apex:repeat>
+                    </table>
+                </apex:outputPanel>
+            </div>  
+        </body>
+    </html>
+</apex:page>

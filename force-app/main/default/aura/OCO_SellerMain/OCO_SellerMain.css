@@ -1,0 +1,15 @@
+.THIS .slds-modal__content {
+    height: 100% !important;
+    box-shadow : none !important;
+    overflow-y : hidden !important;
+   
+}
+
+.THIS .sectionHeader{
+    background: #f3f2f2 !important;
+    padding-left: 10px !important;
+}
+
+.THIS .toastContainer{
+    position : fixed !important;
+}

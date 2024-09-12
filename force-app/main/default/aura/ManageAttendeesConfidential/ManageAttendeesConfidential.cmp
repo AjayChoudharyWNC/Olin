@@ -1,0 +1,125 @@
+<aura:component implements="flexipage:availableForAllPageTypes,force:hasRecordId,force:lightningQuickActionWithoutHeader" controller="ManageAttendeesConfidential">
+    <aura:handler value="this" name="init" action="{!c.doInit}"/>
+    <aura:attribute name="data" type="Object"/>
+    <aura:attribute name="columns" type="List"/>
+    <aura:attribute name="data1" type="Object"/>
+    <aura:attribute name="datatsPaginated" type="Object"/> 
+    <aura:attribute name="columns1" type="List"/>
+    <aura:attribute name="contact" type="Contact"/>
+    <aura:attribute name="Fname" type="String" default="" />
+    <aura:attribute name="Lname" type="String"  default=""/>
+    <aura:attribute name="Aname" type="String"  default=""/>
+    <aura:attribute name="Filters" type="String"  default="Related to Account"/>
+    <aura:attribute name="allContacttypes" type="List" />
+    <aura:attribute name="Avalue" type="String"/>
+    <aura:attribute name="showCreateContact" type="boolean" default="false"/>
+    <aura:attribute name="selectedRows" type="List" />
+    <aura:attribute name="FirstName" type="String" default=""/>
+    <aura:attribute name="title" type="String" default=""/>
+    <aura:attribute name="LastName" type="String" default=""/>
+    <aura:attribute name="Phone" type="String" default=""/>
+    <aura:attribute name="Email" type="String" default=""/>
+    <aura:attribute name="emailfilter" type="String" default=""/>
+    <aura:attribute name="selectedObject" type="String" default="Related to Account"/>
+    <aura:attribute name="showSpinner" type="boolean"/>
+    <aura:attribute type="Integer" name="pageNumber" default="1" />
+    <aura:attribute type="Integer" name="pageSize" default="20" />
+    <aura:handler name="change" value="{!v.pageNumber}" action="{!c.renderList}" />
+    <aura:attribute name="totalPages" type="Integer"/>
+    <ltng:require styles="{!$Resource.IncreasePopUpWidth}"/>
+    
+    <aura:html tag="style">
+        .slds-p-around–medium {
+        padding: 0rem !important;
+        }
+        .slds-modal__content{
+        overflow-y:hidden !important;
+        height:unset !important;
+        max-height:unset !important;
+        }
+        .cuf-content {
+        padding: 0 0rem !important;
+        }
+    </aura:html>
+    <aura:if isTrue="{!v.showSpinner}">
+        <lightning:spinner alternativeText="Loading" size="large"/>
+    </aura:if>
+    <div class="modal-header slds-modal__header slds-m-bottom_xx-large" style="margin-bottom: 4px">
+        <span>
+            <span class="title slds-text-heading--medium slds-hyphenate">Manage Attendees</span>
+            <lightning:button variant="Brand" class="slds-float_right" label="Finish" onclick="{! c.handleExit }"/>
+        </span>
+    </div>
+    <div  style="width:100%;margin:auto;height:100%" >
+        <div class="slds-p-top_medium">
+            <lightning:datatable keyField="Id"
+                                 data="{! v.data }" 
+                                 columns="{! v.columns }"
+                                 hideCheckboxColumn="true"
+                                 onrowselection="{!c.handleSelectedRow}"
+                                 onrowaction="{! c.handleRowAction1 }"/>
+        </div>  
+        <div class="slds-align_absolute-center slds-p-top_medium slds-p-bottom_medium">            
+            <lightning:button variant="neutral" label="Create New Contact" onclick="{!c.showContactPopUp}" />            
+        </div>
+        <div class="slds-card slds-grid slds-wrap slds-gutters slds-p-around_small slds-m-left_small slds-m-right_small">
+            <div class="slds-col slds-size_2-of-12 ">
+                <span class="slds-text-heading_medium" style="font-size:14pt;">Search For Contacts</span>
+            </div>
+            <div class="slds-col slds-size_4-of-12 " style="margin-left: 6%;">
+                <lightning:input name="Fname" label="First Name" value="{!v.Fname}" onchange="{!c.handlefnameChange}"/>
+                <lightning:input name="Lname" label="Last Name" value="{!v.Lname}" onchange="{!c.handlesnameChange}"/>
+                <lightning:input name="Lname" label="Email" value="{!v.emailfilter}" onchange="{!c.handleemailChange}"/>
+            </div>
+            <div class="slds-col slds-size_4-of-12 " >
+                <lightning:input name="Aname" label="Account Name" value="{!v.Aname}"  onchange="{!c.handlesAnameChange}"/>
+                <lightning:select name="types" label="Contact Filter Type"  value="{!v.Filters}" onchange="{!c.handlesfiltertypeChange}" >
+                    <aura:iteration items="{!v.allContacttypes}" var="option" >
+                        <option text="{!option}" value="{!option}" selected="{!option == v.selectedObject}"/>
+                    </aura:iteration>
+                </lightning:select>
+            </div>
+        </div>
+        <div class="slds-p-top_medium">
+            <lightning:datatable keyField="Id" 
+                                 data="{! v.datatsPaginated }" 
+                                 columns="{! v.columns1 }" 
+                                 hideCheckboxColumn="true"
+                                 onrowaction="{! c.handleRowAction }"/>
+        </div> 
+    </div>
+    <div>
+        <footer class="slds-card__footer">
+            <c:Pagination currentPageNumber="{!v.pageNumber}" maxPageNumber="{!v.totalPages}" />
+        </footer>
+        <lightning:button variant="Brand" class="slds-float_right" label="Finish" onclick="{! c.handleExit }"/>
+    </div>
+    
+    <div class="slds-m-around_xx-large">
+        <aura:if isTrue="{!v.showCreateContact}">
+            <div role="dialog" class="slds-modal slds-fade-in-open ">
+                <div class="slds-modal__container">
+                    <header class="slds-modal__header">
+                        <lightning:buttonIcon iconName="utility:close" onclick="{!c.closeModel }"  variant="bare-inverse"  class="slds-modal__close"/>
+                        <h1 class="slds-text-heading--medium">Create New Contact</h1>
+                    </header>
+                    <div class="slds-modal__content slds-p-around--medium">
+                        <lightning:recordEditForm objectApiName="Contact">
+                            <lightning:inputField fieldName="FirstName"  value="{!v.FirstName}"/>
+                            <lightning:inputField fieldName="LastName"  value="{!v.LastName}"/>
+                            <lightning:inputField fieldName="Email"     value="{!v.Email}" required="true"/>
+                            <lightning:inputField fieldName="Title"  value="{!v.title}"/>
+                            <lightning:inputField fieldName="Phone"     value="{!v.Phone}" />
+                            <lightning:inputField fieldName="AccountId" value="{!v.Avalue}" disabled="true"/>
+                        </lightning:recordEditForm>
+                    </div>
+                    <footer class="slds-modal__footer">
+                        <lightning:button variant="brand" type="submit" name="save" label="Save" onclick="{!c.handleCreateContact}"/>
+                        <lightning:button variant="neutral" label="Cancel"  onclick="{! c.closeModel }"/>
+                    </footer>
+                </div>
+            </div>
+            <div class="slds-backdrop slds-backdrop--open"></div>            
+        </aura:if>
+    </div>
+</aura:component>

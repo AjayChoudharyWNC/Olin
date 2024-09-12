@@ -1,0 +1,875 @@
+<apex:page standardController="Questionnaire__c" sidebar="false" showHeader="false" renderAs="pdf" extensions="ProductStewardshipController">
+    
+    <head>
+        <style>
+            @font-face {
+            font-family: "sans-serif";
+            }
+            
+            table,
+            td,
+            tr {
+            font-family: "sans-serif";
+            }
+            td .fieldHeader{
+            font-size: 12px !important;
+            }
+            td .fieldValue{
+            font-size:15px !important;
+            font-weight:bold;
+            }
+        </style>
+    </head>
+    
+    <body style="font-family : sans-serif;">
+        <div style="text-align:center;margin-bottom:15px;">
+            <img src="{!$Resource.PSAOlinLogo}" width="150px"/>
+        </div>
+        <div style="margin-bottom:10px;">
+            <table style="width:100%;">
+                <tr>
+                    <td style="width:33%;">
+                        <p style="margin:0px;">Assessment Submit Date: &nbsp;
+                            <apex:outputText value="{0,date,MM/dd/yy}">
+                                <apex:param value="{!Questionnaire__c.LastModifiedDate}" /> </apex:outputText>
+                        </p>
+                        <p style="margin:0px;">Assessment No. {!Questionnaire__c.Name}</p>
+                    </td>
+                </tr>
+                
+            </table>
+        </div>
+        <div style="margin-bottom:10px;">
+            <table style="width:100%;">
+                <tr>
+                    <td width="50%">
+                        <p style="font-weight:bold;margin:0px;">Sold To Details : </p>
+                        <p style="margin:0px;">{!Questionnaire__c.Sap_Onboarding__r.Sold_To_Company_name__c}</p>
+                        <p style="margin:0px;">{!Questionnaire__c.Sap_Onboarding__r.Sold_To_Street__c}&nbsp;{!Questionnaire__c.Sap_Onboarding__r.Sold_To_Street_2__c},{!Questionnaire__c.Sap_Onboarding__r.Sold_To_City__c}</p>
+                        <p style="margin:0px;">{!Questionnaire__c.Sap_Onboarding__r.Sold_To_State_Province__c}, {!Questionnaire__c.Sap_Onboarding__r.Sold_To_Country__c}</p>
+                        <p style="margin:0px;">{!Questionnaire__c.Sap_Onboarding__r.Sold_To_Postal_Code__c}</p>
+                    </td>
+                    <td width="50%">
+                        <p style="font-weight:bold;margin:0px;">Ship To Details : </p>
+                        <p style="margin:0px;">{!Questionnaire__c.Onboarding_Product__r.Onboarding_Ship_To__r.Ship_To_Company_Name__c }</p>
+                        <p style="margin:0px;">{!Questionnaire__c.Onboarding_Product__r.Onboarding_Ship_To__r.Ship_To_Street__c}, {!Questionnaire__c.Onboarding_Product__r.Onboarding_Ship_To__r.Ship_To_Street_2__c}</p>
+                        <p style="margin:0px;">{!Questionnaire__c.Onboarding_Product__r.Onboarding_Ship_To__r.Ship_To_City__c}, {!Questionnaire__c.Onboarding_Product__r.Onboarding_Ship_To__r.Ship_To_State_Province__c}</p>
+                        <p style="margin:0px;">{!Questionnaire__c.Onboarding_Product__r.Onboarding_Ship_To__r.Ship_To_Country__c} - {!Questionnaire__c.Onboarding_Product__r.Onboarding_Ship_To__r.Ship_To_Postal_Code__c}</p>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <div style="margin-bottom:20px;">
+            <table style="width:100%;">
+                <tr>
+                    <td width="50%">
+                        <p style="font-weight:bold;margin:0px;">Product Details : </p>
+                        <p style="margin:0px;">{!Questionnaire__c.Onboarding_Product__r.Product_Name_Form__c} - {!Questionnaire__c.Onboarding_Product__r.New_Customer_Ship_Mode__c}</p>
+                        <p style="margin:0px;">{!Questionnaire__c.Onboarding_Product__r.Product_Family__c}</p>
+                    </td>
+                    <td width="50%">
+                        <p style="font-weight:bold;margin:0px;">Assessment Details : </p>
+                        <p style="margin:0px;">{!Questionnaire__c.RecordType.Name} - {!Questionnaire__c.Questionnaire_Setup_Type__c}</p>
+                        
+                    </td>
+                </tr>
+            </table>
+        </div>
+        
+        <!--div style="display:{!if(or(showUsaQuestions == true, showCanadaQuestions == true), 'block', 'none')};margin-top:20px;">
+            <table style="width:100%;">
+                <tr>
+                    <td colspan="2" style="font-weight:bold;border-bottom:2px solid black;">Regulatory Information</td>
+                </tr>
+                <tr>
+                    <td width="50%">
+                        <span style="font-size:12px;">Does your location require FIFRA Registration?</span><br/>
+                        <span style="font-size:15px;font-weight:bold;">{!Questionnaire__c.Onboarding_Product__r.Location_required_FIFRA_Registration__c}</span>
+                    </td>
+                    <td width="50%" style="display:{!if(showEup == true, 'block', 'none')}">
+                        <span style="font-size:12px;">How are you using your product?</span><br/>
+                        <span style="font-size:15px;font-weight:bold;">{!Questionnaire__c.Onboarding_Product__r.How_are_you_using_your_product__c}</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td width="50%" style="display:{!if(showEup == true, 'block', 'none')}">
+                        <span style="font-size:12px;">Is Customer a Direct (EUP) End User</span><br/>
+                        <span style="font-size:15px;font-weight:bold;">{!Questionnaire__c.Onboarding_Product__r.Is_Customer_a_Direct_EUP_End_User__c}</span>
+                    </td>
+                    <td width="50%" style="display:{!if(showEup == true, 'block', 'none')}">
+                        <span style="font-size:12px;">Would you like a copy of the PMRA label emailed to you?</span><br/>
+                        <span style="font-size:15px;font-weight:bold;">{!Questionnaire__c.Onboarding_Product__r.Would_you_like_a_copy_of_FIFRA_label__c}</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td width="50%" style="display:{!if(showMup == true, 'block', 'none')}">
+                        <span style="font-size:12px;">Have a label or Establishment # (MUP)</span><br/>
+                        <span style="font-size:15px;font-weight:bold;">{!Questionnaire__c.Onboarding_Product__r.Have_a_label_or_Establishment_MUP__c}</span>
+                    </td>
+                    <td width="50%" style="display:{!if(showMup == true, 'block', 'none')}">
+                        <span style="font-size:12px;">MUP Establishment Number</span><br/>
+                        <span style="font-size:15px;font-weight:bold;">{!Questionnaire__c.Onboarding_Product__r.MUP_Establishment_Number__c}</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td width="50%" style="display:{!if(showCanadaQuestions == true, 'block', 'none')}">
+                        <span style="font-size:12px;">Does your location require PMRA Registration?</span><br/>
+                        <span style="font-size:15px;font-weight:bold;">{!Questionnaire__c.Onboarding_Product__r.EPA_FIFRA_or_PMRA_PCP_Required__c}</span>
+                    </td>
+                    <td width="50%" style="visibility:{!if(showPmraLabel == true, 'visible', 'hidden')}">
+                        <span style="font-size:12px;">Would you like a copy of the PMRA label emailed to you?</span><br/>
+                        <span style="font-size:15px;font-weight:bold;">{!Questionnaire__c.Onboarding_Product__r.Would_you_like_a_copy_of_PMRA_label__c}</span>
+                    </td>
+                </tr>
+            </table>
+        </div-->
+        <div>
+            <table style="border:1px solid black; border-collapse:collapse;">
+                <tr style="border-bottom:1px solid black;">
+                    <td colspan="2" style="font-weight:bold;border-bottom:2px solid black;">Procedure and Training</td>
+                </tr>
+                
+                <tr>
+                    <td width="75%" style="padding-right:5px;padding-top:10px;"> Does the facility use unloading procedures or a checklist for the unloading process?</td>
+                    <td width="25%" style="display : flex;">
+                        <img src="{!if(Questionnaire__c.Procedure_Unloading_Process__c == 'No', '/img/checkbox_checked.gif' , '/img/checkbox_unchecked.gif')}"
+                             /> No
+                        <img src="{!if(Questionnaire__c.Procedure_Unloading_Process__c == 'Yes' , '/img/checkbox_checked.gif' , '/img/checkbox_unchecked.gif')}"
+                             /> Yes
+                        
+                    </td>
+                </tr>
+                <tr><td colspan="2">
+                    <table style="width:100%;">
+                        <tr>
+                            <td width="50%" style="padding-top:10px;padding-bottom:15px;border-bottom:1px solid black; border-radius:3px;">
+                                Comments :
+                                <br/>
+                                <div style="border:1px solid #808080;border-radius:3px;height:45px;padding:5px;">
+                                    <apex:outputText value="{!Questionnaire__c.Procedure_Unloading_Process_Comment__c}" />
+                                </div>
+                            </td>
+                            <td width="50%" style="padding-top:10px;padding-bottom:15px;border-bottom:1px solid black;">
+                                Notes :
+                                <br/>
+                                <div style="border:1px solid #808080;border-radius:3px;height:45px;padding:5px;">
+                                    <apex:outputText value="{!Questionnaire__c.Procedure_Unloading_NOTE__c}" />
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+                    </td>
+                </tr>
+                <tr style="border-bottom:0px;">
+                    <td width="75%" style="padding-right:5px;padding-top:10px;"> Are site unloading personnel trained to understand the hazards and safe handling of Sulfuric Acid?</td>
+                    <td width="25%" style="display : flex;">
+                        <img src="{!if(Questionnaire__c.Employess_Trained_for_Hazards__c == 'No', '/img/checkbox_checked.gif' , '/img/checkbox_unchecked.gif')}"
+                             /> No
+                        <img src="{!if(Questionnaire__c.Employess_Trained_for_Hazards__c == 'Yes' , '/img/checkbox_checked.gif' , '/img/checkbox_unchecked.gif')}"
+                             /> Yes
+                        
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        <table style="width:100%;">
+                            <tr>
+                                <td width="50%" style="padding-top:10px;padding-bottom:15px;border-bottom:1px solid black; border-radius:3px;">
+                                    Comments :
+                                    <br/>
+                                    <div style="border:1px solid #808080;border-radius:3px;height:45px;padding:5px;">
+                                        <apex:outputText value="{!Questionnaire__c.Employess_Trained_for_Hazards_Comment__c}" />
+                                    </div>
+                                </td>
+                                <td width="50%" style="padding-top:10px;padding-bottom:15px;border-bottom:1px solid black;">
+                                    Notes :
+                                    <br/>
+                                    <div style="border:1px solid #808080;border-radius:3px;height:45px;padding:5px;">
+                                        <apex:outputText value="{!Questionnaire__c.Emp_Trained_for_Hazards_NOTE__c}" />
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+                <tr>
+                    <td width="75%" style="padding-right:5px;padding-top:10px;">Are site unloading personnel trained to understand the regulatory inspection and securement requirements associated with Sulfuric Acid railcars?
+                    </td>
+                    <td width="25%" style="display : flex;">
+                        <img src="{!if(Questionnaire__c.Employees_Trained_For_Inspection__c == 'No', '/img/checkbox_checked.gif' , '/img/checkbox_unchecked.gif')}"
+                             /> No
+                        <img src="{!if(Questionnaire__c.Employees_Trained_For_Inspection__c == 'Yes' , '/img/checkbox_checked.gif' , '/img/checkbox_unchecked.gif')}"
+                             /> Yes                        
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        <table style="width:100%;">
+                            <tr>
+                                <td width="50%" style="padding-top:10px;padding-bottom:15px;">
+                                    Comments :
+                                    <br/>
+                                    <div style="border:1px solid #808080;border-radius:3px;height:45px;padding:5px;">
+                                        <apex:outputText value="{!Questionnaire__c.Employees_Trained_For_Inspection_Comment__c}" />
+                                    </div>
+                                </td>
+                                <td width="50%" style="padding-top:10px;padding-bottom:15px;">
+                                    Notes :
+                                    <br/>
+                                    <div style="border:1px solid #808080;border-radius:3px;height:45px;padding:5px;">
+                                        <apex:outputText value="{!Questionnaire__c.Emp_Trained_For_Inspection_NOTE__c}" />
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+                <tr>
+                    <td width="75%" style="padding-right:5px;padding-top:10px;">Is there an Emergency Response or Action Plan that clearly identifies the emergency responder?
+                    </td>
+                    <td width="25%" style="display : flex;">
+                        <img src="{!if(Questionnaire__c.Emergency_Action_Plan__c == 'No', '/img/checkbox_checked.gif' , '/img/checkbox_unchecked.gif')}"
+                             /> No
+                        <img src="{!if(Questionnaire__c.Emergency_Action_Plan__c == 'Yes' , '/img/checkbox_checked.gif' , '/img/checkbox_unchecked.gif')}"
+                             /> Yes                        
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        <table style="width:100%;">
+                            <tr>
+                                <td width="50%" style="padding-top:10px;padding-bottom:15px;">
+                                    Comments :
+                                    <br/>
+                                    <div style="border:1px solid #808080;border-radius:3px;height:45px;padding:5px;">
+                                        <apex:outputText value="{!Questionnaire__c.Emergency_Action_Plan_Comment__c}" />
+                                    </div>
+                                </td>
+                                <td width="50%" style="padding-top:10px;padding-bottom:15px;">
+                                    Notes :
+                                    <br/>
+                                    <div style="border:1px solid #808080;border-radius:3px;height:45px;padding:5px;">
+                                        <apex:outputText value="{!Questionnaire__c.Emergency_Action_Plan_NOTE__c}" />
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+                <tr>
+                    <td width="75%" style="padding-right:5px;padding-top:10px;">Does the facility have a preferred mobile repair unit that is used for railcar repairs? If 'Yes', list the mobile repair unit in Comments.
+                    </td>
+                    <td width="25%" style="display : flex;">
+                        <img src="{!if(Questionnaire__c.Is_Mobile_Repair_Unit_Available__c == 'No', '/img/checkbox_checked.gif' , '/img/checkbox_unchecked.gif')}"
+                             /> No
+                        <img src="{!if(Questionnaire__c.Is_Mobile_Repair_Unit_Available__c == 'Yes' , '/img/checkbox_checked.gif' , '/img/checkbox_unchecked.gif')}"
+                             /> Yes                        
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        <table style="width:100%;">
+                            <tr>
+                                <td width="50%" style="padding-top:10px;padding-bottom:15px;">
+                                    Comments :
+                                    <br/>
+                                    <div style="border:1px solid #808080;border-radius:3px;height:45px;padding:5px;">
+                                        <apex:outputText value="{!Questionnaire__c.Mobile_Repair_Unit_Comments__c}" />
+                                    </div>
+                                </td>
+                                <td width="50%" style="padding-top:10px;padding-bottom:15px;">
+                                    Notes :
+                                    <br/>
+                                    <div style="border:1px solid #808080;border-radius:3px;height:45px;padding:5px;">
+                                        <apex:outputText value="{!Questionnaire__c.Mobile_Repair_Unit_NOTE__c}" />
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2" style="font-weight:bold;border-bottom:2px solid black;">Safety / Environmental Requirements</td>
+                </tr>
+                <tr>
+                    <td width="75%" style="padding-right:5px;padding-top:10px;">Is there a means to monitor the unloading process (video surveillance, radio, buddy system, etc.)? Describe the means of monitoring the unloading process in Comments.
+                    </td>
+                    <td width="25%" style="display : flex;">
+                        <img src="{!if(Questionnaire__c.Means_To_Monitor_The_Unloading_Personnel__c == 'No', '/img/checkbox_checked.gif' , '/img/checkbox_unchecked.gif')}"
+                             /> No
+                        <img src="{!if(Questionnaire__c.Means_To_Monitor_The_Unloading_Personnel__c == 'Yes' , '/img/checkbox_checked.gif' , '/img/checkbox_unchecked.gif')}"
+                             /> Yes                        
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        <table style="width:100%;">
+                            <tr>
+                                <td width="50%" style="padding-top:10px;padding-bottom:15px;">
+                                    Comments :
+                                    <br/>
+                                    <div style="border:1px solid #808080;border-radius:3px;height:45px;padding:5px;">
+                                        <apex:outputText value="{!Questionnaire__c.Monitor_The_Unloading_Personnel_Comments__c}" />
+                                    </div>
+                                </td>
+                                <td width="50%" style="padding-top:10px;padding-bottom:15px;">
+                                    Notes :
+                                    <br/>
+                                    <div style="border:1px solid #808080;border-radius:3px;height:45px;padding:5px;">
+                                        <apex:outputText value="{!Questionnaire__c.Monitor_Unloading_Process_NOTE__c}" />
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+                <tr>
+                    <td width="75%" style="padding-right:5px;padding-top:10px;">Is there a plumbed and operable safety shower/eyewash combination(SS/EW) unit available near the unloading area?
+                    </td>
+                    <td width="25%" style="display : flex;">
+                        <img src="{!if(Questionnaire__c.SS_EW_unit_available_near_the_ul_area__c == 'No', '/img/checkbox_checked.gif' , '/img/checkbox_unchecked.gif')}"
+                             /> No
+                        <img src="{!if(Questionnaire__c.SS_EW_unit_available_near_the_ul_area__c == 'Yes' , '/img/checkbox_checked.gif' , '/img/checkbox_unchecked.gif')}"
+                             /> Yes                        
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        <table style="width:100%;">
+                            <tr>
+                                <td width="100%" style="padding-top:10px;padding-bottom:15px;border-bottom:1px solid black; border-radius:3px;">
+                                    Comments :
+                                    <br/>
+                                    <div style="border:1px solid #808080;border-radius:3px;height:45px;padding:5px;">
+                                        <apex:outputText value="{!Questionnaire__c.SS_EW_Combination_Unit_Comments__c}" />
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+                <tr>
+                    <td width="75%" style="padding-right:5px;padding-top:10px;">Are the SS/EW unit serviced with portable water?
+                    </td>
+                    <td width="25%" style="display : flex;">
+                        <img src="{!if(Questionnaire__c.SS_EW_units_serviced_with_potable_water__c == 'No', '/img/checkbox_checked.gif' , '/img/checkbox_unchecked.gif')}"
+                             /> No
+                        <img src="{!if(Questionnaire__c.SS_EW_units_serviced_with_potable_water__c == 'Yes' , '/img/checkbox_checked.gif' , '/img/checkbox_unchecked.gif')}"
+                             /> Yes                        
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        <table style="width:100%;">
+                            <tr>
+                                <td width="100%" style="padding-top:10px;padding-bottom:15px;border-bottom:1px solid black; border-radius:3px;">
+                                    Comments :
+                                    <br/>
+                                    <div style="border:1px solid #808080;border-radius:3px;height:45px;padding:5px;">
+                                        <apex:outputText value="{!Questionnaire__c.SSEW_units_serviced_with_potable_COM__c}" />
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+                <tr>
+                    <td width="75%" style="padding-right:5px;padding-top:10px;">Is the access path free of obstruction/trip hazards (such as hoses,tools,stairs,etc.)?
+                    </td>
+                    <td width="25%" style="display : flex;">
+                        <img src="{!if(Questionnaire__c.Access_path_free_of_Obstructions_trip__c == 'No', '/img/checkbox_checked.gif' , '/img/checkbox_unchecked.gif')}"
+                             /> No
+                        <img src="{!if(Questionnaire__c.Access_path_free_of_Obstructions_trip__c == 'Yes' , '/img/checkbox_checked.gif' , '/img/checkbox_unchecked.gif')}"
+                             /> Yes                        
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        <table style="width:100%;">
+                            <tr>
+                                <td width="100%" style="padding-top:10px;padding-bottom:15px;border-bottom:1px solid black; border-radius:3px;">
+                                    Comments :
+                                    <br/>
+                                    <div style="border:1px solid #808080;border-radius:3px;height:45px;padding:5px;">
+                                        <apex:outputText value="{!Questionnaire__c.Access_path_free_of_Obstructions_tr_COM__c}" />
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+                <tr>
+                    <td width="75%" style="padding-right:5px;padding-top:10px;">Is the SS/EW with 10 seconds(or approximately 55 feet) from the connection point?
+                    </td>
+                    <td width="25%" style="display : flex;">
+                        <img src="{!if(Questionnaire__c.SS_EW_within_10_sec_from_conn_point__c == 'No', '/img/checkbox_checked.gif' , '/img/checkbox_unchecked.gif')}"
+                             /> No
+                        <img src="{!if(Questionnaire__c.SS_EW_within_10_sec_from_conn_point__c == 'Yes' , '/img/checkbox_checked.gif' , '/img/checkbox_unchecked.gif')}"
+                             /> Yes                        
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        <table style="width:100%;">
+                            <tr>
+                                <td width="100%" style="padding-top:10px;padding-bottom:15px;border-bottom:1px solid black; border-radius:3px;">
+                                    Comments :
+                                    <br/>
+                                    <div style="border:1px solid #808080;border-radius:3px;height:45px;padding:5px;">
+                                        <apex:outputText value="{!Questionnaire__c.SSEW_within_10_sec_from_conn_point_COM__c}" />
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+                <tr>
+                    <td width="75%" style="padding-right:5px;padding-top:10px;">Can spilled material reach a storm drain, sewer, or waterway and/or exceed your property line? If Yes, explain in Comments the controls that are in place to prevent an offsite impact.
+                    </td>
+                    <td width="25%" style="display : flex;">
+                        <img src="{!if(Questionnaire__c.Controls_of_Material_Spill__c == 'No', '/img/checkbox_checked.gif' , '/img/checkbox_unchecked.gif')}"
+                             /> No
+                        <img src="{!if(Questionnaire__c.Controls_of_Material_Spill__c == 'Yes' , '/img/checkbox_checked.gif' , '/img/checkbox_unchecked.gif')}"
+                             /> Yes                        
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        <table style="width:100%;">
+                            <tr>
+                                <td width="50%" style="padding-top:10px;padding-bottom:15px;">
+                                    Comments :
+                                    <br/>
+                                    <div style="border:1px solid #808080;border-radius:3px;height:45px;padding:5px;">
+                                        <apex:outputText value="{!Questionnaire__c.Controls_of_Material_Spill_Comment__c}" />
+                                    </div>
+                                </td>
+                                <td width="50%" style="padding-top:10px;padding-bottom:15px;">
+                                    Notes :
+                                    <br/>
+                                    <div style="border:1px solid #808080;border-radius:3px;height:45px;padding:5px;">
+                                        <apex:outputText value="{!Questionnaire__c.Product_Spill_NOTE__c}" />
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+                <tr>
+                    <td width="75%" style="padding-right:5px;padding-top:10px;">Confirm that industry standard chemical resistant PPE is worn by site unloading personnel while in the immediate area (within 25 feet from point of connection) during the transfer. (Select appropriate options), If all options are not selected, explain the deviations in Comments
+                    </td>
+                    <td width="25%" style="display : flex;">
+                        <img src="{!if(CONTAINS(Questionnaire__c.Industry_Standard_Chemical_Resistant__c,'Face Shield	') , '/img/checkbox_checked.gif' , '/img/checkbox_unchecked.gif')}"
+                             /> Face Shield	<br/>
+                        <img src="{!if(CONTAINS(Questionnaire__c.Industry_Standard_Chemical_Resistant__c,'Gloves') , '/img/checkbox_checked.gif' , '/img/checkbox_unchecked.gif')}"
+                             /> Gloves<br/>
+                        <img src="{!if(CONTAINS(Questionnaire__c.Industry_Standard_Chemical_Resistant__c,'Boots') , '/img/checkbox_checked.gif' , '/img/checkbox_unchecked.gif')}"
+                             /> Boots<br/>
+                        <img src="{!if(CONTAINS(Questionnaire__c.Industry_Standard_Chemical_Resistant__c,'Chemical Suit') , '/img/checkbox_checked.gif' , '/img/checkbox_unchecked.gif')}"
+                             /> Chemical Suit<br/>
+                        <img src="{!if(CONTAINS(Questionnaire__c.Industry_Standard_Chemical_Resistant__c,'Googles') , '/img/checkbox_checked.gif' , '/img/checkbox_unchecked.gif')}"
+                             /> Googles<br/>
+                        <img src="{!if(CONTAINS(Questionnaire__c.Industry_Standard_Chemical_Resistant__c,'Acid Respirator') , '/img/checkbox_checked.gif' , '/img/checkbox_unchecked.gif')}"
+                             /> Acid Respirator	<br/>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2" style="padding-top:10px;padding-bottom:15px;">
+                        Comments :
+                        <br/>
+                        <div style="border:1px solid #808080;border-radius:3px;height:45px;padding:5px;">
+                            <apex:outputText value="{!Questionnaire__c.Industry_Standard_Chemical_Resistant_Com__c}" />
+                        </div>
+                    </td>
+                </tr>
+                <tr style="border-bottom:1px solid black;">
+                    <td colspan="2" style="font-weight:bold;border-bottom:2px solid black;">Customer Railcar Unloading System</td>
+                </tr>
+                <tr>
+                    <td width="75%" style="padding-right:5px;padding-top:10px;"> Is the weight of the unloading hose independently supported to prevent stresses on the connections on either side of the hose? (Tying off to handrail for hose support is not a recommend practice.) 
+                    </td>
+                    <td width="25%" style="display : flex;">
+                        <img src="{!if(Questionnaire__c.Hose_Independently_Supported_to_Prevent__c == 'No', '/img/checkbox_checked.gif' , '/img/checkbox_unchecked.gif')}"
+                             /> No
+                        <img src="{!if(Questionnaire__c.Hose_Independently_Supported_to_Prevent__c == 'Yes' , '/img/checkbox_checked.gif' , '/img/checkbox_unchecked.gif')}"
+                             /> Yes                        
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        <table style="width:100%;">
+                            <tr>
+                                <td width="50%" style="padding-top:10px;padding-bottom:15px;">
+                                    Comments :
+                                    <br/>
+                                    <div style="border:1px solid #808080;border-radius:3px;height:45px;padding:5px;">
+                                        <apex:outputText value="{!Questionnaire__c.Hose_Independently_Supported_Comments__c}" />
+                                    </div>
+                                </td>
+                                <td width="50%" style="padding-top:10px;padding-bottom:15px;">
+                                    Notes :
+                                    <br/>
+                                    <div style="border:1px solid #808080;border-radius:3px;height:45px;padding:5px;">
+                                        <apex:outputText value="{!Questionnaire__c.Hose_Support_TC_NOTE__c}" />
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+                <tr>
+                    <td width="75%" style="padding-right:5px;padding-top:10px;">Which unloading method is used? 
+                    </td>
+                    <td width="25%" style="display : flex;">
+                        <img src="{!if(Questionnaire__c.Equipment_Unloading_Method__c == 'Customer Supplied Air', '/img/checkbox_checked.gif' , '/img/checkbox_unchecked.gif')}"
+                             /> Customer Supplied Air <br/>
+                        <img src="{!if(Questionnaire__c.Equipment_Unloading_Method__c == 'Pump' , '/img/checkbox_checked.gif' , '/img/checkbox_unchecked.gif')}"
+                             /> Pump  <br/>
+                        <img src="{!if(Questionnaire__c.Equipment_Unloading_Method__c == 'Truck Supplied Air' , '/img/checkbox_checked.gif' , '/img/checkbox_unchecked.gif')}"
+                             /> Truck Supplied Air  <br/>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        <table style="width:100%;">
+                            <tr>
+                                <td width="50%" style="padding-top:10px;padding-bottom:15px;">
+                                    Comments :
+                                    <br/>
+                                    <div style="border:1px solid #808080;border-radius:3px;height:45px;padding:5px;">
+                                        <apex:outputText value="{!Questionnaire__c.Equipment_Unloading_Method_Comments__c}" />
+                                    </div>
+                                </td>
+                                <td width="50%" style="padding-top:10px;padding-bottom:15px;">
+                                    Notes :
+                                    <br/>
+                                    <div style="border:1px solid #808080;border-radius:3px;height:45px;padding:5px;">
+                                        <apex:outputText value="{!Questionnaire__c.Unload_by_pumpair_NOTE__c}" />
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+                <tr>
+                    <td width="75%" style="padding-right:5px;padding-top:10px;">For customer supplied air, is the air pressure regulated to less than 30 psig?If air is not used, mark 'N/A' in Comments.
+                    </td>
+                    <td width="25%" style="display : flex;">
+                        <img src="{!if(Questionnaire__c.Air_for_Unloading_30_psig__c == 'No', '/img/checkbox_checked.gif' , '/img/checkbox_unchecked.gif')}"
+                             /> No
+                        <img src="{!if(Questionnaire__c.Air_for_Unloading_30_psig__c == 'Yes' , '/img/checkbox_checked.gif' , '/img/checkbox_unchecked.gif')}"
+                             /> Yes  
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        <table style="width:100%;">
+                            <tr>
+                                <td width="50%" style="padding-top:10px;padding-bottom:15px;">
+                                    Comments :
+                                    <br/>
+                                    <div style="border:1px solid #808080;border-radius:3px;height:45px;padding:5px;">
+                                        <apex:outputText value="{!Questionnaire__c.Air_for_Unloading_30_psig_Comment__c}" />
+                                    </div>
+                                </td>
+                                <td width="50%" style="padding-top:10px;padding-bottom:15px;">
+                                    Notes :
+                                    <br/>
+                                    <div style="border:1px solid #808080;border-radius:3px;height:45px;padding:5px;">
+                                        <apex:outputText value="{!Questionnaire__c.Air_for_Unload_30_psig_NOTE__c}" />
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+                <tr>
+                    <td width="75%" style="padding-right:5px;padding-top:10px;">If customer supplied air is used, is it filtered to prevent contaminants from entering the railcar? If air is not used, mark 'N/A' in Comments.
+                    </td>
+                    <td width="25%" style="display : flex;">
+                        <img src="{!if(Questionnaire__c.Filtered_and_Oil_Free_Air_for_Unloading__c == 'No', '/img/checkbox_checked.gif' , '/img/checkbox_unchecked.gif')}"
+                             /> No
+                        <img src="{!if(Questionnaire__c.Filtered_and_Oil_Free_Air_for_Unloading__c == 'Yes' , '/img/checkbox_checked.gif' , '/img/checkbox_unchecked.gif')}"
+                             /> Yes  
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        <table style="width:100%;">
+                            <tr>
+                                <td width="50%" style="padding-top:10px;padding-bottom:15px;">
+                                    Comments :
+                                    <br/>
+                                    <div style="border:1px solid #808080;border-radius:3px;height:45px;padding:5px;">
+                                        <apex:outputText value="{!Questionnaire__c.Filtered_and_Oil_Free_Air_for_Unldg_Cmn__c}" />
+                                    </div>
+                                </td>
+                                <td width="50%" style="padding-top:10px;padding-bottom:15px;">
+                                    Notes :
+                                    <br/>
+                                    <div style="border:1px solid #808080;border-radius:3px;height:45px;padding:5px;">
+                                        <apex:outputText value="{!Questionnaire__c.FilteredOilFree_Air_NOTE__c}" />
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+                <tr>
+                    <td width="75%" style="padding-right:5px;padding-top:10px;">If a pump is used for unloading, explain the safeguards in place to prevent a vacuum on the railcar.(NOTE: All Olin Dilute Sulfuric Acid railcars are top unloading only, If a pump is not used, mark 'N/A' in Comments.)
+                    </td>
+                    <td width="25%" style="display : flex;">
+                        <img src="{!if(Questionnaire__c.Is_Pump_used_for_Unldg_and_verified__c == 'No', '/img/checkbox_checked.gif' , '/img/checkbox_unchecked.gif')}"
+                             /> No
+                        <img src="{!if(Questionnaire__c.Is_Pump_used_for_Unldg_and_verified__c == 'Yes' , '/img/checkbox_checked.gif' , '/img/checkbox_unchecked.gif')}"
+                             /> Yes  
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        <table style="width:100%;">
+                            <tr>
+                                <td width="50%" style="padding-top:10px;padding-bottom:15px;">
+                                    Comments :
+                                    <br/>
+                                    <div style="border:1px solid #808080;border-radius:3px;height:45px;padding:5px;">
+                                        <apex:outputText value="{!Questionnaire__c.Is_Pump_use_for_Unldg_verify_by_Cust_C__c}" />
+                                    </div>
+                                </td>
+                                <td width="50%" style="padding-top:10px;padding-bottom:15px;">
+                                    Notes :
+                                    <br/>
+                                    <div style="border:1px solid #808080;border-radius:3px;height:45px;padding:5px;">
+                                        <apex:outputText value="{!Questionnaire__c.Pump_used_for_Unldg_wvacuum_NOTE__c}" />
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+                
+                <tr>
+                    <td colspan="2" style="font-weight:bold;border-bottom:2px solid black;">Storage Tank</td>
+                </tr>
+                <tr>
+                    <td colspan="2" style="padding-top:10px;padding-bottom:15px;">
+                        List the capacity (in U.S. - gallons) of each storage tank being filled. :
+                        <br/>
+                        <div style="border:1px solid #808080;border-radius:3px;height:45px;padding:5px;">
+                            <apex:outputText value="{!Questionnaire__c.Size_of_Tank_Vant_Specified_Comments__c}" />
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2" style="padding-top:10px;padding-bottom:15px;">
+                        Specify the material of construction in 'COMMENTS'. (Provide specific detail, i.e., not just "plastic") : Delivery Connection
+                        <br/>
+                        <div style="border:1px solid #808080;border-radius:3px;height:45px;padding:5px;">
+                            <apex:outputText value="{!Questionnaire__c.MOC_Delivery_Connection__c}" />
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2" style="padding-top:10px;padding-bottom:15px;">
+                        Specify the material of construction in 'COMMENTS'. (Provide specific detail, i.e., not just "plastic") : Piping
+                        <br/>
+                        <div style="border:1px solid #808080;border-radius:3px;height:45px;padding:5px;">
+                            <apex:outputText value="{!Questionnaire__c.MOC_Piping__c}" />
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2" style="padding-top:10px;padding-bottom:15px;">
+                        Specify the material of construction in 'COMMENTS'. (Provide specific detail, i.e., not just "plastic") : Isolation Block(Valve)
+                        <br/>
+                        <div style="border:1px solid #808080;border-radius:3px;height:45px;padding:5px;">
+                            <apex:outputText value="{!Questionnaire__c.MOC_Valves_Fittings__c}" />
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2" style="padding-top:10px;padding-bottom:15px;">
+                        Specify the material of construction in 'COMMENTS'. (Provide specific detail, i.e., not just "plastic") : Storage Tank
+                        <br/>
+                        <div style="border:1px solid #808080;border-radius:3px;height:45px;padding:5px;">
+                            <apex:outputText value="{!Questionnaire__c.MOC_Tank__c}" />
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td width="75%" style="padding-right:5px;padding-top:10px;">Are there any leaks in the storage and piping systems?</td>
+                    <td width="25%" style="display : flex;">
+                        <img src="{!if(Questionnaire__c.Tank_Shows_No_Evidence_of_Leaks__c == 'No', '/img/checkbox_checked.gif' , '/img/checkbox_unchecked.gif')}"
+                             /> No
+                        <img src="{!if(Questionnaire__c.Tank_Shows_No_Evidence_of_Leaks__c == 'Yes' , '/img/checkbox_checked.gif' , '/img/checkbox_unchecked.gif')}"
+                             /> Yes
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        <table style="width:100%;">
+                            <tr>
+                                <td width="50%" style="padding-top:10px;padding-bottom:15px;border-bottom:1px solid black;">
+                                    Comments :
+                                    <br/>
+                                    <div style="border:1px solid #808080;border-radius:3px;height:45px;padding:5px;">
+                                        <apex:outputText value="{!Questionnaire__c.Tank_Shows_No_Evidence_of_Leaks_Comment__c}" />
+                                    </div>
+                                </td>
+                                <td width="50%" style="padding-top:10px;padding-bottom:15px;border-bottom:1px solid black;">
+                                    Notes :
+                                    <br/>
+                                    <div style="border:1px solid #808080;border-radius:3px;height:45px;padding:5px;">
+                                        <apex:outputText value="{!Questionnaire__c.Evidence_of_Leaks_NOTE__c}" />
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+                <tr>
+                    <td width="75%" style="padding-right:5px;padding-top:10px;">Does the tank inlet pipe enter through the top of the storage tank?</td>
+                    <td width="25%" style="display : flex;">
+                        <img src="{!if(Questionnaire__c.Tank_Fill_Pipe_is_at_the_Top__c == 'No', '/img/checkbox_checked.gif' , '/img/checkbox_unchecked.gif')}"
+                             /> No
+                        <img src="{!if(Questionnaire__c.Tank_Fill_Pipe_is_at_the_Top__c == 'Yes' , '/img/checkbox_checked.gif' , '/img/checkbox_unchecked.gif')}"
+                             /> Yes
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        <table style="width:100%;">
+                            <tr>
+                                <td width="50%" style="padding-top:10px;padding-bottom:15px;border-bottom:1px solid black;">
+                                    Comments :
+                                    <br/>
+                                    <div style="border:1px solid #808080;border-radius:3px;height:45px;padding:5px;">
+                                        <apex:outputText value="{!Questionnaire__c.Tank_Fill_Pipe_is_at_the_Top_Comment__c}" />
+                                    </div>
+                                </td>
+                                <td width="50%" style="padding-top:10px;padding-bottom:15px;border-bottom:1px solid black;">
+                                    Notes :
+                                    <br/>
+                                    <div style="border:1px solid #808080;border-radius:3px;height:45px;padding:5px;">
+                                        <apex:outputText value="{!Questionnaire__c.Tank_Fill_PipeTop_NOTE__c}" />
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2" style="padding-top:10px;padding-bottom:15px;border-bottom:1px solid black;">
+                        Enter the size of the storage tank vent line in ‘COMMENTS’.
+                        <br/>
+                        <div style="border:1px solid #808080;border-radius:3px;height:45px;padding:5px;">
+                            <apex:outputText value="{!Questionnaire__c.Size_of_Tank_Vant_Specified_Comments__c}" />
+                        </div>
+                    </td>
+                </tr>
+                <!--tr>
+                    <td colspan="2" style="padding-top:10px;padding-bottom:15px;border-bottom:1px solid black;">
+                        In 'COMMENTS', describe the scrubber system / type (for example recirculating; packed column; static; etc.).
+                        <br/>
+                        <div style="border:1px solid #808080;border-radius:3px;height:45px;padding:5px;">
+                            <apex:outputText value="{!Questionnaire__c.Scrubber_System_Type__c}" />
+                        </div>
+                    </td>
+                </tr-->
+                <tr>
+                    <td width="75%" style="padding-right:5px;padding-top:10px;">Is there an adequate process, equipment, and/or procedure in place to measure tank level to prevent tank overflow during the transfer? Describe in Comments.</td>
+                    <td width="25%" style="display : flex;">
+                        <img src="{!if(Questionnaire__c.Storage_Tank_Equipped_To_Measure_Volume__c == 'No', '/img/checkbox_checked.gif' , '/img/checkbox_unchecked.gif')}"
+                             /> No
+                        <img src="{!if(Questionnaire__c.Storage_Tank_Equipped_To_Measure_Volume__c == 'Yes' , '/img/checkbox_checked.gif' , '/img/checkbox_unchecked.gif')}"
+                             /> Yes
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        <table style="width:100%;">
+                            <tr>
+                                <td width="50%" style="padding-top:10px;padding-bottom:15px;border-bottom:1px solid black;">
+                                    Comments :
+                                    <br/>
+                                    <div style="border:1px solid #808080;border-radius:3px;height:45px;padding:5px;">
+                                        <apex:outputText value="{!Questionnaire__c.Equipped_To_Measure_Volume_Comments__c}" />
+                                    </div>
+                                </td>
+                                <td width="50%" style="padding-top:10px;padding-bottom:15px;border-bottom:1px solid black;">
+                                    Notes :
+                                    <br/>
+                                    <div style="border:1px solid #808080;border-radius:3px;height:45px;padding:5px;">
+                                        <apex:outputText value="{!Questionnaire__c.Process_To_Measure_Volume_NOTE__c}" />
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+                <tr>
+                    <td width="75%" style="padding-right:5px;padding-top:10px;"> Is the storage tank located inside a containment system?</td>
+                    <td width="25%" style="display : flex;">
+                        <img src="{!if(Questionnaire__c.Is_Tank_Located_in_Containment__c == 'No', '/img/checkbox_checked.gif' , '/img/checkbox_unchecked.gif')}"
+                             /> No
+                        <img src="{!if(Questionnaire__c.Is_Tank_Located_in_Containment__c == 'Yes' , '/img/checkbox_checked.gif' , '/img/checkbox_unchecked.gif')}"
+                             /> Yes
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        <table style="width:100%;">
+                            <tr>
+                                <td width="50%" style="padding-top:10px;padding-bottom:15px;border-bottom:1px solid black;">
+                                    Comments :
+                                    <br/>
+                                    <div style="border:1px solid #808080;border-radius:3px;height:45px;padding:5px;">
+                                        <apex:outputText value="{!Questionnaire__c.Tank_Located_in_Containment__c}" />
+                                    </div>
+                                </td>
+                                <td width="50%" style="padding-top:10px;padding-bottom:15px;border-bottom:1px solid black;">
+                                    Notes :
+                                    <br/>
+                                    <div style="border:1px solid #808080;border-radius:3px;height:45px;padding:5px;">
+                                        <apex:outputText value="{!Questionnaire__c.Tank_In_Containment_NOTE__c}" />
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+                <tr>
+                    <td width="75%" style="padding-right:5px;padding-top:10px;"> Is Sulfuric Acid stored in the same containment with other chemicals? List each chemical in Comments.</td>
+                    <td width="25%" style="display : flex;">
+                        <img src="{!if(Questionnaire__c.Stored_NAOH_with_Other_Chemicals__c == 'No', '/img/checkbox_checked.gif' , '/img/checkbox_unchecked.gif')}"
+                             /> No
+                        <img src="{!if(Questionnaire__c.Stored_NAOH_with_Other_Chemicals__c == 'Yes' , '/img/checkbox_checked.gif' , '/img/checkbox_unchecked.gif')}"
+                             /> Yes
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        <table style="width:100%;">
+                            <tr>
+                                <td width="50%" style="padding-top:10px;padding-bottom:15px;border-bottom:1px solid black;">
+                                    Comments :
+                                    <br/>
+                                    <div style="border:1px solid #808080;border-radius:3px;height:45px;padding:5px;">
+                                        <apex:outputText value="{!Questionnaire__c.Stored_NaOH_with_Other_Chemicals_Comment__c}" />
+                                    </div>
+                                </td>
+                                <td width="50%" style="padding-top:10px;padding-bottom:15px;border-bottom:1px solid black;">
+                                    Notes :
+                                    <br/>
+                                    <div style="border:1px solid #808080;border-radius:3px;height:45px;padding:5px;">
+                                        <apex:outputText value="{!Questionnaire__c.Stored_with_other_chemicals_NOTE__c}" />
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </body>
+</apex:page>

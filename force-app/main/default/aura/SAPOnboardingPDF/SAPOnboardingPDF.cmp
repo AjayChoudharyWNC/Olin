@@ -1,0 +1,4 @@
+<aura:component implements="flexipage:availableForRecordHome,force:hasRecordId,force:lightningQuickAction" access="global" >
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    <!--iframe src="{!'/apex/CustomerSetupPDF?id='+v.recordId}" style="width:580px;height:800px"/-->
+</aura:component>

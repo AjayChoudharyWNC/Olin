@@ -1,0 +1,23 @@
+<apex:component controller="ComponentQuoteLineScaleController" access="global">
+  <apex:attribute name="Qid" type="Id" description="Id of the quoteline" assignTo="{!quotelineId}"/>
+  
+  <apex:outputPanel rendered="{!hasSurcharge}">
+            <table  border = "1" cellspacing = "0">
+                <tr>
+                    <td>NAME</td>
+                    <td>UNIT PRICE/PERCENT</td>
+                    
+                    
+                </tr>
+                <apex:repeat value="{!quotelinesSurcharge}" var="ql">
+                    <tr>
+                        <td>{!ql.SBQQ__ProductName__c}</td>
+                        <td>{!ql.CurrencyIsoCode} {!ql.SBQQ__ListPrice__c}</td>
+                                                
+                    </tr>       
+                </apex:repeat>      
+                
+            </table> 
+    </apex:outputPanel>
+    <br/><br/>
+</apex:component>

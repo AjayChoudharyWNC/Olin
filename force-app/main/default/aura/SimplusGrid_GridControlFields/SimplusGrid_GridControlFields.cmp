@@ -1,0 +1,55 @@
+<aura:component controller="SimplusGridController">
+    <aura:attribute name="fieldSets" type="String" />
+    <aura:attribute type="Object[]" name="fieldsList" />
+    <aura:attribute type="String" name="mainListSource" />
+    <aura:attribute type="Boolean" name="showEdit" default="false"/>
+
+    <aura:attribute type="Boolean" name="isDisabled" default="false" />
+
+    <aura:handler value="{!this}" name="init" action="{!c.init}" />
+    <aura:registerEvent name="pushUpdate" type="c:SimplusGrid_PushUp"/>
+    <aura:registerEvent name="pushSave" type="c:SimplusGrid_PushUp"/>
+    <aura:registerEvent name="pushCancel" type="c:SimplusGrid_PushUp"/>
+    <aura:registerEvent name="pushClone" type="c:SimplusGrid_PushUp"/>
+
+    <div style="display: flex; margin-bottom: 10px;">
+        <div style="flex: 1;" />
+        <!--<aura:iteration items="{!v.fieldsList}" var="fl">
+            <c:SimplusGrid_GridControlFieldLineItem field="{!fl}" />
+        </aura:iteration>-->
+        <lightning:select aura:id="priceChangeBehavior" label="Price Change Behavior" class="margin-right" onchange="{!c.onPricePicklistSelect}" disabled="{!v.isDisabled}">
+            <option value="Add">Adjust Price</option>
+            <option value="Set">Set Price</option>
+            <option value="Percent">Adjust Percent</option>
+        </lightning:select>
+        <lightning:input 
+            aura:id="newPrice" 
+            type="number" 
+            label="Price Adjustment"
+            formatter="currency" 
+            step="0.01" 
+            autocomplete="off" 
+            class="margin-right"
+            oncommit="{!c.adjustPercentageField}"
+            disabled="{!v.isDisabled}"/>
+        <lightning:input aura:id="priceStart" type="date" name="priceStart" label="New Price Start Date" autocomplete="off" class="margin-right" onchange="{!c.validateDates}" disabled="{!v.isDisabled}"/>
+        <lightning:input aura:id="priceEnd" type="date" name="priceEnd" label="New Price Exp. Date" autocomplete="off" class="margin-right" onchange="{!c.validateDates}" disabled="{!v.isDisabled}"/>
+        <aura:if isTrue="{!v.fieldsList}">
+            <div style="margin-top: 22px;">
+                <!-- <aura:if isTrue="{!v.showEdit}"> -->
+                    <lightning:buttonGroup>
+                        <lightning:button label="Save" aura:id="btnApply" onclick="{!c.saveClicked}" class="button-fixed" disabled="{!v.isDisabled}"/>
+                        <!-- <lightning:button label="Cancel" onclick="{!c.cancelClicked}" class="button-fixed"/> -->
+                    </lightning:buttonGroup>
+                    <!-- <aura:set attribute="else">
+                        <lightning:buttonGroup>
+                            <lightning:button aura:id="btnApply" label="Apply" onclick="{!c.applyChangesClick}" class="button-fixed"/>
+                            <lightning:button label="Clear" onclick="{!c.clearAllClick}" class="button-fixed"/>
+                        </lightning:buttonGroup>
+                    </aura:set>
+                </aura:if> -->
+                <lightning:button label="Clone and Submit" onclick="{!c.cloneClicked}" variant="brand" class="button-fixed" disabled="{!v.isDisabled}"/>
+            </div>
+        </aura:if>
+    </div>
+</aura:component>

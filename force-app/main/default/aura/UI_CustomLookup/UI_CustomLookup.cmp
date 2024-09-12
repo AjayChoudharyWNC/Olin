@@ -1,0 +1,72 @@
+<aura:component controller="CustomUtilitiesController">
+    <aura:attribute type="String" name="srcObject" />
+    <aura:attribute type="String" name="filter" />
+    <aura:attribute type="String" name="labelApi" />
+    <aura:attribute type="String" name="fieldLabel" />
+    <aura:attribute type="String" name="idApi" />
+    <aura:attribute type="String" name="labelVal" />    
+    <aura:attribute type="String" name="idVal" />
+    <aura:attribute type="String[]" name="searchFrom" />
+    <aura:attribute type="String[]" name="display" default="['Name']"/>
+    <aura:attribute type="Object[]" name="results" />
+    <aura:attribute type="String" name="message" />
+    <aura:attribute type="Boolean" name="isLoading" default="false" />
+    
+    <aura:registerEvent name="pushNewVal" type="c:SimplusWalletShare_PushEvent"/>
+    <span>
+        <aura:if isTrue="{!v.idVal}">
+            
+            <div class="slds-form-element">
+                <aura:if isTrue="{!v.fieldLabel}">
+                    <label class="slds-form-element__label" for="inputField">{!v.fieldLabel}</label>
+                </aura:if>
+                <div class="slds-form-element__control slds-input-has-icon slds-input-has-icon_right slds-input-has-icon_group-right">
+                    <input type="String" aura:id="displayField" disabled="true" class="slds-input displayInput" value="{!v.labelVal}" />
+                </div>
+    
+                <div class="slds-input__icon-group slds-input__icon-group_right">
+                    <button class="slds-button slds-button_icon slds-input__icon slds-input__icon_right" title="undo" onclick="{!c.revertValue}">
+                        <lightning:icon iconName="utility:close" size="xx-small" alternativeText="Remove Selection" />
+                    </button>
+                </div>
+            </div>
+
+
+            <aura:set attribute="else">
+                <div class="slds-form-element">
+                    <aura:if isTrue="{!v.fieldLabel}">
+                        <label class="slds-form-element__label" for="inputField">{!v.fieldLabel}</label>
+                    </aura:if>
+                    <div class="slds-form-element__control slds-input-has-icon slds-input-has-icon_right slds-input-has-icon_group-right">
+                        <!-- lightning:icon size="xx-small" class="slds-icon slds-input__icon slds-input__icon_left slds-icon-text-default" iconName="utility:search" alternativeText="Utility image" / -->
+                        <input onblur="{!c.clearResults}" type="String" aura:id="inputField" value="{!v.labelVal}" onkeyup="{!c.onInputType}" class="slds-input"/>
+                    </div>
+        
+                    <div class="slds-input__icon-group slds-input__icon-group_right">
+                        <aura:if isTrue="{!v.isLoading}">
+                            <div role="status" class="slds-spinner slds-spinner_brand slds-spinner_x-small slds-input__spinner">
+                                <span class="slds-assistive-text">Loading</span>
+                                <div class="slds-spinner__dot-a"></div>
+                                <div class="slds-spinner__dot-b"></div>
+                            </div>
+                        </aura:if>
+                        
+                        <button class="slds-button slds-button_icon slds-input__icon slds-input__icon_right" title="undo" onclick="{!c.runSearch}">
+                            <br/>
+                            <lightning:icon iconName="utility:search" size="xx-small" alternativeText="Search" />
+                        </button>
+                    </div>
+                </div>
+        
+                <aura:if isTrue="{!v.message || v.results.length}">
+                    <div class="lookupResults" aura:id="resultContainer">
+                        <aura:iteration items="{!v.results}" var="r" indexVar="rIdx">
+                            <div class="lookupItem" onclick="{!c.onItemSelect}" data-src-id="{!r.Id}" data-src-index="{!rIdx}">{!r.Name}</div>
+                        </aura:iteration>
+                        <div class="lookupMessage">{!v.message}</div>
+                    </div>
+                </aura:if>
+            </aura:set>
+        </aura:if>
+    </span>
+</aura:component>

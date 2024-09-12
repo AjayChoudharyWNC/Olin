@@ -1,0 +1,212 @@
+<aura:component controller="OCO_SellerController" implements="flexipage:availableForRecordHome,force:hasRecordId,force:lightningQuickActionWithoutHeader" access="global" >
+    <aura:attribute name="mainAccount" type="Account"/>
+    <aura:attribute name="CSRTeamMember" type="Object"/>
+    <aura:attribute name="sapType" type="string"/>
+    <aura:attribute name="recordId" type="string"/>
+    <aura:attribute name="sapId" type="string"/>
+    <aura:attribute name="screen" default="pre" type="string"/>
+    <aura:attribute name="sapRecord" type="SAP_Onboarding__c" default="{'sObjectType' : 'SAP_Onboarding__c'}"/>
+    <aura:attribute name="spinner" type="boolean" default="false"/>
+    <aura:attribute name="showAppUser" type="boolean" default="true"/>
+    <aura:attribute name="isTypeDisabled" type="boolean" default="false"/>
+    <aura:attribute name="relatedContacts" type="Contact[]"/>
+    <aura:attribute name="shipToAccounts" type="Account[]"/>
+    <aura:attribute name="shipToAccount" type="String"/>
+    <aura:attribute name="mainOnboardContact" type="String"/>
+    <aura:attribute name="isCusTypeDisabled" type="boolean"/>
+    <aura:attribute name="isSalesOrgDisabled" type="boolean"/>
+    <aura:attribute name="requestTypes" type="List"/>
+    <aura:handler name="init" value="this" action="{!c.doInit}"/>
+    <aura:attribute name="dueDate" type="Date"/>
+    <aura:attribute name="estDate" type="Date"/>
+    <aura:attribute name="selectedSalesOrg" type="String"/>
+    <aura:attribute name="salesOrgs" type="List"/>
+    <aura:attribute name="isProspect" type="Boolean"/>
+    <aura:attribute name="relatedProducts" type="List"/>
+    <aura:attribute name="selectedShipToAccounts" type="List" default="[]"/>
+    <aura:attribute name="shipToAccountOptions" type="List"/>
+    <aura:attribute name="cusType" type="String"/>
+    <aura:attribute name="selectedUser" type="String"/>
+    <aura:attribute name="selectedCSR" type="String"/>
+    <aura:attribute name="isMultipleShipTo" type="boolean" default="true"/>
+    <aura:attribute name="showInfo" type="boolean" default="true"/>
+    <aura:attribute name="serviceRepUserList" type="List"/>
+    <ltng:require styles="{!$Resource.IncPopUpWidthForCreateSAP}"/>
+    <!--loading spinner start... style=Brand Medium (blue dots)-->
+    <aura:if isTrue="{!v.spinner}">
+        <div aura:id="spinnerId" class="slds-spinner_container">
+            <div class="slds-spinner--brand  slds-spinner slds-spinner--large slds-is-relative" role="alert">
+                <span class="slds-assistive-text">Loading</span>
+                <div class="slds-spinner__dot-a"></div>
+                <div class="slds-spinner__dot-b"></div>
+            </div>
+        </div>
+    </aura:if>
+    <!-- Loading spinner end--> 
+    <lightning:quickActionAPI aura:id="quickActionAPI" />
+    <form class="slds-form--stacked">
+        <div class="modal-header slds-modal__header slds-size_1-of-1">
+            <h4 class="title slds-text-heading--medium" >Customer Setup</h4>
+        </div>
+        <!-- MODAL BODY / INPUT FORM -->   
+        <div class="slds-modal__content  slds-size_1-of-1 slds-is-relative" style="{!'height:'+ if(v.screen == 'pre', '70vh', '500px')+' !important;overflow-y:auto !important;'}" aura:id="modalbody" id="modalbody">
+            <aura:if isTrue="{!if(v.screen == 'pre', true, false)}"  >
+                <lightning:recordEditForm  onsubmit="{!c.handleSubmit}" objectApiName="SAP_Onboarding__c" aura:id="SAPOnboarding" class="editForm">
+                    <lightning:messages />
+                    <aura:if isTrue="{!v.showInfo}" >
+                        <ui:message title="Important" severity="info" closable="true" class="slds-align_absolute-center uiWidth">
+                            Please ensure you have created your Prospect Ship-To, Purchased Product and your Main Contact prior to proceeding with this process.
+                        </ui:message>
+                    </aura:if>
+                    <div class="slds-grid slds-wrap slds-var-p-vertical_medium slds-var-p-horizontal_xx-large" >
+                        <div class="slds-col slds-size_2-of-12"> </div>
+                        <div class="slds-col slds-size_8-of-12 slds-grid" style="margin-bottom: 10px;">
+                            <span class="slds-size_4-of-12 slds-form-element__label" style="padding-top:20px;">Onboarding Request</span>
+                            <lightning:select name="On_boarding_Request_Type__c" label="" value="{!v.sapType}" aura:id="On_boarding_Request_Type__c" 
+                                              variant="label-hidden" class="slds-size_8-of-12" disabled="{!v.isTypeDisabled}" onchange="{!c.handleSapType}">
+                                <aura:iteration items="{!v.requestTypes}" var="re">
+                                    <aura:if isTrue="{!and(v.mainAccount.RecordType.Name != 'Prospect',re != 'New Sold-To w/ Ship-to &amp; Product')}">
+                                        <option value="{!re}">{!re}</option>
+                                        <aura:set attribute="else">
+                                            <aura:if isTrue = "{!v.mainAccount.RecordType.Name == 'Prospect'}">
+                                                <option value="New Sold-To w/ Ship-to &amp; Product">New Sold-To w/ Ship-to &amp; Product</option>
+                                            </aura:if>
+                                        </aura:set>
+                                    </aura:if>
+                                </aura:iteration>
+                            </lightning:select>
+                        </div>
+                        <div class="slds-col slds-size_2-of-12 "></div>
+                        <div class="slds-col slds-size_2-of-12 "> </div>
+                        <div class="slds-col slds-size_8-of-12 slds-grid" >
+                            <div class="slds-col slds-size_4-of-12">
+                                <Span style="font-size: 0.75rem;padding: 0px 0px 5px 5px;color:rgb(62, 62, 60);">Sold To Account</Span>
+                            </div>
+                            <div class="slds-col slds-size_8-of-12" style="padding: 0 4px 10px 0;">
+                                <lightning:inputField fieldName="Account__c" aura:id="Account__c" variant="label-hidden"  value="{!v.recordId}" disabled="true"  />
+                            </div>
+                        </div>
+                        <div class="slds-col slds-size_2-of-12 "></div>
+                        <div class="slds-col slds-size_2-of-12 "></div>
+                        <div class="slds-col slds-size_8-of-12 slds-grid slds-p-top_small">
+                            <span class="slds-size_4-of-12 slds-form-element__label">Ship To Account<aura:if isTrue="{!v.sapType != 'Modify Ship-To'}"><br/>(Click and select at least one Ship-To. Hold the Ctrl key and click each Ship-To select multiples)</aura:if></span>
+                            <select multiple="{!v.isMultipleShipTo}" id="shipToAccounts" class="slds-select" disabled="{!v.sapType == 'Modify Sold-To'}">
+                                <aura:iteration items="{!v.shipToAccountOptions}" var="acc">
+                                    <option value="{!acc.value}">{!acc.label}</option>
+                                </aura:iteration> 
+                            </select>
+                        </div>
+                        <div class="slds-col slds-size_2-of-12 "></div>
+                        <div class="slds-col slds-size_2-of-12 "> </div>
+                        <div class="slds-col slds-size_8-of-12 slds-grid" >
+                            <span class="slds-size_4-of-12 slds-form-element__label" style="padding-top:20px;">Sales Rep</span>
+                            <lightning:select label="" aura:id="Sales_Rep__c" value="{!v.selectedUser}" class="slds-size_8-of-12" variant="label-hidden">
+                                <option value="">--None--</option>
+                                <option value="{!v.mainAccount.OwnerId}" selected="true">{!v.mainAccount.Owner.Name}</option>
+                                <aura:iteration items="{!v.mainAccount.AccountTeamMembers}" var="user">
+                                    <aura:if isTrue="{!and(user.UserId != v.mainAccount.OwnerId, user.TeamMemberRole != 'Customer Service Rep')}">
+                                        <option value="{!user.UserId}">{!user.User.Name}</option>
+                                    </aura:if>
+                                </aura:iteration>
+                            </lightning:select>
+                        </div>
+                        <!--div class="slds-col slds-size_2-of-12 "></div>
+                        <div class="slds-col slds-size_2-of-12 "> </div>
+                        <div class="slds-col slds-size_8-of-12 slds-grid" >
+                            <aura:if isTrue="{!v.mainAccount.RecordType.Name != 'Prospect'}">
+                                <span class="slds-size_4-of-12 slds-form-element__label" style="padding-top:20px;">CSR</span>
+                                <lightning:inputField fieldName="Customer_Service_Rep__c" aura:id="CSR_Mgr__c" variant="label-hidden" class="slds-size_8-of-12 slds-m-top_medium" required="true" value="{!v.selectedCSR}"/>
+                                
+                            </aura:if>
+                        </div-->
+                        <div class="slds-col slds-size_2-of-12 "></div>
+                        <div class="slds-col slds-size_2-of-12 "> </div>
+                        <div class="slds-col slds-size_8-of-12 slds-grid" >
+                            <span class="slds-size_4-of-12 slds-form-element__label" style="padding-top:20px;">Sales Org</span>
+                            <aura:if isTrue="{!v.mainAccount.RecordType.Name == 'Prospect'}">
+                                <lightning:inputField fieldName="Sales_Organization__c" variant="label-hidden" disabled="{!v.isSalesOrgDisabled}" aura:id="Sales_Organization__c" value="{!v.selectedSalesOrg}" class="slds-size_8-of-12" style="padding-top:20px;"/>
+                                <aura:set attribute="else">
+                                    <lightning:select label="Sales Org" aura:id="Sales_Organization__c" value="{!v.selectedSalesOrg}" class="slds-size_8-of-12" variant="label-hidden">
+                                        <option value="">-None-</option>
+                                        <aura:iteration items="{!v.salesOrgs}" var="con">
+                                            <option value="{!con.Sales_Organization__r.Id}">{!con.Sales_Org_Name_Code__c}</option>
+                                        </aura:iteration>
+                                    </lightning:select>
+                                </aura:set>
+                            </aura:if>
+                        </div>
+                        <div class="slds-col slds-size_2-of-12 "></div>
+                        <div class="slds-col slds-size_2-of-12 "> </div>
+                        <div class="slds-col slds-size_8-of-12 slds-grid" >
+                            <span class="slds-size_4-of-12 slds-form-element__label" style="padding-top:20px;">Main Onboarding Contact</span>
+                            <lightning:select label="" aura:id="Main_Onboarding_Contact__c" value="{!v.mainOnboardContact}" class="slds-size_8-of-12" variant="label-hidden" onchange="{!c.handleMainConChange}">
+                                <option value="">--None--</option>
+                                <aura:iteration items="{!v.relatedContacts}" var="con">
+                                    <option value="{!con.Id}">{!con.Name} ({!con.Email != null ? con.Email : 'Email is missing'})</option>
+                                </aura:iteration>
+                            </lightning:select>
+                        </div>
+                        <div class="slds-col slds-size_2-of-12 "></div>
+                        <div class="slds-col slds-size_2-of-12 "> </div>
+                        <div class="slds-col slds-size_8-of-12 slds-grid slds-p-top_medium" >
+                            <div class="slds-size_4-of-12">
+                                <span style="font-size: 0.75rem;color:rgb(62, 62, 60);">Customer Type</span>
+                            </div>
+                            <div class="slds-col slds-size_8-of-12">
+                                <lightning:inputField fieldName="Customer_Type__c" value="{!v.cusType}" variant="label-hidden" disabled="{!v.isCusTypeDisabled}"/>
+                            </div>
+                        </div>
+                        <div class="slds-col slds-size_2-of-12 "></div>
+                        <div class="slds-col slds-size_2-of-12 "> </div>
+                        <div class="slds-col slds-size_8-of-12 slds-grid slds-p-top_medium" >
+                            <div class="slds-size_4-of-12">
+                                <span style="font-size: 0.75rem;color:rgb(62, 62, 60);">Form Due Date</span>
+                            </div>
+                            <div class="slds-col slds-size_8-of-12">
+                                <lightning:inputField fieldName="Form_Due_Date__c" value="{!v.dueDate}" variant="label-hidden"/>
+                            </div>
+                        </div>
+                        <aura:if isTrue ="{!and(v.sapType != 'Modify Sold-To',v.sapType != 'Modify Ship-To')}">
+                            <div class="slds-col slds-size_2-of-12 "></div>
+                            <div class="slds-col slds-size_2-of-12 "> </div>
+                            <div class="slds-col slds-size_8-of-12 slds-grid slds-p-top_medium" >
+                                <div class="slds-size_4-of-12">
+                                    <span style="font-size: 0.75rem;color:rgb(62, 62, 60);">Estimated Date Of First Shipment</span>
+                                </div>
+                                <div class="slds-col slds-size_8-of-12">
+                                    <lightning:inputField fieldName="Estimated_Date_of_First_Shipment__c" value="{!v.estDate}" variant="label-hidden"/>
+                                </div>
+                            </div>
+                        </aura:if>
+                      
+                    </div>
+                </lightning:recordEditForm>
+                <aura:set attribute="else">
+                    <aura:if isTrue="{!v.screen == 'post'}">
+                        <c:OCO_SellerMain selectedShipToAccounts="{!v.selectedShipToAccounts}" sapType="{!v.sapType}"  selectedSapId="{!v.sapId}"
+                                                    mainOnboardContact="{!v.mainOnboardContact}" recordId="{!v.recordId}" salesOrgs="{!v.salesOrgs}"
+                                                    mainAccount="{!v.mainAccount}" relatedProducts="{!v.relatedProducts}" isProspect="{!v.isProspect}"
+                                                    relatedContacts = "{!v.relatedContacts}" selectedSalesOrgId="{!v.selectedSalesOrg}" showNewSap = "true"
+                                                    formDueDate="{!v.dueDate}" estDate="{!v.estDate}" salesRepId="{!v.selectedUser}" CSRId = "{!v.selectedCSR}"/>
+                        <aura:set attribute="else">
+                            <c:OCO_SellerMain selectedShipToAccounts="{!v.selectedShipToAccounts}" sapType="{!v.sapType}"  selectedSapId="{!v.sapId}"
+                                                    mainOnboardContact="{!v.mainOnboardContact}" recordId="{!v.recordId}" salesOrgs="{!v.salesOrgs}"
+                                                    mainAccount="{!v.mainAccount}" relatedProducts="{!v.relatedProducts}" isProspect="{!v.isProspect}"  CSRId = "{!v.selectedCSR}"
+                                                    relatedContacts = "{!v.relatedContacts}" estDate="{!v.estDate}" selectedSalesOrgId="{!v.selectedSalesOrg}" salesRepId="{!v.selectedUser}" showNewSap = "true" />
+                        </aura:set>
+                    </aura:if>            
+                    
+                </aura:set>
+            </aura:if>
+            
+        </div>
+        <!-- MODAL FOOTER -->
+        <div class="modal-footer slds-modal__footer slds-size_1-of-1">
+            <div class="forceChangeRecordTypeFooter">
+                <aura:if isTrue="{!v.screen == 'pre'}">
+                    <ui:button class="slds-button slds-button--brand" label="Next" press="{!c.handlePreNext}"/>
+                </aura:if>
+            </div>
+        </div> 
+    </form>
+</aura:component>

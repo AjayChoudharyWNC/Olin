@@ -1,0 +1,730 @@
+<apex:page showHeader="false" sidebar="false" applyBodyTag="false" applyHtmlTag="false" standardController="SAP_Onboarding__c" renderAs="pdf" extensions="CustomerSetupPDFController">
+    <html>
+        <head>
+            <style>
+                @page {
+                margin : 2em;
+                }
+                html *
+                {
+                color: #000 !important;
+                font-family: Verdana, Arial, sans-serif !important;
+                }
+                .detailHeader{
+                font-size: 18px;
+                background:#d8d8d8;
+                padding:5px;
+                border: 1px solid #d8d8d8;
+                }
+                .fieldHeader{
+                font-size: 12px;
+                }
+                .fieldValue{
+                font-size:15px;
+                font-weight:bold;
+                }
+                #content-details{
+                padding-left : 10px;
+                padding-right : 10px;
+                margin-top:10px;
+                }
+                #content-details-child{
+                padding-left : 10px;
+                padding-right : 10px;
+                margin-top:50px;
+                }
+                
+                table, th, td {
+                border: 1px solid #d8d8d8;
+                border-collapse: collapse;
+                
+                }
+                
+                th{
+                font-weight:bold;background-color:#ececec;
+                width : 40% !important;
+                }
+                .marginTop{
+                margin-top : 2em;
+                }
+                
+            </style>
+        </head>
+        <body>
+            <div id="container">
+                <div id="header">
+                    <div style="float:left">
+                        <img src="{!$Resource.CustomerSetupLogo}" style="width:150px;"/>
+                    </div>
+                    <div style="text-align:right;">
+                        <span style="font-size:15px;font-weight:bold;">INTERNAL DOCUMENT<br/></span>
+                    </div>
+                    <div style="text-align:right;">
+                        <span style="font-size:15px;font-weight:bold;">CUSTOMER SETUP NO. {!SAP_Onboarding__c.Name}<br/></span>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="content" style="margin-top:3em;">
+                <div style="text-align:center;font-size:20px;font-weight:bold;">
+                    CUTOMER SETUP INFORMATION
+                </div>
+                <div style="text-align:center;font-size:20px;font-weight:bold;{!if(SAP_Onboarding__c.SAP_Status__c == 'Complete' , "display:block", "display:none;")}">
+                    Already Processed in MDG
+                </div>
+                
+                <div class="detailHeader marginTop">
+                    General Information
+                </div>
+                <table  style="margin-top:10px;width:100%; " cellpadding="4" cellspacing= "4">
+                    <tr>
+                        <th>Title</th>
+                        <td>{!SAP_Onboarding__c.Name}</td>
+                    </tr>  
+                    <tr>
+                        <th>Onboarding Request</th>
+                        <td>{!SAP_Onboarding__c.On_boarding_Request_Type__c}</td>
+                    </tr>
+                    <tr>
+                        <th>Sales Rep</th>
+                        <td>{!SAP_Onboarding__c.Sales_Rep__r.Name}</td>
+                    </tr>
+                    <tr>
+                        <th>Company Name(Legal Entity)</th>
+                        <td>{!SAP_Onboarding__c.Full_Legal_Name__c}</td>
+                    </tr>
+                    <tr>
+                        <th>Sales Org</th>
+                        <td>{!SAP_Onboarding__c.Sales_Organization__r.Name} - {!SAP_Onboarding__c.Sales_Organization__r.Sales_Organization_Code__c}</td>
+                    </tr>  
+                    <tr>
+                        <th>Form Due Date </th>
+                        <td><apex:outputText value="{0, date, MMMM d','  yyyy}">
+                            <apex:param value="{!SAP_Onboarding__c.Form_Due_Date__c}" /> 
+                            </apex:outputText></td>
+                    </tr>
+                    <tr>
+                        <th>Overall Status</th>
+                        <td>{!SAP_Onboarding__c.Status__c}</td>
+                    </tr>
+                    <tr>
+                        <th>Customer Information Status</th>
+                        <td>{!SAP_Onboarding__c.Customer_Information_Status__c}</td>
+                    </tr>
+                    <!--tr>
+<th>Document Delivery Status</th>
+<td>{!SAP_Onboarding__c.Order_Placement_Status__c}</td>
+</tr-->
+                    <tr>
+                        <th> Credit Application Status</th>
+                        <td>{!SAP_Onboarding__c.Credit_Application_Status__c}</td>
+                    </tr>
+                    <tr>
+                        <th>Product Stewardship Status</th>
+                        <td>{!SAP_Onboarding__c.Product_Stewardship_Status__c}</td>
+                    </tr>
+                </table>
+            </div> 
+            <div id="content" style="{!if(SAP_Onboarding__c.Account__c != null , "margin-bottom:4em;", "display:none;")}">
+                <div class="detailHeader marginTop">
+                    Sold - To Information
+                </div>
+                <table style="margin-top:10px;width:100%" cellpadding="4" cellspacing= "4">
+                    <tr>
+                        <th>Sold - To No. </th>
+                        <td> 
+                            {!SAP_Onboarding__c.SAP_S_4_No_Sold_To__c}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Name</th>
+                        <td>{!SAP_Onboarding__c.Sold_To_Company_Name__c}</td>
+                    </tr>
+                    <tr>
+                        <th>Street</th>
+                        <td>{!SAP_Onboarding__c.Sold_To_Street__c}</td>
+                    </tr>
+                    <tr>
+                        <th>Street 2</th>
+                        <td>{!SAP_Onboarding__c.Sold_To_Street_2__c}</td>
+                    </tr>
+                    <tr>
+                        <th>City</th>
+                        <td>{!SAP_Onboarding__c.Sold_To_City__c}</td>
+                    </tr>
+                    <tr>
+                        <th>State/Province</th>
+                        <td>{!SAP_Onboarding__c.Sold_To_State_Province__c}</td>
+                    </tr>
+                    <tr>
+                        <th>Postal code </th>
+                        <td>{!SAP_Onboarding__c.Sold_To_Postal_Code__c}</td>
+                    </tr>
+                    <tr>
+                        <th>Country</th>
+                        <td>{!SAP_Onboarding__c.Sold_To_Country__c}</td>
+                    </tr>
+                    <tr>
+                        <th> Telephone (Invoice)</th>
+                        <td>{!SAP_Onboarding__c.Email_Invoice_Phone__c}</td>
+                    </tr>
+                    <tr>
+                        <th>Email (Invoice)</th>
+                        <td>{!SAP_Onboarding__c.Email_Invoice_Email_Address__c}</td>
+                    </tr>
+                    <tr>
+                        <th>Salesforce Internal Id</th>
+                        <td> {!SAP_Onboarding__c.Name}</td>
+                    </tr>
+                </table>
+            </div>
+            <div id="content" style="margin-top:1em;">
+                <div class="detailHeader">
+                    Global Customer and Bill-To Details
+                </div>
+                <table  style="margin-top:10px ;width:100%" cellpadding="4" cellspacing= "4">
+                    <tr>
+                        <th>Global Customer</th>
+                        <td>
+                            <span  style="display: {!IF(SAP_Onboarding__c.Parent_Company_Name__c == '', 'none', 'block')};" > {!SAP_Onboarding__c.Parent_Company_Name__c},</span>
+                            <span  style="display: {!IF(SAP_Onboarding__c.Parent_Street__c == '', 'none', 'block')};" >{!SAP_Onboarding__c.Parent_Street__c},</span>
+                            <span  style="display: {!IF(SAP_Onboarding__c.Parent_Street_2__c == '', 'none', 'block')};" >{!SAP_Onboarding__c.Parent_Street_2__c},</span>
+                            <span  style="display: {!IF(SAP_Onboarding__c.Parent_City__c == '', 'none', 'block')};" > {!SAP_Onboarding__c.Parent_City__c},</span>
+                            <span  style="display: {!IF(SAP_Onboarding__c.Parent_State_Province__c == '', 'none', 'block')};" > {!SAP_Onboarding__c.Parent_State_Province__c},</span>
+                            <span  style="display: {!IF(SAP_Onboarding__c.Parent_Country__c == '', 'none', 'block')};" >{!SAP_Onboarding__c.Parent_Country__c}</span></td>
+                    </tr>
+                    <tr>
+                        <th>Bill-To Details</th>
+                        <td>
+                            <span  style="display: {!IF(SAP_Onboarding__c.Bill_To_Company_Name__c == '', 'none', 'block')};" > {!SAP_Onboarding__c.Bill_To_Company_Name__c},</span>
+                            <span  style="display: {!IF(SAP_Onboarding__c.Bill_To_Street__c == '', 'none', 'block')};" >{!SAP_Onboarding__c.Bill_To_Street__c},</span>
+                            <span  style="display: {!IF(SAP_Onboarding__c.Bill_To_Street_2__c == '', 'none', 'block')};" > {!SAP_Onboarding__c.Bill_To_Street_2__c},</span>
+                            <span  style="display: {!IF(SAP_Onboarding__c.Bill_To_City__c == '', 'none', 'block')};" >{!SAP_Onboarding__c.Bill_To_City__c},</span>
+                            <span  style="display: {!IF(SAP_Onboarding__c.Bill_To_State_Province__c == '', 'none', 'block')};" >{!SAP_Onboarding__c.Bill_To_State_Province__c},</span>
+                            <span  style="display: {!IF(SAP_Onboarding__c.Bill_To_Country__c == '', 'none', 'block')};" >{!SAP_Onboarding__c.Bill_To_Country__c}</span> 
+                        </td>
+                    </tr>
+                </table>  
+            </div>
+            <div id="content" style="margin-top:1em;">
+                <div class="detailHeader">
+                    Credit Information
+                </div>
+                <table style="margin-top:10px;width:100%" cellpadding="4" cellspacing= "4">
+                    <tr>
+                        <th>DUNS No.</th>
+                        <td>{!SAP_Onboarding__c.DUNS_No__c}</td>
+                    </tr>
+                    <tr>
+                        <th>Is Customer a Publicly Traded Company?</th>
+                        <td>{!SAP_Onboarding__c.Is_Customer_a_Publically_Traded_Company__c}</td>
+                    </tr>
+                    <tr>
+                        <th>Stock/Ticker Symbol</th>
+                        <td>{!SAP_Onboarding__c.Stock_Ticker_Symbol__c}</td>
+                    </tr>
+                    <tr>
+                        <th>Estimated Date Of First Shipment</th>
+                        <td> <apex:outputText value="{0, date, MMMM d','  yyyy}">  <apex:param value="{!SAP_Onboarding__c.Estimated_Date_of_First_Shipment__c}" /> </apex:outputText></td>
+                    </tr>
+                    <tr>
+                        <th>Requested Payment Terms</th>
+                        <td>{!SAP_Onboarding__c.Requested_Payment_Terms__c}</td>
+                    </tr>
+                    <tr>
+                        <th>Estimate First Order Value</th>
+                        <td><apex:outputText value="{0, Number, Currency}"><apex:param value="{!SAP_Onboarding__c.Estimated_First_Order_Amount__c}" /></apex:outputText></td>
+                    </tr>
+                    <tr>
+                        <th>Estimate Annual Sales</th>
+                        <td><apex:outputText value="{0, Number, Currency}"><apex:param value="{!SAP_Onboarding__c.Estimated_Annual_Sales__c}"/></apex:outputText></td>
+                    </tr>
+                    <tr>
+                        <th>Describe Special Billing Procedures Req.</th>
+                        <td>{!SAP_Onboarding__c.Non_Standard_Billing_Procedure_Details__c}</td>
+                    </tr>
+                    
+                    <tr>
+                        <th>Additional Information</th>
+                        <td>{!SAP_Onboarding__c.Additional_Information__c}</td>
+                    </tr>
+                </table>
+                
+                <apex:variable value="{!0}" var="rowNum"/>
+                <apex:repeat value="{!vatList}" var="vat">
+                    <apex:variable var="rowNum" value="{!rowNum + 1}"/>
+                    <div class="detailHeader marginTop">
+                        Tax/VAT {!rowNum}
+                    </div>
+                    <table style="margin-top:10px ;width:100%" cellpadding="4" cellspacing= "4">
+                        <tr>
+                            <th>Country</th>
+                            <td>{!vat.Country__c}</td>
+                        </tr>
+                        <tr>
+                            <th>Tax Type</th>
+                            <td>{!vat.Tax_Type__c}</td>
+                        </tr>
+                        <tr>
+                            <th>Tax/VAT Exempt</th>
+                            <td>{!vat.Tax_VAT1_Exempt__c}</td>
+                        </tr>
+                        <tr>
+                            <th>Tax/VAT Number</th>
+                            <td>{!vat.VAT_Tax_Number__c}</td>
+                        </tr>
+                        
+                    </table>
+                </apex:repeat>
+            </div>
+            <div id="content">
+                <div class="detailHeader marginTop">
+                    Contacts
+                </div>
+                <table style="margin-top:10px;width:100%" cellpadding="4" cellspacing= "4">
+                    <tr>
+                        <th>Contract Notification | Contact</th>
+                        <td>{!SAP_Onboarding__c.Contract_Notification_First_Name__c} &nbsp;
+                            <span  style="display: {!IF(SAP_Onboarding__c.Contract_Notification_Last_Name__c == '', 'none', 'block')};" > {!SAP_Onboarding__c.Contract_Notification_Last_Name__c},</span>
+                            <span  style="display: {!IF(SAP_Onboarding__c.Contract_Notification_Title__c == '', 'none', 'block')};" >{!SAP_Onboarding__c.Contract_Notification_Title__c},</span>
+                            <span  style="display: {!IF(SAP_Onboarding__c.Contract_Notification_Email__c == '', 'none', 'block')};" >{!SAP_Onboarding__c.Contract_Notification_Email__c},</span>
+                            <span  style="display: {!IF(SAP_Onboarding__c.Contract_Notification_Phone__c == '', 'none', 'block')};" >TEL - {!SAP_Onboarding__c.Contract_Notification_Phone__c}</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Credit | Contact</th>
+                        <td>{!SAP_Onboarding__c.Credit_First_Name__c} &nbsp;
+                            <span  style="display: {!IF(SAP_Onboarding__c.Credit_Last_Name__c == '', 'none', 'block')};" > {!SAP_Onboarding__c.Credit_Last_Name__c},</span>
+                            <span  style="display: {!IF(SAP_Onboarding__c.Credit_Title__c == '', 'none', 'block')};" >{!SAP_Onboarding__c.Credit_Title__c},</span>
+                            <span  style="display: {!IF(SAP_Onboarding__c.Credit_Email__c == '', 'none', 'block')};" > {!SAP_Onboarding__c.Credit_Email__c},</span>
+                            <span  style="display: {!IF(SAP_Onboarding__c.Credit_Phone__c == '', 'none', 'block')};" >TEL - {!SAP_Onboarding__c.Credit_Phone__c}</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Account Payable | Contact</th>
+                        <td>{!SAP_Onboarding__c.Account_Payable_First_Name__c} &nbsp;
+                            <span  style="display: {!IF(SAP_Onboarding__c.Account_Payable_Last_Name__c == '', 'none', 'block')};" > {!SAP_Onboarding__c.Account_Payable_Last_Name__c},</span>
+                            <span  style="display: {!IF(SAP_Onboarding__c.Account_Payable_Title__c == '', 'none', 'block')};" > {!SAP_Onboarding__c.Account_Payable_Title__c},</span>
+                            <span  style="display: {!IF(SAP_Onboarding__c.Account_Payable_Email__c == '', 'none', 'block')};" > {!SAP_Onboarding__c.Account_Payable_Email__c},</span>
+                            <span  style="display: {!IF(SAP_Onboarding__c.Account_Payable_Phone__c == '', 'none', 'block')};" >TEL - {!SAP_Onboarding__c.Account_Payable_Phone__c}</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Email Invoice  | Contact</th>
+                        <td>{!SAP_Onboarding__c.Email_Invoice_First_Name__c} &nbsp;
+                            <span  style="display: {!IF(SAP_Onboarding__c.Email_Invoice_Last_Name__c == '', 'none', 'block')};" > {!SAP_Onboarding__c.Email_Invoice_Last_Name__c},</span>
+                            <span  style="display: {!IF(SAP_Onboarding__c.Email_Invoice_Title__c == '', 'none', 'block')};" > {!SAP_Onboarding__c.Email_Invoice_Title__c},</span>
+                            <span  style="display: {!IF(SAP_Onboarding__c.Email_Invoice_Email_Address__c == '', 'none', 'block')};" > {!SAP_Onboarding__c.Email_Invoice_Email_Address__c},</span>
+                            <span  style="display: {!IF(SAP_Onboarding__c.Email_Invoice_Phone__c == '', 'none', 'block')};" >TEL - {!SAP_Onboarding__c.Email_Invoice_Phone__c}</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>CFO (Officer) | Contact</th> 
+                        <td>{!SAP_Onboarding__c.CXO_Officer_First_Name__c} &nbsp;
+                            <span  style="display: {!IF(SAP_Onboarding__c.CXO_Officer_Last_Name__c == '', 'none', 'block')};" > {!SAP_Onboarding__c.CXO_Officer_Last_Name__c},</span>
+                            <span  style="display: {!IF(SAP_Onboarding__c.CXO_Officer_Title__c == '', 'none', 'block')};" > {!SAP_Onboarding__c.CXO_Officer_Title__c},</span>
+                            <span  style="display: {!IF(SAP_Onboarding__c.CXO_Officer_Email__c == '', 'none', 'block')};" > {!SAP_Onboarding__c.CXO_Officer_Email__c},</span>
+                            <span  style="display: {!IF(SAP_Onboarding__c.CXO_Officer_Phone__c == '', 'none', 'block')};" > TEL - {!SAP_Onboarding__c.CXO_Officer_Phone__c}</span>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div id="content" style="margin-top:1em;">
+                <apex:variable value="{!0}" var="rowNum"/>
+                <table style="width:100% ;margin-bottom:2em;">
+                    <apex:repeat value="{!shipToList}" var="acc">
+                        <apex:variable var="rowNum" value="{!rowNum + 1}"/>
+                        <tr>
+                            <td>
+                                <div class="detailHeader" style="{!IF(rowNum != 1, 'margin-top:1em;', '')}">
+                                    Ship - To Information {!rowNum}
+                                </div>
+                                <table style="margin-top:10px;width:100%" cellpadding="4" cellspacing= "4">
+                                    <tr>
+                                        <th>Ship-To Num </th>
+                                        <td> {!acc.Ship_To_No__c}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>Name</th>
+                                        <td>{!acc.Ship_To_Company_Name__c}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Street</th>
+                                        <td>{!acc.Ship_To_Street__c}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Street 2</th>
+                                        <td>{!acc.Ship_To_Street_2__c}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>City</th>
+                                        <td>{!acc.Ship_To_City__c}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>State/Province</th>
+                                        <td>{!acc.Ship_To_State_Province__c}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Postal Code</th>
+                                        <td>{!acc.Ship_To_Postal_Code__c}</td>
+                                    </tr>
+                                    
+                                    <tr>
+                                        <th>Country</th>
+                                        <td>{!acc.Ship_To_Country__c}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Buyer | Contact</th>
+                                        <td>{!acc.Buyer_First_Name__c}&nbsp;
+                                            <span  style="display: {!IF(acc.Buyer_Last_Name__c == '', 'none', 'block')};" > {!acc.Buyer_Last_Name__c},</span>
+                                            <span  style="display: {!IF(acc.Buyer_Title__c== '', 'none', 'block')};" >{!acc.Buyer_Title__c}</span>
+                                            <span  style="display: {!IF(acc.Buyer_Email__c == '', 'none', 'block')};" >{!acc.Buyer_Email__c},</span>
+                                            <span  style="display: {!IF(acc.Buyer_Phone__c == '', 'none', 'block')};" >TEL - {!acc.Buyer_Phone__c}</span>
+                                            <span  style="display: {!IF(acc.Buyer_Fax__c == '', 'none', 'block')};" >FAX - {!acc.Buyer_Fax__c}</span>
+                                            
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>Delivery Point | Contact</th>
+                                        <td>{!acc.Delivery_Point_First_Name__c}&nbsp;
+                                            <span  style="display: {!IF(acc.Delivery_Point_Last_Name__c == '', 'none', 'block')};" > {!acc.Delivery_Point_Last_Name__c},</span>
+                                            <span  style="display: {!IF(acc.Delivery_Point_Title__c== '', 'none', 'block')};" >{!acc.Delivery_Point_Title__c}</span>
+                                            <span  style="display: {!IF(acc.Delivery_Point_Email__c == '', 'none', 'block')};" >{!acc.Delivery_Point_Email__c},</span>
+                                            <span  style="display: {!IF(acc.Delivery_Point_Phone__c == '', 'none', 'block')};" >TEL - {!acc.Delivery_Point_Phone__c}</span>
+                                            <span  style="display: {!IF(acc.Delivery_Point_Fax__c == '', 'none', 'block')};" >FAX - {!acc.Delivery_Point_Fax__c}</span>
+                                            
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>Product Stewardship | Contact</th>
+                                        <td>{!acc.Regulatory_First_Name__c}&nbsp;
+                                            <span  style="display: {!IF(acc.Regulatory_Last_Name__c == '', 'none', 'block')};" > {!acc.Regulatory_Last_Name__c},</span>
+                                            <span  style="display: {!IF(acc.Regulatory_Title__c== '', 'none', 'block')};" >{!acc.Regulatory_Title__c}</span>
+                                            <span  style="display: {!IF(acc.Regulatory_Email__c == '', 'none', 'block')};" >{!acc.Regulatory_Email__c},</span>
+                                            <span  style="display: {!IF(acc.Regulatory_Phone__c == '', 'none', 'block')};" >TEL - {!acc.Regulatory_Phone__c}</span>
+                                            <span  style="display: {!IF(acc.Regulatory_Phone__c == '', 'none', 'block')};" >FAX - {!acc.Regulatory_Fax__c}</span>
+                                            
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>After Hours | Contact</th>
+                                        <td>{!acc.After_Hours_First_Name__c}&nbsp;
+                                            <span  style="display: {!IF(acc.After_Hours_Last_Name__c == '', 'none', 'block')};" > {!acc.After_Hours_Last_Name__c},</span>
+                                            <span  style="display: {!IF(acc.After_Hours_Title__c== '', 'none', 'block')};" >{!acc.After_Hours_Title__c}</span>
+                                            <span  style="display: {!IF(acc.After_Hours_Email__c == '', 'none', 'block')};" >{!acc.After_Hours_Email__c},</span>
+                                            <span  style="display: {!IF(acc.After_Hours_Phone__c == '', 'none', 'block')};" >TEL - {!acc.After_Hours_Phone__c}</span>
+                                            <span  style="display: {!IF(acc.After_Hours_Phone__c == '', 'none', 'block')};" >FAX - {!acc.After_Hours_Fax__c}</span>
+                                            
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>Salesforce Internal Id</th>
+                                        <td> {!acc.Name}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Order Confirmation Email/Fax</th>
+                                        <td>{!acc.Order_Confirmation_Email_Fax__c}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Preferred Method of Order Confirmation</th>
+                                        <td>{!acc.Preferred_Method_of_Order_Confirmation__c}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Bill of Lading Email/Fax</th>
+                                        <td>{!acc.Bill_of_Lading_Email_Fax__c}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Preferred Method of Bill of Lading</th>
+                                        <td>{!acc.Preferred_Method_of_Bill_of_Lading__c}</td>
+                                    </tr> 
+                                    <tr>
+                                        <th>SDS Delivery Email/Fax</th>
+                                        <td>{!acc.SDS_Delivery_Email_Fax__c}</td>
+                                    </tr> 
+                                    <tr>
+                                        <th>Preferred Method of SDS Delivery</th>
+                                        <td>{!acc.Preferred_Method_of_MSDS_Delivery__c}</td>
+                                    </tr> 
+                                    <tr>
+                                        <th>Certificate of Analysis Email/Fax</th>
+                                        <td>{!acc.Certificate_of_Analysis_Email_Fax__c}</td>
+                                    </tr> 
+                                    <tr>
+                                        <th>Preferred Method of Certifi. of Analysis</th>
+                                        <td>{!acc.Preferred_Method_of_Certifi_of_Analysis__c}</td>
+                                    </tr>
+                                </table>  
+                            </td>
+                        </tr>
+                        <table style="width:100%;margin-top:2em;">
+                            <tr><td>
+                                <div id="content">
+                                    <apex:variable var="prodRowNum" value="{!0}"/>
+                                    <apex:repeat value="{!prodList}" var="prod">
+                                        <div style="{!if(prod.Onboarding_Ship_To__c == acc.Id, '', 'display:none;')}">
+                                        <apex:variable var="prodRowNum" value="{!if(prod.Onboarding_Ship_To__c == acc.Id, prodRowNum + 1, prodRowNum)}"/>
+                                        <div class="detailHeader" style="{!IF(prodRowNum != 1, 'margin-top:1em;', '')}">
+                                           Ship-To {!rowNum} Product {!prodRowNum} Details
+                                        </div>
+                                        <table  style="margin-top:10px ;width:100%" cellpadding="4" cellspacing= "4">
+                                            <tr>
+                                                <th>Product Name</th>
+                                                <td>{!prod.Purchased_Product__r.Product_R1__r.Name}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Product GMID</th>
+                                                <td>{!prod.Purchased_Product__r.Product_R1__r.GMID_Number__c}</td>
+                                            </tr>
+                                            <tr>
+                                                <th> Product UOM</th>
+                                                <td>{!prod.Product_UOM__c}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Primary Ship Mode</th>
+                                                <td>{!prod.New_Customer_Ship_Mode__c}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Estimated Volume</th>
+                                                <td><apex:outputText value="{0, Number}"><apex:param value="{!prod.Estimated_Volume__c}"/></apex:outputText></td>
+                                            </tr>
+                                            <tr>
+                                                <th>Volume Period</th>
+                                                <td>{!prod.Volume_Period__c}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Is this Customer Pickup?</th>
+                                                <td>{!prod.Customer_Pickup__c}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Truck Type</th>
+                                                <td>{!prod.Truck_Type__c}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Estimated Date of First Shipment for this Product</th>
+                                                <td> <apex:outputText value="{0, date, MMMM d','  yyyy}"><apex:param value="{!prod.Estimated_Date_of_First_Shipment__c}" />    </apex:outputText></td>
+                                            </tr>
+                                            <tr>
+                                                <th>Do You Have a Customer Material Number?</th>
+                                                <td>{!prod.Customer_Material_Number__c}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Customer Material Number or Description</th>
+                                                <td>{!prod.Customer_Material_Number_Free_Text__c}</td>
+                                            </tr>
+                                        </table>
+                                        <table  style="margin-top:10px ;width:100%" cellpadding="4" cellspacing= "4">
+                                            <tr>
+                                                <td colspan="2">
+                                                    <div class="detailHeader">
+                                                        Quality
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <th>Specific Quality Standards</th>
+                                                <td>{!prod.Any_Specific_Quality_Standards__c}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Specific Quality Standards (Other)</th>
+                                                <td>{!prod.Specific_Quality_Standards_Other__c}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Standard Product Specifications</th>
+                                                <td>{!prod.Any_Non_Standard_Product_Specifications__c}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Customer Product Specifications</th>
+                                                <td>{!prod.Any_Customer_Specifications__c}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Quality Spec Attached?</th>
+                                                <td>{!if(prod.Attachments.size > 0, 'Yes' ,'No')}</td>
+                                            </tr>
+                                        </table>
+                                        <table  style="{!if(prod.Has_Regulatory_Info__c == true, 'margin-top:10px ;width:100%;', 'margin-top:10px ;width:100%;display:none')}" cellpadding="4" cellspacing= "4">
+                                            <tr>
+                                                <td colspan="2">
+                                                    <div class="detailHeader">
+                                                        Regulatory
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <th>Is EPA/FIFRA/PMRA/PCP Registration?</th>
+                                                <td>{!prod.Is_EPA_FIFRA_PMRA_PCP_Registration__c}</td>
+                                            </tr>
+                                            
+                                            <tr>
+                                                <th>How are you using your product?</th>
+                                                <td>{!prod.How_are_you_using_your_product__c}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Is EUP or MUP?</th>
+                                                <td>{!prod.Is_EUP_or_MUP__c}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Customer Has Registered Label?</th>
+                                                <td>{!prod.Customer_Has_Registered_Label__c}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Customer Establishment No</th>
+                                                <td>{!prod.Customer_Establishment_No__c}</td>
+                                            </tr>
+                                        </table>
+                                        <table  style="margin-top:10px ;width:100%" cellpadding="4" cellspacing= "4">
+                                            <tr>
+                                                <td colspan="2">
+                                                    <div class="detailHeader">
+                                                        Pricing
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <th>Primary Ship From</th>
+                                                <td>{!prod.Primary_Ship_From__r.Name} - {!prod.Primary_Ship_From__r.SAP_ID__c}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>INCO Terms</th>
+                                                <td>{!prod.INCO_Terms__c}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Validity Start Date</th>
+                                                <td> <apex:outputText value="{0, date, MMMM d','  yyyy}"><apex:param value="{!prod.Validity_Start_Date__c}" />    </apex:outputText></td>
+                                            </tr>
+                                            <tr>
+                                                <th>Validity End Date</th>
+                                                <td> <apex:outputText value="{0, date, MMMM d','  yyyy}"><apex:param value="{!prod.Validity_End_Date__c}" />    </apex:outputText></td>
+                                            </tr>
+                                            <tr>
+                                                <th>Grade/Concentration (If Applicable)</th>
+                                                <td>{!prod.GradeConcentration__c}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Initial Price</th>
+                                                <td>{!prod.Initial_Price__c}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Currency</th>
+                                                <td>{!prod.Currency__c}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>UOM</th>
+                                                <td>{!prod.UOM__c}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>FSC Exempt?</th>
+                                                <td>{!prod.FSC_Exempt__c}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>List Price</th>
+                                                <td>{!prod.List_Price__c}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Energy Surcharge?</th>
+                                                <td>{!prod.Energy_Surcharge__c}</td>
+                                            </tr>
+                                          <tr>
+                                                <th>Enter Scales?</th>
+                                                <td>{!if(prod.Scales__c == true, 'Yes', 'No')}</td>
+                                            </tr>
+                                            
+                                            <tr>
+                                                <th>Scale UOM</th>
+                                                <td>{!prod.Scale_UOM__c}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Scale Volume</th>
+                                                <td><span style="display: {!IF(prod.Scale_1_Volume__c == null, 'none', 'block')};">Scale 1 - {!prod.Scale_1_Volume__c}</span>
+                                                    <span style="display: {!IF(prod.Scale_2_Volume__c == null, 'none', 'block')};">Scale 2 - {!prod.Scale_2_Volume__c}</span>
+                                                    <span style="display: {!IF(prod.Scale_3_Volume__c == null, 'none', 'block')};">Scale 3 - {!prod.Scale_3_Volume__c}</span>
+                                                    <span style="display: {!IF(prod.Scale_4_Volume__c == null, 'none', 'block')};">Scale 4 - {!prod.Scale_4_Volume__c}</span>
+                                                    <span style="display: {!IF(prod.Scale_5_Volume__c == null, 'none', 'block')};">Scale 5 - {!prod.Scale_5_Volume__c}</span>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <th>Scale Price</th>
+                                                <td><span style="display: {!IF(prod.Scale_1_Price__c == null, 'none', 'block')};">Scale 1 - {!prod.Scale_1_Price__c}</span>
+                                                    <span style="display: {!IF(prod.Scale_2_Price__c == null, 'none', 'block')};">Scale 2 - {!prod.Scale_2_Price__c}</span>
+                                                    <span style="display: {!IF(prod.Scale_3_Price__c == null, 'none', 'block')};">Scale 3 - {!prod.Scale_3_Price__c}</span>
+                                                    <span  style="display: {!IF(prod.Scale_4_Price__c == null, 'none', 'block')};">Scale 4 - {!prod.Scale_4_Price__c}</span>
+                                                    <span style="display: {!IF(prod.Scale_5_Price__c == null, 'none', 'block')};">Scale 5 - {!prod.Scale_5_Price__c}</span>
+                                                </td>
+                                            </tr>
+                                            
+                                            <tr>
+                                                <th>Additional Ship-From/Price?</th>
+                                                <td>{!if(prod.Additional_Ship_From_Price__c == true, 'Yes', 'No')}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Additional/Alternate Ship From</th>
+                                                <td>{!prod.Additional_Alternate_ship_From__r.Name}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Additional Volume</th>
+                                                <td>{!prod.Additional_Volume__c}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Additional Price</th>
+                                                <td>{!prod.Additional_Price__c}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Additional Scales?</th>
+                                                <td>{!if(prod.X2nd_Scales__c == true, 'Yes', 'No')}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Scale UOM</th>
+                                                <td>{!prod.X2nd_Scale_UOM__c}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Scale Volume</th>
+                                                <td><span style="display: {!IF(prod.X2nd_Scale_1_Volume__c == null, 'none', 'block')};">Scale 1 - {!prod.X2nd_Scale_1_Volume__c}</span>
+                                                    <span style="display: {!IF(prod.X2nd_Scale_2_Volume__c == null, 'none', 'block')};">Scale 2 - {!prod.X2nd_Scale_2_Volume__c}</span>
+                                                    <span style="display: {!IF(prod.X2nd_Scale_3_Volume__c == null, 'none', 'block')};">Scale 3 - {!prod.X2nd_Scale_3_Volume__c}</span>
+                                                    <span style="display: {!IF(prod.X2nd_Scale_4_Volume__c == null, 'none', 'block')};">Scale 4 - {!prod.X2nd_Scale_4_Volume__c}</span>
+                                                    <span style="display: {!IF(prod.X2nd_Scale_5_Volume__c == null, 'none', 'block')};">Scale 5 - {!prod.X2nd_Scale_5_Volume__c}</span>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <th>Scale Price</th>
+                                                <td><span style="display: {!IF(prod.X2nd_Scale_1_Price__c == null, 'none', 'block')};">Scale 1 - {!prod.X2nd_Scale_1_Price__c}</span>
+                                                    <span style="display: {!IF(prod.X2nd_Scale_2_Price__c == null, 'none', 'block')};">Scale 2 - {!prod.X2nd_Scale_2_Price__c}</span>
+                                                    <span style="display: {!IF(prod.X2nd_Scale_3_Price__c == null, 'none', 'block')};">Scale 3 - {!prod.X2nd_Scale_3_Price__c}</span>
+                                                    <span  style="display: {!IF(prod.X2nd_Scale_4_Price__c == null, 'none', 'block')};">Scale 4 - {!prod.X2nd_Scale_4_Price__c}</span>
+                                                    <span style="display: {!IF(prod.X2nd_Scale_5_Price__c == null, 'none', 'block')};">Scale 5 - {!prod.X2nd_Scale_5_Price__c}</span>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <th>Additional Pricing Comments/Charges</th>
+                                                <td>{!prod.Additional_Pricing_Comments_Charges__c}</td>
+                                            </tr>
+                                            
+                                            
+                                        </table>
+                                        </div>
+                                    </apex:repeat>
+                                </div>
+                                </td>
+                            </tr>
+                        </table>
+                    </apex:repeat>
+                </table>
+            </div>
+            <div id="content" style="margin-top:1em;">
+                <div class="detailHeader">
+                    MDG Information
+                </div>
+                <table style="margin-top:10px;width:100%" cellpadding="4" cellspacing= "4">
+                    <tr>
+                        <th>MDG Status</th>
+                        <td>{!SAP_Onboarding__c.SAP_Status__c}</td>
+                    </tr>
+                    <tr>
+                        <th>MDG CR No. | SAP Codes | Comments</th>
+                        <td>{!SAP_Onboarding__c.New_SAP_Codes_Comments__c}</td>
+                    </tr>
+                </table>
+            </div>
+        </body>
+    </html>
+</apex:page>

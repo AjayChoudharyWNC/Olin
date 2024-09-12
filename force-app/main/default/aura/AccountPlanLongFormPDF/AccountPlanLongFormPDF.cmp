@@ -1,0 +1,58 @@
+<aura:component implements="force:appHostable,flexipage:availableForAllPageTypes,force:hasRecordId,force:LightningQuickAction" access="global">
+    <aura:attribute name="recordId" type="Id" />
+    <aura:attribute name="logo" type="Boolean"/>
+    <aura:attribute name="sta" type="Boolean"/>
+    <aura:attribute name="exes" type="Boolean"/>
+    <aura:attribute name="apro" type="Boolean"/>
+    <aura:attribute name="asg" type="Boolean"/>
+    <aura:attribute name="ets" type="Boolean"/>
+    <aura:attribute name="cps" type="Boolean"/>
+    <aura:attribute name="cbs" type="Boolean"/>
+    <aura:attribute name="cana" type="Boolean"/>
+    <aura:attribute name="swot" type="Boolean"/>
+    <aura:attribute name="apt" type="Boolean"/>
+    <aura:attribute name="kc" type="Boolean"/>
+    <aura:attribute name="cr" type="Boolean"/>
+    <aura:attribute name="mp" type="Boolean"/>
+    <aura:attribute name="sec" type="String"/>
+    
+    <div class="slds-box slds-grid slds-wrap">
+        <div class="slds-col slds-size_1-of-1 slds-align_absolute-center">Please select sections to be included into PDF below:</div>
+        <div class="slds-col slds-size_1-of-1 slds-align_absolute-center">
+            <div class="slds-form-element slds-m-right_small" id="switch">
+                <label class="slds-checkbox_toggle slds-grid">
+                    <input name="checkbox-toggle-2" type="checkbox" checked="false" aria-describedby="checkbox-toggle-2" value="checkbox-toggle-2" onchange="{!c.toggleSelect}"/>
+                    <span id="checkbox-toggle-2" class="slds-checkbox_faux_container" aria-live="assertive">
+                        <span class="slds-checkbox_faux"></span>
+                        <span class="slds-checkbox_on">Select All</span>
+                        <span class="slds-checkbox_off">Deselect All</span>
+                    </span>
+                </label>
+            </div>
+        </div>
+    	<div class="slds-col slds-size_1-of-2"><lightning:input type="checkbox" label="Logo" checked="{!v.logo}"/></div>
+        <div class="slds-col slds-size_1-of-2"><lightning:input type="checkbox" label="Sold-To Accounts" checked="{!v.sta}"/></div>
+        <div class="slds-col slds-size_1-of-2"><lightning:input type="checkbox" label="Executive Summary" checked="{!v.exes}"/></div>
+        <div class="slds-col slds-size_1-of-2"><lightning:input type="checkbox" label="Account Profile" checked="{!v.apro}"/></div>
+        <div class="slds-col slds-size_1-of-2"><lightning:input type="checkbox" label="Account Strategies/Goals" checked="{!v.asg}"/></div>
+        <div class="slds-col slds-size_1-of-2"><lightning:input type="checkbox" label="Entertainment/Trade Shows/Etc." checked="{!v.ets}"/></div>
+        <div class="slds-col slds-size_1-of-2"><lightning:input type="checkbox" label="Customer Purchasing Strategy" checked="{!v.cps}"/></div>
+        <div class="slds-col slds-size_1-of-2"><lightning:input type="checkbox" label="Customer Business Strategy" checked="{!v.cbs}"/></div>
+        <div class="slds-col slds-size_1-of-2"><lightning:input type="checkbox" label="Consumption Analysis" checked="{!v.cana}"/></div>
+        <div class="slds-col slds-size_1-of-2"><lightning:input type="checkbox" label="SWOT Analysis" checked="{!v.swot}"/></div>
+        <div class="slds-col slds-size_1-of-2"><lightning:input type="checkbox" label="Account Plan Team" checked="{!v.apt}"/></div>
+        <div class="slds-col slds-size_1-of-2"><lightning:input type="checkbox" label="Key Contacts" checked="{!v.kc}"/></div>
+        <div class="slds-col slds-size_1-of-2"><lightning:input type="checkbox" label="Contact Relationships" checked="{!v.cr}"/></div>
+        <div class="slds-col slds-size_1-of-2"><lightning:input type="checkbox" label="Meeting Preps" checked="{!v.mp}"/></div>
+        <div class="slds-col slds-size_1-of-1 slds-align_absolute-center slds-m-top_small">
+        	<button class="slds-button slds-button_brand" onclick="{!c.showPDF}">GENERATE PDF</button>
+        </div>
+    </div>
+    <br/>
+    <aura:if isTrue="{!sec == ''}">
+        <iframe src="{! '/apex/AccountPlanPDF?id=' + v.recordId }" height="500px" width="580px" frameBorder="0"/>
+        <aura:set attribute="else">
+        	<iframe src="{! '/apex/AccountPlanPDF?id=' + v.recordId + '&amp;sec='+v.sec}" height="500px" width="580px" frameBorder="0"/>
+        </aura:set>
+    </aura:if>
+</aura:component>

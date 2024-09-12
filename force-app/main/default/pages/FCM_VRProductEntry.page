@@ -1,0 +1,200 @@
+<apex:page standardController="FCM_VisitReport__c" extensions="FCM_VRProductEntryCtrlExtension" lightningStylesheets="{!$User.UIThemeDisplayed == 'Theme4d'}" sidebar="false" >
+<html xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <apex:slds />
+
+    <div>
+        <div class="slds-scope">
+            <br/>
+            <div class="slds-media slds-no-space slds-grow">
+                <div class=" slds-media__figure">
+                    <svg aria-hidden="true" class=" slds-icon slds-icon-action-map" style="background-color: #B781D3;">
+                        <use xlink:href="{!URLFOR($Asset.SLDS, 'assets/icons/action-sprite/svg/symbols.svg#new_contact')}"></use>
+                    </svg>
+                </div>
+                <br/>
+                <div class=" slds-media__body">
+                    <p class=" slds-text-heading--label">
+                        <apex:outputText value="{!$Label.Manage}  {!$ObjectType.Product2.LabelPlural}" ></apex:outputText>
+
+                    </p>
+                   <!-- <h1 class=" slds-page-header__title slds-m-right--small slds-truncate slds-align-middle">{!opportunity.Name}</h1><br/>-->
+                </div>
+            </div>
+        </div>
+
+    </div><br/>
+    <style>
+            .slds-scope .search-text td{
+            padding:3px;
+        }
+    </style>
+    <script type='text/javascript'>
+    
+        // This script assists the search bar functionality
+        // It will execute a search only after the user has stopped typing for more than 1 second
+        // To raise the time between when the user stops typing and the search, edit the following variable:
+        
+        var waitTime = 1;
+        
+    
+        var countDown = waitTime+1;
+        var started = false;
+        
+        function resetTimer(){
+        
+            countDown=waitTime+1;
+            
+            if(started==false){
+                started=true;
+                runCountDown();
+            }
+        }
+        
+        function runCountDown(){
+        
+            countDown--;
+            
+            if(countDown<=0){
+                fetchResults();
+                started=false;
+            }
+            else{
+                window.setTimeout(runCountDown,1000); 
+            }
+        }
+        function fetchResults(){
+        fetchResults();
+        }
+
+    	function completeSave()
+    	{
+            var now = new Date();
+            window.open('/lightning/r/FCM_VisitReport__c/{!visitReport}/view?ts='+now.getTime(), target="_self");
+        }
+    </script>
+    <apex:form >
+        <apex:actionStatus id="status">
+            <apex:facet name="start">
+                <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; opacity: 0.25; z-index: 1000; background-color: black;">
+                    &nbsp;
+                </div>
+                <div style="position: fixed; left: 0; top: 0; bottom: 0; right: 0; z-index: 1001; margin: 15% 50%">
+                    <div style="display: inline-block; padding: 2px; background-color: #fff; width: 125px;">
+                        <img src="/img/loading.gif" style="float: left; margin: 8px;" />
+                        <span style="display: inline-block; padding: 10px 0px;">Please Wait...</span>
+                    </div>
+                </div>
+            </apex:facet>
+        </apex:actionStatus>
+        <apex:actionFunction name="saveAction" action="{!onSave}" rerender="abc" oncomplete="completeSave();" status="status"/>
+        <apex:outputPanel id="mainBody">
+             <apex:pageBlock title="{!$Label.Selected} {!$ObjectType.Product2.LabelPlural}" id="selected">
+                       
+                <apex:pageblockTable value="{!productLst}" var="s">
+                
+                    <apex:column headerValue="{!$Label.Select}">
+                        <apex:inputField value="{!s.FCM_IsToBeDeleted__c}"/>
+                    </apex:column>
+                    
+                    <apex:column headerValue="{!$ObjectType.Product2.LabelPlural}" value="{!s.FCM_Product__r.Name}"/> 
+                    
+                    <apex:column headerValue="{!$ObjectType.Product2.Fields.ProductCode.Label}" >
+                            <apex:outputText value="{!IF(s.FCM_Product__r.LegacyOCAPCode_R1__c != null, s.FCM_Product__r.LegacyOCAPCode_R1__c, s.FCM_Product__r.LegacyBCCode_R1__c)}"></apex:outputText>
+                    </apex:column>
+                    
+                </apex:pageblockTable>
+                </apex:pageBlock>
+                <div align="center">
+                    
+                
+                    <apex:commandButton styleClass="slds-button slds-button_neutral" action="{!onCancel}" value="Cancel" immediate="true"/>
+                    <apex:commandButton styleClass="slds-button slds-button_neutral" action="{!removeFromShoppingCart}" reRender="selected,searchResults" value="Remove" />
+                     <apex:commandButton styleClass="slds-button slds-button_brand"  onclick="saveAction();" value="Save" reRender="selected,searchResults"/>
+                 </div><br/>
+             
+
+<!-- this is the lower table: search bar and search results  -->
+             
+             <apex:pageBlock >  
+                 <apex:outputPanel style="font-size:14pt;margin-right:20px;">
+                     <apex:outputText value=" {!$Label.SearchFor} {!$ObjectType.Product2.LabelPlural}:"></apex:outputText>
+                 </apex:outputPanel>
+                     <i>
+                         <!-- actionStatus component makes it easy to let the user know when a search is underway -->
+                         <apex:actionStatus id="searchStatus" startText="searching..." stopText=" "/>
+                    </i>
+                    <br/>        
+                            <apex:actionRegion renderRegionOnly="false" immediate="true">                                                     
+                                 <apex:actionFunction name="fetchResults" action="{!updateAvailableList}" reRender="searchResults" status="searchStatus"/>                                 
+
+                     <div class="slds-p-top_none">
+                     <apex:pageBlockSection id="InfoIdo1" columns="2">
+                     
+                     <apex:pageBlockSectionItem >
+                         <apex:outputpanel styleclass="productname">{!$Label.ProductName_R1}</apex:outputPanel>
+                         <apex:inputText value="{!searchString}" title="{!$Label.ProductName_R1}" onkeydown="if(event.keyCode==13){this.blur();}else{resetTimer();}" style="width:300px;height:30px;margin-left:10px;"/> 
+                     </apex:pageBlockSectionItem> 
+                      
+                     <apex:pageBlockSectionItem >   
+                          <apex:outputPanel styleClass="LineOfBusiness">{!$ObjectType.FCM_VRProduct__c.Fields.LineofBusiness_R1__c.Label}</apex:outputPanel>
+                             <apex:selectList size="1" value="{!lineOfBusiness}" title="{!$ObjectType.FCM_VRProduct__c.Fields.LineofBusiness_R1__c.Label}" onchange="fetchResults();" id="LOB" style="width:300px;height:30px;margin-left:10px;">
+                                 <apex:selectOptions value="{!ListLineofBussiness}" />
+                             </apex:selectList>
+                         
+                         <!--<apex:outputPanel styleClass="LineOfBusiness">Line of Business</apex:outputPanel>
+                             <apex:selectList size="1" value="{!LOBprofile}" onchange="sendLOB(this.value)" id="LOB" style="width:300px;height:25px;margin-left:10px;margin-bottom:10px;">
+                                 <apex:selectOptions value="{!ListLineofBussiness}" />
+                                 <apex:actionFunction name="sendLOB" action="{!updateAvailableList}" reRender="searchResults" immediate="true">
+                                 <apex:param name="LOBSelected" assignTo="{!lineOfBusiness}" value=""/>
+                                 </apex:actionFunction> 
+                             </apex:selectList> -->
+                     </apex:pageBlockSectionItem>
+                         <apex:pageBlockSectionItem />
+                     <apex:pageBlockSectionItem >   
+                          <apex:outputPanel styleClass="prodTypeFilter">{!$ObjectType.FCM_VRProduct__c.Fields.ProductTypeFilter_R1__c.Label}</apex:outputPanel>
+                             <apex:selectList size="1" value="{!prodTypeFilter}" title="{!$ObjectType.FCM_VRProduct__c.Fields.ProductTypeFilter_R1__c.Label}" onchange="fetchResults();" id="LOB" style="width:300px;height:30px;margin-left:10px;">
+                                 <apex:selectOptions value="{!ListProductFilterType}" />
+                             </apex:selectList>
+                     </apex:pageBlockSectionItem>
+                         </apex:pageBlockSection>
+                    </div>
+                 </apex:actionRegion>
+                 <apex:outputPanel id="searchResults">
+                
+                    <apex:pageBlockTable value="{!AvailableProducts}" var="a">
+                        
+                        <apex:column >
+                            <!-- command button in a column... neato -->
+                            <apex:commandButton styleClass="slds-button slds-button_neutral"
+                                                value="{!$Label.Select}"
+                                                action="{!addToShoppingCart}"
+                                                reRender="selected,searchResults" immediate="true">
+                                <!-- again we use apex:param to be able to tell the controller which row we are working with -->
+                                <apex:param value="{!a.Id}" assignTo="{!toSelect}" name="toSelect"/>
+                            </apex:commandButton>
+                        </apex:column>
+                        
+                        <apex:column headerValue="{!$ObjectType.Product2.Fields.Name.Label}" value="{!a.Name}" />
+                        
+                        <apex:column headerValue="{!$ObjectType.Product2.Fields.ProductCode.Label}" >
+                            <apex:outputText value="{!IF(a.LegacyOCAPCode_R1__c != null, a.LegacyOCAPCode_R1__c, a.LegacyBCCode_R1__c)}"></apex:outputText>
+                        </apex:column>
+                                                                                       
+                        <!--<apex:column headerValue="{!$ObjectType.Product2.Fields.UnitOfMeasure_R1__c.Label}" value="{!a.UnitOfMeasure_R1__c}"/>--> 
+                                                                         
+                    </apex:pageBlockTable>
+                    
+                    <!-- We put up a warning if results exceed 100 rows -->
+                    <apex:outputPanel styleClass="fyi" rendered="{!overLimit}">
+                        <br/>
+                        <apex:outputText value="Long Search Result {!$ObjectType.Product2.Label}."></apex:outputText>
+
+                        <br/>
+                    </apex:outputPanel>                    
+                </apex:outputPanel>
+            </apex:pageBlock>
+        </apex:outputPanel>
+    </apex:form>
+    
+    </html>
+</apex:page>

@@ -1,0 +1,92 @@
+<apex:page showHeader="false" controller="ForecastingExtractController" contentType="application/vnd.ms-excel">
+    <style>
+        th {
+        text-align: center;
+        }
+        tr.header th{
+        	background-color : #A9A9A9;
+        }
+        tr.subHeader th{
+        	background-color : lightgrey;
+        }
+    </style>
+    <h3>Forecasting Grid Extract</h3>
+    <table border="1">
+        <thead>
+            <tr class="header">
+                <th >Parent Account</th>
+                <th >Sold To</th>
+                <th >Ship To</th>
+                <th >Shipping City</th>
+                <th >Product</th>
+                <th >Sold To Owner</th>
+                <th >City</th>
+                <th >Country</th>
+                <th >Shipping Country</th>
+                <th >Ship From Source</th>
+                <th >Shipping Mode</th>
+                <th >Unit Of Measure</th>
+                <th >Purchased Product</th>
+                <apex:repeat value="{!monthDisplayList}" var="m">
+                    <th >{!m} Prior</th>
+                  <!--  <th >{!m} priorAct</th> -->
+                    <th >{!m} Average</th>
+                    <apex:outputPanel rendered="{!showSales}"><th>{!m} Sales</th></apex:outputPanel><!------- Changed by Ajay Choudhary on 11th June 2021 ------>
+                    <apex:outputPanel rendered="{!showMktg}"><th>{!m} Mktg</th></apex:outputPanel><!------- Changed by Ajay Choudhary on 11th June 2021 ------>
+                    <apex:outputPanel rendered="{!showAlloc}"><th>{!m} Allocation</th></apex:outputPanel><!------- Changed by Ajay Choudhary on 11th June 2021 ------>
+                </apex:repeat>
+                <th >Total Prior</th>
+                <apex:outputPanel rendered="{!showSales}"><th >Total Sales</th></apex:outputPanel><!------- Changed by Ajay Choudhary on 11th June 2021 ------>
+                <apex:outputPanel rendered="{!showMktg}"><th >Total Mktg</th></apex:outputPanel><!------- Changed by Ajay Choudhary on 11th June 2021 ------>
+            </tr>
+            <!--tr class="subHeader">
+                <apex:repeat value="{!monthDisplayList}" var="m">
+                    <th>Prior</th>
+                    <th>Average</th>
+                    <th>Sales</th>
+                    <th>Mktg</th>
+                </apex:repeat>
+                <th>Prior</th><th>Sales</th><th>Mktg</th--><!------- Added by GAURISH on 21st May 2021 ------>
+            <!--/tr-->
+        </thead>
+        <tbody>
+            <apex:repeat value="{!finalList}" var="a">
+                <tr>
+                    <apex:repeat value="{!finalList[a]}" var="b">
+                        <apex:repeat value="{!b.data}" var="d">
+                            <td>{!d}</td>
+                        </apex:repeat>
+                        <apex:repeat value="{!b.forecastData}" var="e">
+                            <td>{!ROUND(e.prior,2)}</td>
+                            <td>{!ROUND(e.average,2)}</td>
+                            <apex:outputPanel rendered="{!showSales}"><td>{!ROUND(e.rep,2)}</td></apex:outputPanel><!------- Changed by Ajay Choudhary on 11th June 2021 ------>
+                            <apex:outputPanel rendered="{!showMktg}"><td>{!ROUND(e.mgr,2)}</td></apex:outputPanel><!------- Changed by Ajay Choudhary on 11th June 2021 ------>
+                            <apex:outputPanel rendered="{!showAlloc}"><td>{!ROUND(e.alloc,2)}</td></apex:outputPanel><!------- Changed by Ajay Choudhary on 11th June 2021 ------>
+                        </apex:repeat>
+                       
+                        <td>{!ROUND(b.totalPrior,2)}</td><!------- Added by GAURISH on 21st May 2021 ------>
+                        <apex:outputPanel rendered="{!showSales}"><td>{!ROUND(b.totalSales,2)}</td></apex:outputPanel><!------- Added by GAURISH on 21st May 2021 ------>
+                        <apex:outputPanel rendered="{!showMktg}"><td>{!ROUND(b.totalMktg,2)}</td></apex:outputPanel><!------- Added by GAURISH on 21st May 2021 ------>
+                    </apex:repeat>
+                </tr>
+            </apex:repeat>
+            <!------- Added by GAURISH on 21st May 2021 ----START-->
+            <tr>
+                <td colspan="13">TOTALS</td>
+                <apex:repeat value="{!monthDisplayList}" var="m">
+                    <td>{!ROUND(monthlyTotalPriorMap[m],2)}</td>
+                 <!--    <td>{!ROUND(monthlyTotalPriorMonthMap[m],2)}</td>  -->   <!--12th july------>
+                    <td>{!ROUND(monthlyTotalAveMap[m],2)}</td>
+                    <apex:outputPanel rendered="{!showSales}"><td>{!ROUND(monthlyTotalSalesMap[m],2)}</td></apex:outputPanel><!------- Changed by Ajay Choudhary on 11th June 2021 ------>
+                    <apex:outputPanel rendered="{!showMktg}"><td>{!ROUND(monthlyTotalMktgMap[m],2)}</td></apex:outputPanel><!------- Changed by Ajay Choudhary on 11th June 2021 ------>
+                    <apex:outputPanel rendered="{!showAlloc}"><td>{!ROUND(monthlyTotalAllocMap[m],2)}</td></apex:outputPanel><!------- Changed by Ajay Choudhary on 11th June 2021 ------>
+                </apex:repeat>
+                <td>{!ROUND(total_totalPrior,2)}</td>
+                <!--   <td>{!ROUND(total_totalPriorMonth,2)}</td>  -->   <!--12th july------>
+                <apex:outputPanel rendered="{!showSales}"><td>{!ROUND(total_totalSales,2)}</td></apex:outputPanel><!------- Changed by Ajay Choudhary on 11th June 2021 ------>
+                <apex:outputPanel rendered="{!showMktg}"><td>{!ROUND(total_totalMktg,2)}</td></apex:outputPanel><!------- Changed by Ajay Choudhary on 11th June 2021 ------>
+            </tr>
+            <!------- Added by GAURISH on 21st May 2021 ---END--->
+        </tbody>
+    </table>
+</apex:page>

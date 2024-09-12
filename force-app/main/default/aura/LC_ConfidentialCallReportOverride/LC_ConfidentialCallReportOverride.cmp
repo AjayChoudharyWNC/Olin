@@ -1,0 +1,88 @@
+<aura:component implements="lightning:actionOverride" controller="CallReportOverrideNew" access="global">
+    
+    <aura:attribute name="errMsg" type="String" default=""/>
+    
+    <aura:attribute name="locationAccount" type="Account" />
+    <aura:attribute name="locationWhereClause" type="String" default=""/>
+    
+    <aura:attribute name="selectedOpp" type="Opportunity" />
+    <aura:attribute name="oppWhereClause" type="String" default=""/>
+    
+    <c:LC_AccountRelationshipService aura:id="accRelationshipService"/>
+    
+    <lightning:recordEditForm aura:id="form" 
+                              objectApiName="Confidential_Call_Report__c" 
+                              onsuccess="{!c.handleSuccess}" 
+                              onsubmit="{!c.handleSubmit}">
+        
+        <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+            <div class="slds-modal__container">
+                <header class="slds-modal__header">
+                    <lightning:buttonIcon iconName="utility:close" onclick="{! c.cancel }" alternativeText="close" variant="bare-inverse" class="slds-modal__close"/>
+                    <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">New Confidential Call Report</h2>
+                </header>
+                <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                    <aura:if isTrue="{!v.errMsg != ''}">
+                        <div class="slds-notify slds-notify_toast slds-theme_error">{!v.errMsg}</div>
+                    </aura:if>
+                    <div class="slds-grid slds-wrap">
+                        <div class="slds-col slds-size_1-of-2">
+                            <lightning:inputField fieldName="FCM_Account__c" aura:id="accId" onchange="{!c.handleAccountValueChange}" />
+                        </div>
+                        <div class="slds-col slds-size_1-of-2">
+                            <!--<lightning:inputField fieldName="Opportunity__c" />-->
+                            <c:LC_CustomLookup aura:id="customOppLookup"
+                                               objectName="Opportunity"
+                                               fieldName="Opportunity"
+                                               fieldPluralName="Opportunities"				
+                                               iconName="standard:opportunity"
+                                               whereClause="{!v.oppWhereClause}"
+                                               selectedRecord="{!v.selectedOpp}" />
+                        </div>
+                        <div class="slds-col slds-size_1-of-2">
+                            <lightning:inputField fieldName="Call_Type__c" />
+                        </div>
+                        <div class="slds-col slds-size_1-of-2">
+                            <lightning:inputField fieldName="FCM_VisitDate__c" />
+                        </div>
+                        <div class="slds-col slds-size_1-of-2">
+                            <lightning:inputField fieldName="ConfidentialityAgreement_R1__c" />
+                        </div>
+                        <div class="slds-col slds-size_1-of-2">
+                            <c:LC_CustomLookup aura:id="customShipToLookup"
+                                               objectName="Account"
+                                               fieldName="Location"
+                                               fieldPluralName="Accounts"
+                                               iconName="standard:account"
+                                               whereClause="{!v.locationWhereClause}"
+                                               selectedRecord="{!v.locationAccount}" />
+                        </div>
+                        <div class="slds-col slds-size_1-of-2">
+                            <lightning:inputField fieldName="End_User_Account__c" />
+                        </div>
+                        <div class="slds-col slds-size_1-of-2">
+                            <lightning:inputField fieldName="Influencer_Account__c" />
+                        </div>
+                        <div class="slds-col slds-size_1-of-1">
+                            <lightning:inputField fieldName="FCM_Objectives__c" />
+                        </div>
+                        <div class="slds-col slds-size_1-of-1">
+                            <lightning:inputField fieldName="FCM_Summary__c" />
+                        </div>
+                        <div class="slds-col slds-size_1-of-1">
+                            <lightning:inputField fieldName="Call_Details__c" />
+                        </div>
+                        <div class="slds-col slds-size_1-of-1">
+                            <lightning:inputField fieldName="Internal_Comments_R1__c" />
+                        </div>
+                    </div>
+                </div>
+                <footer class="slds-modal__footer">
+                    <lightning:button class="slds-m-top_small" variant="brand" type="submit" name="save" label="Save" />
+                    <lightning:button class="slds-m-top_small" variant="neutral" label="Cancel" onclick="{!c.cancel}"/>
+                </footer>
+            </div>
+        </section>
+        
+    </lightning:recordEditForm>
+</aura:component>

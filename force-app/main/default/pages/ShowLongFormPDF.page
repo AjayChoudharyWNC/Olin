@@ -1,0 +1,5 @@
+<apex:page standardController="Account_Plan__c" title="Account Plan"  applyBodyTag="false" applyHtmlTag="false"  showHeader="false" sidebar="false" standardStylesheets="false" >
+    <script type="text/ng-template" id=" OK_JobStatistics_Monitoring_List_IMS.template">
+    <apex:outputLink value="{!URLFOR($Page.AccountPlanPDF)}" id="page">Click here</apex:outputLink>
+    </script>
+</apex:page>

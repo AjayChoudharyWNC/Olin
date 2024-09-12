@@ -1,0 +1,68 @@
+<aura:component controller="LC_CustomLookupController">
+    
+    <aura:attribute name="objectName" type="String"/>
+    <aura:attribute name="fieldName" type="String"/>
+    <aura:attribute name="fieldPluralName" type="String"/>
+    <aura:attribute name="listOfSearchResults" type="List" default="[]"/> 
+    <aura:attribute name="whereClause" type="String" />
+    <aura:attribute name="iconName" type="String" />
+    <aura:attribute name="noResultMessage" type="String" />
+    <aura:attribute name="keyWord" type="String" />
+    <aura:attribute name="selectedRecord" type="sObject" />
+    
+    <div>
+        <div class="slds-form-element">
+            <label class="slds-form-element__label" for="combobox-id-1">{!v.fieldName}</label>
+            
+            <aura:if isTrue="{!v.selectedRecord != null}">
+                <div aura:id="lookupPill" class="slds-pill-container">
+                    <lightning:pill class="pillSize" label="{!v.selectedRecord.Name}" name="{!v.selectedRecord.Name}" onremove="{!c.handleRemoveSelectedRecord}">
+                        <aura:set attribute="media">
+                            <lightning:icon iconName="{!v.iconName}" size="x-small" alternativeText="{!v.iconName}"/>
+                        </aura:set>
+                    </lightning:pill>
+                </div>
+                
+                <aura:set attribute="else">
+                    <div aura:id="lookupForm" class="slds-form-element__control">
+                        <div onmouseleave="{!c.onMouseLeave}" class="slds-combobox_container">       
+                            <div aura:id="searchResult" class="slds-combobox slds-dropdown-trigger slds-dropdown-trigger_click" aria-expanded="false" aria-haspopup="listbox" role="combobox">
+                                <div class="slds-combobox__form-element slds-input-has-icon slds-input-has-icon_right" role="none">
+                                    <input class="slds-input slds-combobox__input" aura:id="lookupField" aria-autocomplete="list" aria-controls="listbox-id-1" autocomplete="off" role="textbox" type="text" 
+                                           placeholder="{!'Search ' + v.fieldPluralName + '...'}" onclick="{!c.onClicked}" onkeyup="{!c.onKeyPressed}" />
+                                    <span class="slds-icon_container slds-icon-utility-search slds-input__icon slds-input__icon_right">
+                                        <lightning:icon iconName="utility:search" size="xx-small" />
+                                    </span>
+                                </div>
+                                <div style="margin-top:0px !important;" id="listbox-id-1" class="slds-dropdown slds-dropdown_length-with-icon-7 slds-dropdown_fluid" role="listbox">
+                                    <ul style="min-height:20px;" class="slds-listbox slds-listbox_vertical" role="presentation">
+                                        <lightning:spinner class="slds-hide" variant="brand" size="small" aura:id="mySpinner"/>    
+                                        <aura:if isTrue="{!empty(v.listOfSearchResults)}">
+                                            <center>{!v.noResultMessage}</center>
+                                            <aura:set attribute="else">
+                                                <aura:iteration items="{!v.listOfSearchResults}" var="result" indexVar="resultIndex">
+                                                    <li role="presentation" class="slds-listbox__item" onclick="{!c.handleSelectedRecord}" value="{!resultIndex}">
+                                                        <div id="option1" class="slds-media slds-listbox__option slds-listbox__option_entity slds-listbox__option_has-meta" role="option">
+                                                            <span class="slds-media__figure slds-listbox__option-icon">
+                                                                <span class="slds-icon_container slds-icon-standard-account">
+                                                                    <lightning:icon iconName="{!v.iconName}" size="x-small" />
+                                                                </span>
+                                                            </span>
+                                                            <span class="slds-media__body">
+                                                                <span class="slds-listbox__option-text slds-listbox__option-text_entity">{!result.Name}</span>
+                                                            </span>
+                                                        </div>
+                                                    </li>
+                                                </aura:iteration>
+                                            </aura:set>
+                                        </aura:if>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </aura:set>
+            </aura:if>
+        </div>
+    </div>
+</aura:component>

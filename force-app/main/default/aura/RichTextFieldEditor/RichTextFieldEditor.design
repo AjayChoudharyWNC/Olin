@@ -1,0 +1,4 @@
+<design:component>
+    <design:attribute name="fieldApiName" label="Field Api Name" />
+    <design:attribute name="showFieldLabel" label="Show Field Label(true/false)" /> 
+</design:component>

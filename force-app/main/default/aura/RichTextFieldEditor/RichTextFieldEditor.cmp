@@ -1,0 +1,67 @@
+<aura:component controller="RichTextFieldEditorClass" implements="flexipage:availableForRecordHome,force:hasRecordId" access="global" >
+    <aura:attribute name="fieldApiName" type="String"/>
+    <aura:attribute name="showFieldLabel" type="String"/>
+    <aura:attribute name="showLabel" type="String"/>
+    <aura:attribute name="showhideClass" type="String"/>
+    <aura:attribute name="showEditBttn" type="String"/>
+    <aura:attribute name="hideEditbttn" type="String"/>
+    <aura:handler name="init" action="{!c.doInit}" value="{!this}"/>
+    <aura:attribute name="showError" type="boolean"/>
+    <aura:attribute name="showError1" type="boolean"/>
+    <aura:attribute name="showSucces" type="boolean"/>
+    <aura:attribute name="showEditForm" type="boolean"/>
+    <aura:attribute name="objectName" type="String"/>
+    
+    <aura:if isTrue="{!v.showError}">
+        <div class="slds-notify" style="width: 94%;">
+            <span class="slds-assistive-text">error</span>
+            <div class="slds-notify__content">
+                <h5 class="slds-text-heading_small slds-align_absolute-center" style="font-color: red;color: red;">Error</h5>
+                <br/>
+                <p class="slds-align_absolute-center" style="font-color: red;color: red;">Only Rich Text type of fields can be used</p>                
+            </div>
+        </div>
+    </aura:if>
+      <aura:if isTrue="{!v.showError1}">
+        <div class="slds-notify" style="width: 94%;">
+            <span class="slds-assistive-text">error</span>
+            <div class="slds-notify__content">
+                <h5 class="slds-text-heading_small slds-align_absolute-center" style="font-color: red;color: red;">Error</h5>
+                <br/>
+                <p class="slds-align_absolute-center" style="font-color: red;color: red;">Do not have permission to view this field</p>                
+            </div>
+        </div>
+    </aura:if>
+    <!--aura:if isTrue="{!v.showSucces}">
+        <lightning:recordForm
+                              aura:id="myRecordForm"
+                              recordId="{!v.recordId}"
+                              objectApiName="{!v.objectName}"
+                              fields="{!v.fieldApiName}"
+                              columns="2"
+                              mode="view"
+                              onsubmit="{!c.handleSubmit}" />
+    </aura:if-->
+    
+    <aura:if isTrue="{!v.showSucces}">
+        <div class="slds-grid slds-wrap">
+            <div class="slds-col slds-size_11-of-12">
+                <span><lightning:recordViewForm recordId="{!v.recordId}" objectApiName="{!v.objectName}">
+                    <lightning:outputField fieldName="{!v.fieldApiName}" variant="{!v.showLabel}"/>
+                    </lightning:recordViewForm>
+                </span>
+            </div>
+            <div class="slds-col slds-size_1-of-12">
+                <span><lightning:buttonIcon iconName="utility:edit" variant="bare" onclick="{!c.handleEdit }" alternativeText="Edit" class="{!v.showEditBttn}"/>
+                </span>
+            </div>
+        </div>
+    </aura:if>
+    <aura:if isTrue="{!v.showEditForm}">
+        <lightning:recordEditForm recordId="{!v.recordId}" objectApiName="{!v.objectName}" onsubmit="{!c.handleSubmit}">
+            <lightning:inputField fieldName="{!v.fieldApiName}" class="{!v.showhideClass}"/>
+            <lightning:button class="slds-m-top_small" variant="brand" type="submit" name="Save" label="Save" />
+            <lightning:button class="slds-m-top_small" variant="brand" name="Cancel" label="Cancel" onclick="{!c.handleCancelClick }"/>
+        </lightning:recordEditForm>
+    </aura:if>
+</aura:component>

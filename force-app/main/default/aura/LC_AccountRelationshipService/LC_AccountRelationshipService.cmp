@@ -1,0 +1,14 @@
+<aura:component controller="LC_AccountRelationshipServiceCtrl">
+
+    <aura:method name="searchShipToAccount" action="{!c.doSearchShipToAccount}">
+        <aura:attribute name="soldToId" type="String" />
+        <aura:attribute name="callback" type="Function" />
+    </aura:method>
+
+    <aura:method name="insertNewAccountRelationship" action="{!c.doInsertNewAccountRelationship}">
+        <aura:attribute name="soldToId" type="String" />
+        <aura:attribute name="shipToId" type="String" />
+        <aura:attribute name="callback" type="Function" />
+    </aura:method>
+    
+</aura:component>

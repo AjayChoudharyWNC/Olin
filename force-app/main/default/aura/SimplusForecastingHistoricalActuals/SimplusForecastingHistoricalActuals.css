@@ -1,0 +1,50 @@
+.THIS {
+    position: absolute;
+    left: calc(50% - 50px);
+    top: 100px;
+    width: 300px;
+    box-shadow: 0 0 5px 0 rgba(0,0,0,0.75);
+    z-index: 900;
+    background: #fafafa;
+    border-radius: 5px;
+}
+.THIS.opacity_1 {
+    opacity: 1;
+}
+.THIS.opacity_2 {
+    opacity: .8;
+}
+.THIS.opacity_3 {
+    opacity: .6;
+}
+.THIS.opacity_4 {
+    opacity: .4;
+}
+.THIS .header {
+    background-color: #1b5297; 
+    color: white; 
+    cursor: move;    
+    padding: 3px 5px;
+    border-radius: 5px 5px 0 0;
+}
+.THIS .header div:first-child {
+    flex: 1;
+}
+.THIS .body {
+    padding: 10px;
+    border: 2px solid #1b5297;
+}
+.THIS .data {
+    font-size: 8pt;
+    display: flex;
+}
+.THIS .data div:first-child {
+    width: 30%;
+}
+.THIS .data div:last-child {
+    width: 70%;
+    text-align: right;
+}
+.THIS table.dataTable tr td:last-child {
+    text-align:right;
+}

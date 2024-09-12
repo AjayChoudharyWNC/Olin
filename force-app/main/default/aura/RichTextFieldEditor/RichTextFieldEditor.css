@@ -1,0 +1,8 @@
+.THIS {
+}
+.THIS .hide-label .slds-form-element__label{
+    display: none !important;
+}
+.THIS .hide-label .slds-button__icon{
+    display: none;
+}

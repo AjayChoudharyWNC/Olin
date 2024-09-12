@@ -1,0 +1,4 @@
+<aura:event type="COMPONENT" description="Event template">
+    <aura:attribute type="Object" name="jsonParam" />
+    <aura:attribute type="String" name="jsonParamType" />
+</aura:event>

@@ -1,0 +1,174 @@
+.THIS .slds-table th, .THIS .slds-table td {
+    /* white-space: normal;white-space: normal; */  
+    padding: 2px 4px;
+    /* width: 100px; */
+    text-align: center;
+}
+.THIS .topControlItem {
+    margin-right: 5px;
+}
+.THIS .slds-table td {  
+    height: 37px;
+    font-size: 10px;
+}
+.THIS .slds-table th {  
+    height: 20px;
+    border-right: 1px solid rgb(221, 219, 218);
+}
+.THIS .colDragger {
+    background: linear-gradient(0deg, rgba(250, 250, 249, 1),#bfbfbf, rgba(250, 250, 249, 1));
+    width: 2px;
+    height: 25px;
+    cursor: col-resize;
+    transform: scaleY(1.3);
+}
+.THIS .slds-button.columnControlButton {
+    background: transparent;
+    border: 0;
+    padding: 0;
+    width: 1rem;
+    height: 1rem;
+    margin-right: 5px;
+    margin-top: 5px;
+}
+.THIS .loaderBackdrop {
+    z-index: 1000;
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    background-color: rgba(0,0,0,.6);
+}
+.THIS tr.disableRow {
+    background-color: #e4e4e4;
+}
+.THIS tr.editRow {
+    font-weight: bold;
+}
+.THIS .colNameSpan {
+    line-height: 2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 8pt;
+    padding: 0 5px;
+}
+
+.THIS .slds-gutters .slds-col {
+    padding: 0;
+}
+.THIS #fixedColumns {
+    position: sticky;
+    background: white;
+    z-index: 30;
+    left: 0px;
+    display: flex;
+}
+
+.THIS #fixedColumns td {
+    border-right: 1px solid rgb(221, 219, 218);
+}
+.THIS #scrollableColumns {
+    margin-left: 12px;
+}
+.THIS #fullTableDragger {
+    height: inherit;
+    width: 3px;
+    background: #00004d;
+}
+.THIS.fullTableContainer {
+    height:500px;
+    overflow-y: scroll;
+    font-weight: bold;
+}
+
+.THIS.fullTableContainer::-webkit-scrollbar {
+    /*width: 10px;
+    height: 10px;*/
+    opacity: .5;
+    width: 1em;
+    height: 1em;
+}
+.THIS.fullTableContainer::-webkit-scrollbar-track {
+    background: rgba(241,241,241,.5); 
+}
+.THIS.fullTableContainer::-webkit-scrollbar-thumb {
+    background: rgba(85,85,85,.5);
+    border-radius: 100px;
+}
+.THIS.fullTableContainer::-webkit-scrollbar-thumb:hover {
+    background: rgba(0,0,0,.5);
+}
+/*
+.THIS .legend {
+    position:absolute;
+    bottom:0;
+    right:0;
+}*/
+.THIS tbody td span.slds-assistive-text, .THIS tbody td label.slds-form-element__label {
+    display:none;
+}
+.THIS tbody td .slds-form-element {
+    width: 70px;
+    height: 25px;
+}
+.THIS tbody td .slds-form-element, .THIS tbody td .slds-form-element__control {
+    font-size: 8pt;
+    height: 25px;
+}
+.THIS tbody td .slds-form-element__control input {
+    padding: 1px 0;
+    height: 25px;
+    min-height: 25px;
+    text-align: center;
+    color: initial;
+}
+
+.THIS input.whiteBg {
+    background-color: white;
+}
+.THIS .forecastInput {
+    background-color: rgb(249, 241, 178); 
+    width:70px; 
+    padding-left: 5px; 
+    padding-right:0px; 
+    color:black;
+    font-size: 7.5pt;
+    border-color: rgb(111, 111, 111);
+}
+.THIS .forecastInput.isChanged {
+    background-color: white
+}
+.THIS .lowerColumnHeader, .THIS .lowerColumnHeaderFloat {
+    font-size: 7pt; padding: 0px 4px;
+}
+.THIS .lowerColumnHeader.hidden, .THIS .lowerColumnHeaderFloat.hidden {
+    display: none;
+}
+.THIS .lowerTdRight td {
+    padding: 0 10px;
+    border-right: 1px solid rgb(221, 219, 218);
+    min-width: 70px;
+}
+.THIS td.isYellow {
+    background-color: rgb(249, 241, 178);
+}
+
+.THIS input.lockRowsInput[type=number]::-webkit-inner-spin-button, 
+.THIS input.lockRowsInput[type=number]::-webkit-outer-spin-button { 
+  -webkit-appearance: none; 
+  margin: 0; 
+}
+.THIS input[type=number] {
+  -moz-appearance: textfield;
+}
+.THIS input[type=number]::-webkit-inner-spin-button, 
+.THIS input[type=number]::-webkit-outer-spin-button { 
+  -webkit-appearance: none; 
+  margin: 0; 
+}
+.THIS .lockRowsInput {
+    width: 40px;
+}
+.THIS .button-fixed{width:105px;}

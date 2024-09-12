@@ -1,0 +1,81 @@
+<aura:component  controller="TaskHomePageController" implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,forceCommunity:availableForAllPageTypes" access="global" >
+    <aura:attribute name="Tasks" type="Task[]" />
+    <aura:attribute name="isModalOpen" type="boolean" default="false"/>
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    <aura:attribute name="Message" type="boolean" default="false"/>
+    
+    <aura:attribute name="currentPage" type="Integer" default="1"/>
+    <aura:attribute name="totalPage" type="Integer" default="0"/>
+    <aura:attribute name="pageTaskList" type="Task[]"/>
+    <aura:attribute name="pagePick" type="List"/>
+    <aura:attribute name="selectedValue" default="1" type="integer" description="using for store a page Number"/>
+    
+    <div class="slds-card">
+        <div class="slds-grid slds-wrap">
+            <div class="slds-col slds-size_10-of-12" style="font-weight:bold;padding:0.5rem">
+                <div class="slds-text-heading_small cardHeader">
+                    Tasks
+                    &nbsp;&nbsp;<lightning:icon  style="cursor:pointer" iconName="utility:refresh" size="x-small" alternativeText="Utility refresh"  onclick="{!c.doInit}"/>
+                </div>
+            </div>
+            <div class="slds-col slds-size_2-of-12" style="padding:0.5rem">
+                <a href="/lightning/o/Task/new?nooverride=1" class="slds-button slds-button_neutral">New</a>
+            </div>
+        </div>
+        
+        <div class="slds-grid slds-wrap slds-text-align_center">
+            <div class="slds-col slds-size_3-of-12">
+                <lightning:button label="All Overdue" onclick="{! c.filterTask }" class="greenBtn" name="AllOverdue"/></div>
+            <div class="slds-col slds-size_3-of-12">
+                <lightning:button label="Today's Task" onclick="{! c.filterTask }" class="greenBtn" name="Todaystask"/></div>
+            <div class="slds-col slds-size_3-of-12">
+                <lightning:button label="This Month" onclick="{! c.filterTask }" class="greenBtn" name="ThisMonth"/></div>
+            <div class="slds-col slds-size_3-of-12">
+                <lightning:button label="All Open" onclick="{! c.filterTask }" class="greenBtn" name="Open"/></div>
+            <aura:if isTrue="{!v.Message}">
+                <div class="slds-col slds-size_12-of-12 slds-notify_container slds-is-relative">
+                    <div class="slds-align_absolute-center">
+                        <h2 class="slds-text-heading_xx-small">No Tasks Found</h2>
+                    </div>
+                </div>
+            </aura:if>
+        </div>
+        <div class="slds-m-left_small">
+            <aura:iteration items="{!v.pageTaskList}" var="t">
+                <div class="demo-only" style="padding:0.5rem;border-bottom:1px solid #d8d8d8;margin-right: 1rem;">
+                    <div>
+                        <lightning:input type="checkbox" aura:id="checkbox" value="{!t.Id}" variant="label-hidden"
+                                         checked="{!t.Status == 'Completed'}" onchange="{!c.onCheck}" style="position: absolute;"/> 
+                        <span style="margin-left:30px;"><a href="{!'/'+t.Id}" target="_blank" id="{!t.Id}">{!t.Subject}</a></span>
+                        <span style="float:right;">{!t.ActivityDate}</span>
+                    </div>
+                    <div style="margin-left:30px;">{!t.Who.Name} - {!t.What.Name}</div>
+                    <div style="margin-left:30px;">{!t.Status} - {!t.Priority} </div>
+                </div>
+            </aura:iteration>
+        </div>
+        
+        <div class="slds-grid slds-var-p-around_medium">
+            <div class="slds-size_2-of-12">
+                <lightning:button disabled="{!v.currentPage == 1}" name="PreviousPage" title="Previous" variant="brand" label="&lt;&lt;" onclick="{! c.navigate }" />            
+            </div>
+            <div class="slds-size_8-of-12">
+                <div class="slds-grid">
+                    <div class="slds-size_9-of-12 slds-text-align_center">
+                        <span class="slds-text-body_small ">Showing 5 records per page <br/>Select Page:</span>
+                    </div>
+                    <div class="slds-size_3-of-12" style="margin-top: -18px;">
+                        <lightning:select name="select" variant="label-hidden" aura:id="recordSelect" value="{!v.selectedValue}" onchange="{!c.navigate}" >
+                            <aura:iteration items="{!v.pagePick}" var="page">
+                                <option value="{!page}">{!page}</option>
+                            </aura:iteration>
+                        </lightning:select>
+                    </div>
+                </div>
+            </div>
+            <div class="slds-size_2-of-12">
+                <lightning:button class="slds-float_right" name="NextPage" title="Next" disabled="{!v.currentPage == v.totalPage}"  variant="brand" label="&gt;&gt;" onclick="{! c.navigate }" />
+            </div>
+        </div>
+    </div>  
+</aura:component>

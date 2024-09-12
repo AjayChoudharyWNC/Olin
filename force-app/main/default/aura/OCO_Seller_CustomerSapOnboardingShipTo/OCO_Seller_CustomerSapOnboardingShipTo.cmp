@@ -1,0 +1,565 @@
+<aura:component controller="OCO_SellerController" implements="flexipage:availableForRecordHome,force:hasRecordId">
+    <aura:attribute name="shipToAndProds" type="List"/>
+    <aura:attribute name="oldShipToAndProds" type="List"/>
+    <aura:attribute name="sapRecord" type="Object"/>
+    <aura:attribute name="sapId" type="string"/>
+    <aura:attribute name="shipToAccIds" type="List"/>
+    <aura:attribute name="shipToAccs" type="List"/>
+    <aura:attribute name="recordId" type="String"/>
+    <aura:attribute name="sapType" type="String"/>
+    <aura:attribute name="spinner" type="boolean"/>
+    <aura:attribute name="estDate" type="date"/>
+    <aura:attribute name="shipFromPlantList" type="List" default="[]"/>
+    <aura:attribute name="isFirst" type="boolean" default="true"/>
+    <aura:attribute name="mainAccount" type="Account"/>
+    <aura:attribute name="relatedProducts" type="List"/>
+    <aura:attribute name="relatedContacts" type="List"/>
+    <aura:attribute name="truckType" type="String" default=""/>
+    <aura:attribute name="showShipMode" type="Boolean" default="true"/>
+    <aura:attribute name="checkForFinalButton" type="boolean" default="true"/>
+    <aura:attribute name="prodFiles" type="List" default="[]"/>
+    <aura:registerEvent name="checkBoxUpdateEvt" type="c:OCO_Seller_CheckboxUpdateEvt"/>
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    
+    <aura:if isTrue="{!v.spinner}">
+        <div aura:id="spinnerId" class="slds-spinner_container">
+            <div class="slds-spinner--brand  slds-spinner slds-spinner--large slds-is-relative" role="alert">
+                <span class="slds-assistive-text">Loading</span>
+                <div class="slds-spinner__dot-a"></div>
+                <div class="slds-spinner__dot-b"></div>
+            </div>
+        </div>
+    </aura:if>
+    <lightning:quickActionAPI aura:id="quickActionAPI" />
+    <div>
+        <lightning:tabset>
+            <aura:if isTrue="{!or(or(v.sapRecord.Product_Stewardship_Status__c != 'Customer Submitted', v.sapRecord.Credit_Application_Status__c != 'Customer Submitted'), v.sapRecord.Order_Placement_Status__c != 'Customer Submitted', v.sapRecord.Customer_Information_Status__c != 'Customer Submitted')}">
+                <div class="slds-size_12-of-12 slds-text-align_right slds-p-top_xx-small">
+                    <lightning:button label="Save Form" disabled="true" aura:id="finalSubmitBtn" variant="success" onclick="{!c.finalSubmit}"/>
+                </div>
+            </aura:if>
+            <aura:iteration items="{!v.shipToAndProds}" var="shipTo" indexVar="j">
+                <lightning:tab label="{!shipTo.Ship_To_Company_Name__c+','+shipTo.Ship_To_City__c}">
+                    <lightning:tabset variant="vertical" selectedTabId="{!shipTo.selectedTabId}">
+                        <lightning:tab label="Onboarding Ship-To Details" id="{!(j+1)+'ShipTo'}">
+                            <lightning:recordEditForm onsuccess="{!c.handleSuccessShipTo}"
+                                                      onerror="{!c.handleError}"
+                                                      onload="{!c.handleShipToLoad}"
+                                                      onsubmit="{!c.handleShipToSubmit}"
+                                                      objectApiName="Onboarding_Ship_To__c" 
+                                                      recordId="{!shipTo.Id}"
+                                                      aura:id="shipToForm"
+                                                      >
+                                <lightning:messages />
+                                <div class="slds-hide">
+                                    <lightning:inputField fieldName="Account__c" value="{!shipTo.Account__c}"/>
+                                </div>
+                                <div class="slds-size_12-of-12 slds-text-align_right">
+                                    <aura:if isTrue="{!v.sapRecord.Product_Stewardship_Status__c != 'Customer Submitted'}">
+                                        <lightning:button label="Save" variant="brand" type="submit" class="{!if(v.sapType == 'New Product', 'slds-hide', '')}"/>
+                                        <lightning:button label="Add Product" variant="brand" onclick="{!c.addProduct}" name="{!shipTo.Id}" disabled="{!shipTo.Id == null}"/>
+                                    </aura:if>
+                                </div>
+                                <lightning:input type="checkbox" label="I have validated Ship-To Data" required="true" disabled="{!or(shipTo.Id != null, v.sapRecord.Product_Stewardship_Status__c == 'Customer Submitted')}" name="{!shipTo.Id}" checked="{!shipTo.Id != null}"/>
+                                <lightning:inputField fieldName="SAP_Onboarding__c" value="{!v.sapId}" disabled="true" class="slds-hide"/>
+                                <lightning:inputField fieldName="Ship_To_No__c" disabled="true" value="{!shipTo.Ship_To_No__c}" class="{!if(shipTo.Ship_To_No__c == null, 'slds-hide', '')}" />
+                                <lightning:inputField fieldName="Ship_To_Company_Name__c" value="{!shipTo.Ship_To_Company_Name__c}" disabled="{!or(v.sapType == 'New Product',v.sapRecord.Product_Stewardship_Status__c == 'Customer Submitted')}"/>
+                                <lightning:inputField fieldName="Ship_To_Street__c" value="{!shipTo.Ship_To_Street__c}" disabled="{!or(v.sapType == 'New Product', v.sapRecord.Product_Stewardship_Status__c == 'Customer Submitted')}"/>
+                                <lightning:inputField fieldName="Ship_To_Street_2__c" value="{!shipTo.Ship_To_Street_2__c}" disabled="{!or(v.sapType == 'New Product', v.sapRecord.Product_Stewardship_Status__c == 'Customer Submitted')}"/>
+                                <lightning:inputField fieldName="Ship_To_City__c" value="{!shipTo.Ship_To_City__c}" disabled="{!or(v.sapType == 'New Product', v.sapRecord.Product_Stewardship_Status__c == 'Customer Submitted')}"/>
+                                <lightning:inputField fieldName="Ship_To_State_Province__c" value="{!shipTo.Ship_To_State_Province__c}" disabled="{!or(v.sapType == 'New Product', v.sapRecord.Product_Stewardship_Status__c == 'Customer Submitted')}"/>
+                                <lightning:inputField fieldName="Ship_To_Postal_Code__c" value="{!shipTo.Ship_To_Postal_Code__c}" disabled="{!or(v.sapType == 'New Product', v.sapRecord.Product_Stewardship_Status__c == 'Customer Submitted')}"/>
+                                <lightning:inputField fieldName="Ship_To_Country__c" value="{!shipTo.Ship_To_Country__c}" disabled="{!or(v.sapType == 'New Product', v.sapRecord.Product_Stewardship_Status__c == 'Customer Submitted')}"/>                                
+                                <lightning:inputField fieldName="Product_Shipped_Out_Of_US__c" value="{!shipTo.Product_Shipped_Out_Of_US__c}" disabled="{!or(v.sapType == 'New Product',v.sapRecord.Product_Stewardship_Status__c == 'Customer Submitted')}"/>
+                               <div class="slds-section slds-is-open" aura:id="prodSection">
+                                            <h3 class="slds-section__title sectionHeader">Contacts</h3>
+                                            <div class="slds-section__content">
+                                                <div class="slds-grid slds-wrap">
+                                                    <div class="slds-grid slds-grid--vertical slds-size_6-of-12">
+                                                        <lightning:select label="Product Stewardship | Contact" aura:id="Regulatory_Contact__c" name="{!'Regulatory_Contact__c/'+j+'/'+k}" onchange="{!c.onValueChange}" value="{!shipTo.Regulatory_Contact__c}" class="slds-p-left_xx-small slds-p-right_xx-small" disabled="{!v.sapRecord.Product_Stewardship_Status__c == 'Customer Submitted'}">
+                                                            <option value="">--None--</option>
+                                                            <aura:iteration items="{!v.relatedContacts}" var="con">
+                                                                <option selected = "{!shipTo.Regulatory_Contact__c == con.Id}" value="{!con.Id}">{!con.Name} ({!con.Email != null ? con.Email : 'Email is missing'})</option>
+                                                            </aura:iteration>
+                                                        </lightning:select>
+                                                        <lightning:inputField fieldName="Regulatory_Contact__c" class="slds-hide" value="{!shipTo.Regulatory_Contact__c}" disabled="{!v.sapRecord.Product_Stewardship_Status__c == 'Customer Submitted'}"/>
+                                                        <lightning:inputField fieldName="Regulatory_First_Name__c" value="{!shipTo.Regulatory_First_Name__c}" disabled="{!v.sapRecord.Product_Stewardship_Status__c == 'Customer Submitted'}"/>
+                                                        <lightning:inputField fieldName="Regulatory_Last_Name__c" value="{!shipTo.Regulatory_Last_Name__c}" disabled="{!v.sapRecord.Product_Stewardship_Status__c == 'Customer Submitted'}"/>
+                                                        <lightning:inputField fieldName="Regulatory_Title__c" value="{!shipTo.Regulatory_Title__c}" disabled="{!v.sapRecord.Product_Stewardship_Status__c == 'Customer Submitted'}"/>
+                                                        <lightning:inputField fieldName="Regulatory_Phone__c" value="{!shipTo.Regulatory_Phone__c}" disabled="{!v.sapRecord.Product_Stewardship_Status__c == 'Customer Submitted'}"/>
+                                                        <lightning:inputField fieldName="Regulatory_Email__c" value="{!shipTo.Regulatory_Email__c}" disabled="{!v.sapRecord.Product_Stewardship_Status__c == 'Customer Submitted'}"/>
+                                                        <lightning:inputField fieldName="Regulatory_Contact_Fax__c" value="{!shipTo.Regulatory_Contact_Fax__c}" disabled="{!v.sapRecord.Product_Stewardship_Status__c == 'Customer Submitted'}"/>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                <div class="slds-size_12-of-12 slds-text-align_right">
+                                    <aura:if isTrue="{!v.sapRecord.Product_Stewardship_Status__c != 'Customer Submitted'}">
+                                        <lightning:button label="Save" variant="brand" type="submit" class="{!if(v.sapType == 'New Product', 'slds-hide', '')}"/>
+                                        <lightning:button label="Add Product" variant="brand" onclick="{!c.addProduct}" name="{!shipTo.Id}" disabled="{!shipTo.Id == null}"/>
+                                    </aura:if>
+                                </div>
+                                          
+                                <div class="slds-p-top_medium slds-size_12-of-12 slds-text-align_center"><b>Please scroll back up to the top.</b></div>
+                            </lightning:recordEditForm>
+                        </lightning:tab>
+                        <aura:iteration items="{!shipTo.prods}" var="product" indexVar="k">
+                            <aura:if isTrue="{!product != undefined}">
+                                <lightning:tab label="{!if(product.saved == true, product.prodName, 'Product '+(k+1))}" id="{!(j+1)+'Product'+(k+1)}" onactive="{!c.handleProductLoad}" class="{!product.selectedProd}">
+                                    <lightning:recordEditForm onsuccess="{!c.handleSuccessProduct}"
+                                                              onerror="{!c.handleError}"
+                                                              onsubmit="{!c.handleProdSubmit}"
+                                                              objectApiName="Onboarding_Product__c" 
+                                                              recordId="{!product.Id}"
+                                                              aura:id="productform"
+                                                              class="{!(j)+'/'+(k)}">
+                                        <!--lightning:messages /-->
+                                        <div class="slds-size_12-of-12 slds-text-align_right">
+                                            <aura:if isTrue="{!v.sapRecord.Product_Stewardship_Status__c != 'Customer Submitted'}">
+                                                <lightning:button label="Save" variant="brand" type="submit"/>
+                                                <lightning:button label="Add Another Product" variant="brand" onclick="{!c.addProduct}" name="{!shipTo.Id}" disabled="{!product.Id == null}"/>
+                                                <lightning:button label="Remove Product" variant="destructive" onclick="{!c.handleRemoveProduct}" name="{!product.Id+'/'+j+'/'+k}"/>
+                                            </aura:if>
+                                        </div>
+                                        <lightning:inputField fieldName="SAP_Onboarding_Sold_To_Account__c" value="{!v.recordId}" class="slds-hide"/>
+                                        <div class="slds-size_12-of-12 slds-text-align_center slds-p-around_medium"><b>Please scroll to the bottom of the screen to ensure all required fields are filled in.</b></div>
+                                        <div class="slds-grid slds-wrap">
+                                            <h3 class="slds-p-around_medium slds-size_1-of-1" style="font-size:1rem;font-weight:bold">Ship-To: {!shipTo.Ship_To_Company_Name__c+','+shipTo.Ship_To_City__c}</h3>
+                                            
+                                        </div>
+                                        <div class="slds-section slds-is-open" aura:id="prodSection">
+                                            <h3 class="slds-section__title sectionHeader">
+                                                Onboarding Product Information
+                                            </h3>
+                                            <div class="slds-section__content">
+                                                <div class="slds-grid slds-wrap">
+                                                    <div class="slds-size_6-of-12 slds-hide">
+                                                        <lightning:inputField fieldName="SAP_Onboarding__c" value="{!v.sapId}" disabled="true"/>
+                                                        <lightning:inputField fieldName="SAP_Onboarding_Sold_To_Account__c" value="{!v.recordId}"/>
+                                                        <lightning:inputField fieldName="Onboarding_Ship_To__c" value="{!shipTo.Id}" disabled="true"/>
+                                                        <lightning:inputField fieldName="Primary_Ship_From__c" value="{!product.Primary_Ship_From__c}" disabled="true"/>
+                                                          <lightning:inputField fieldName="Additional_Alternate_ship_From__c"  value="{!product.Additional_Alternate_ship_From__c}"  disabled="true"/> 
+                                                        <!--lightning:inputField fieldName="Alternative_Ship_From__c" value="{!product.Alternative_Ship_From__c}" disabled="true"/-->
+                                                    </div>
+                                                    <aura:if isTrue="{!or(product.performanceCenter == 'CHLORINE', product.performanceCenter == 'Chlorine')}">
+                                                        <div class="slds-size_1-of-1 slds-p-around_medium">
+                                                            <b>A chlorine product will require an on-site visit. Please coordinate with Tecnical Services and your customer.</b>  
+                                                        </div>
+                                                    </aura:if>
+                                                    <div class="slds-size_6-of-12">
+                                                        <lightning:select aura:id="Purchased_Product__c" value="{!product.selectedProd}" name="{!'Purchased_Product__c/'+j+'/'+k}" required="true" onchange="{!c.onValueChange}" title="0"  label="Purchased Product" disabled="{!or(product.saved == true,v.sapRecord.Product_Stewardship_Status__c == 'Customer Submitted')}" class="slds-p-right_xx-small slds-p-left_xx-small">
+                                                            <option value="" selected="true">--None--</option>
+                                                            <aura:iteration items="{!v.relatedProducts}" var="con">
+                                                                <aura:if isTrue="{!con.Ship_To__c == shipTo.Account__c}">
+                                                                    <option value="{!con.Id}">{!con.Product_R1__r.Name +' - '+ con.Product_Code__c +' - '+con.Name}</option>
+                                                                </aura:if>
+                                                            </aura:iteration>
+                                                        </lightning:select>
+                                                    </div>
+                                                    <div class="slds-size_6-of-12">
+                                                        <lightning:inputField fieldName="Product_UOM__c" disabled="true" value="{!product.Product_UOM__c}" disable="{!v.sapRecord.Product_Stewardship_Status__c == 'Customer Submitted'}"/>
+                                                    </div>
+                                                    <div class="slds-size_6-of-12">
+                                                        <aura:if isTrue="{!v.showShipMode}">
+                                                            <lightning:inputField fieldName="Ship_Mode__c" value="{!product.Ship_Mode__c}" required="true" class="{!'Ship_Mode_c/'+j+'/'+k}" onchange="{!c.onValueChange}" disabled="{!v.sapRecord.Product_Stewardship_Status__c == 'Customer Submitted'}"/>
+                                                        </aura:if>
+                                                    </div>
+                                                    <div class="slds-size_6-of-12">
+                                                        <lightning:inputField fieldName="Customer_Pickup__c" value="{!product.Customer_Pickup__c}" required="true" disabled="{!v.sapRecord.Product_Stewardship_Status__c == 'Customer Submitted'}"/>
+                                                    </div>
+                                                    <aura:if isTrue="{!product.Ship_Mode__c == '01'}">
+                                                        <div class="slds-size_6-of-12">
+                                                            <lightning:inputField fieldName="Truck_Type__c" required="true" value="{!if(product.saved == false, v.truckType, product.Truck_Type__c)}" disabled="{!v.sapRecord.Product_Stewardship_Status__c == 'Customer Submitted'}"/>
+                                                        </div>
+                                                    </aura:if>
+                                                    <div class="slds-size_6-of-12">
+                                                        <!--  <lightning:select aura:id="Primary_Ship_From__c" value="{!product.Primary_Ship_From__c}"  label="Primary Ship From" disabled="{!or(or(product.selectedProd == '',v.sapRecord.Product_Stewardship_Status__c == 'Customer Submitted'), product.selectedProd == 'undefined')}" required="{!product.prodFamily == 'CAPV'}">
+                                                            <option value="">-None-</option>
+                                                            <aura:iteration items="{!v.shipFromPlantList}" var="acc">
+                                                                    <option value="{!acc.Id}" selected="{!acc.Id == product.Primary_Ship_From__c}">{!acc.Name}-{!acc.AccountNumber_R1__c}-{!acc.BillingCity}-{!acc.BillingState}</option>
+                                                            </aura:iteration>
+                                                        </lightning:select> -->
+                                                    </div>
+                                                    
+                                                    <!--div class="slds-size_6-of-12">
+                                                        <lightning:select aura:id="Alternative_Ship_From__c" value="{!product.Alternative_Ship_From__c}"  label="Alternative Ship From" disabled="{!or(or(product.selectedProd == '',v.sapRecord.Product_Stewardship_Status__c == 'Customer Submitted'), product.selectedProd == 'undefined')}">
+                                                            <option value="">-None-</option>
+                                                            <aura:iteration items="{!v.shipFromPlantList}" var="acc">
+                                                                    <option value="{!acc.Id}" selected="{!acc.Id == product.Alternative_Ship_From__c}">{!acc.Name}-{!acc.AccountNumber_R1__c}-{!acc.BillingCity}-{!acc.BillingState}</option>
+                                                            </aura:iteration>
+                                                        </lightning:select>
+                                                    </div-->
+                                                    
+                                                    <div class="slds-size_6-of-12">
+                                                        <lightning:inputField fieldName="Estimated_Volume__c" required="true" disabled="{!v.sapRecord.Product_Stewardship_Status__c == 'Customer Submitted'}"/>
+                                                    </div>
+                                                    <div class="slds-size_6-of-12 slds-p-right_xx-small slds-p-left_xx-small">
+                                                        <label class="slds-form-element__label slds-no-flex">Estimated Date of First Shipment for this Product</label>
+                                                        <lightning:inputField fieldName="Estimated_Date_of_First_Shipment__c" value="{!v.estDate}" variant="label-hidden" required="true" disabled="{!v.sapRecord.Product_Stewardship_Status__c == 'Customer Submitted'}"/>
+                                                    </div>
+                                                    <div class="slds-size_6-of-12">
+                                                        <lightning:inputField fieldName="Volume_Period__c" required="true" disabled="{!v.sapRecord.Product_Stewardship_Status__c == 'Customer Submitted'}"/>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="slds-section slds-is-open" aura:id="prodSection">
+                                            <h3 class="slds-section__title sectionHeader">
+                                                Pricing
+                                            </h3>
+                                            <div class="slds-section__content">
+                                                <div class="slds-grid slds-wrap">
+                                                    <div class="slds-size_6-of-12">
+                                                        <lightning:select aura:id="Primary_Ship_From__c" value="{!product.Primary_Ship_From__c}"  label="Primary Ship From" disabled="{!or(or(product.selectedProd == '',v.sapRecord.Product_Stewardship_Status__c == 'Customer Submitted'), product.selectedProd == 'undefined')}" required="true">
+                                                            <option value="">-None-</option>
+                                                            <aura:iteration items="{!v.shipFromPlantList}" var="acc">
+                                                                <option value="{!acc.Id}" selected="{!acc.Id == product.Primary_Ship_From__c}">{!acc.Name}-{!acc.AccountNumber_R1__c}-{!acc.BillingCity}-{!acc.BillingState}</option>
+                                                            </aura:iteration>
+                                                        </lightning:select>
+                                                    </div>
+                                                    
+                                                  <div class="slds-size_6-of-12">
+                                                        <lightning:inputField fieldName="INCO_Terms__c" value="{!product.INCO_Terms__c}" required="true" disabled="{!v.sapRecord.Product_Stewardship_Status__c == 'Customer Submitted'}"/>  
+                                                    </div>
+                                                    <div class="slds-size_6-of-12">
+                                                        <lightning:inputField fieldName="Validity_Start_Date__c" value="{!product.Validity_Start_Date__c}" required="true" disabled="{!v.sapRecord.Product_Stewardship_Status__c == 'Customer Submitted'}"/>  
+                                                    </div>
+                                                    <div class="slds-size_6-of-12">
+                                                        <lightning:inputField fieldName="Validity_End_Date__c" value="{!product.Validity_End_Date__c}" required="true" disabled="{!v.sapRecord.Product_Stewardship_Status__c == 'Customer Submitted'}"/>
+                                                    </div>
+                                                    <div class="slds-size_6-of-12">
+                                                         <lightning:inputField fieldName="GradeConcentration__c" value="{!product.GradeConcentration__c}"  disabled="{!v.sapRecord.Product_Stewardship_Status__c == 'Customer Submitted'}"/>
+                                               
+                                                    </div>
+                                                    <div class="slds-size_6-of-12">
+                                                              <!-- <lightning:inputField fieldName="Volume__c" value="{!product.Volume__c}" required="true" disabled="{!v.sapRecord.Product_Stewardship_Status__c == 'Customer Submitted'}"/> -->
+                                                    </div>
+                                                    
+                                                    
+                                                    <div class="slds-size_6-of-12">
+                                                        <lightning:inputField fieldName="Initial_Price__c" value="{!product.Initial_Price__c}" required="true" disabled="{!v.sapRecord.Product_Stewardship_Status__c == 'Customer Submitted'}"/>
+                                                    </div>
+                                                    
+                                                    <div class="slds-size_6-of-12">
+                                                        <lightning:inputField fieldName="Currency__c" value="{!product.Currency__c}" required="true" disabled="{!v.sapRecord.Product_Stewardship_Status__c == 'Customer Submitted'}"/>
+                                                    </div>
+                                                    <div class="slds-size_6-of-12">
+                                                        <lightning:inputField fieldName="UOM__c" value="{!product.UOM__c}" required="true" disabled="{!v.sapRecord.Product_Stewardship_Status__c == 'Customer Submitted'}"/>
+                                                    </div>
+                                                    <div class="slds-size_6-of-12">
+                                                        <aura:if isTrue="{!product.prodFamily == 'CAPV'}">
+                                                            <lightning:inputField fieldName="FSC_Exempt__c" value="{!product.FSC_Exempt__c}"  disabled="{!v.sapRecord.Product_Stewardship_Status__c == 'Customer Submitted'}"/> 
+                                                        </aura:if>
+                                                        <aura:if isTrue="{!product.prodFamily == 'Epoxy'}">
+                                                               <lightning:inputField fieldName="List_Price__c" value="{!product.List_Price__c}"  disabled="{!v.sapRecord.Product_Stewardship_Status__c == 'Customer Submitted'}"/> 
+                                                        </aura:if>
+                                                    </div>
+                                                    <div class="slds-size_6-of-12">
+                                                        <lightning:inputField fieldName="Energy_Surcharge__c" value="{!product.Energy_Surcharge__c}"  disabled="{!v.sapRecord.Product_Stewardship_Status__c == 'Customer Submitted'}"/>
+                                                    </div>
+                                                    <div class="slds-size_6-of-12">
+                                                        <aura:if isTrue="{!and(product.prodFamily == 'CAPV', OR(shipTo.Ship_To_State_Province__c == 'CA', shipTo.Ship_To_State_Province__c == 'California'))}">
+                                                            <lightning:inputField fieldName="CA_Mill_Tax__c" value="{!product.CA_Mill_Tax__c}"  disabled="{!v.sapRecord.Product_Stewardship_Status__c == 'Customer Submitted'}"/>
+                                                        </aura:if>
+                                                    </div>
+                                                    <div class="slds-size_7-of-12">
+                                                        <div class="slds-grid slds-wrap">
+                                                            <div class=" slds-col slds-size_1-of-12">
+                                                                <lightning:inputField fieldName="Scales__c" value="{!product.Scales__c}" class="slds-hide"/>
+                                                                <lightning:input type="checkbox" variant="label-hidden"  checked="{!product.Scales__c}"  disabled="{!v.sapRecord.Product_Stewardship_Status__c == 'Customer Submitted'}"/> 
+                                                            </div> 
+                                                            <div class=" slds-col slds-size_7-of-12">
+                                                                <label class="slds-form-element__label slds-no-flex">Enter Scales?</label>
+                                                            </div>
+                                                             <aura:if isTrue="{!product.Scales__c}">
+                                                            <div class="slds-col slds-size_4-of-12"> 
+                                                               <label class="slds-form-element__label slds-no-flex">Scale UOM <span style="color:red;">*</span> </label>
+                                                                <lightning:inputField fieldName="Scale_UOM__c" variant="label-hidden" value="{!product.Scale_UOM__c}" required="{!product.Scales__c}" disabled="{!v.sapRecord.Product_Stewardship_Status__c == 'Customer Submitted'}"/>
+                                                            </div>
+                                                              <div class="slds-col slds-size_4-of-12 slds-m-top_small"> 	
+                                                            </div>
+                                                             <div class="slds-col slds-size_4-of-12 slds-m-top_small"> 
+                                                                 <label class="slds-form-element__label slds-no-flex">Scale Volume</label> 
+                                                            </div>
+                                                             <div class=" slds-col slds-size_4-of-12 slds-m-top_small slds-p-left_small">
+                                                                   <label class="slds-form-element__label slds-no-flex">Scale Price</label> 
+                                                            </div>
+                                                             <div class="slds-col slds-size_4-of-12"> 	
+                                                               <label class="slds-form-element__label slds-no-flex">Scale 1 <span style="color:red;">*</span></label>
+                                                            </div>
+                                                             <div class="slds-col slds-size_4-of-12"> 
+                                                                  <lightning:inputField fieldName="Scale_1_Volume__c" variant="label-hidden" required="{!product.Scales__c}"  value="{!product.Scale_1_Volume__c}"  disabled="{!v.sapRecord.Product_Stewardship_Status__c == 'Customer Submitted'}"/> 
+                                                            </div>
+                                                             <div class=" slds-col slds-size_4-of-12 slds-p-left_small">
+                                                                  <lightning:inputField fieldName="Scale_1_Price__c" variant="label-hidden" required="{!product.Scales__c}" value="{!product.Scale_1_Price__c}"  disabled="{!v.sapRecord.Product_Stewardship_Status__c == 'Customer Submitted'}"/> 
+                                                            </div>
+                                                              <div class="slds-col slds-size_4-of-12 slds-m-top_small"> 	
+                                                               <label class="slds-form-element__label slds-no-flex">Scale 2</label>
+                                                            </div>
+                                                             <div class="slds-col slds-size_4-of-12 slds-m-top_small"> 
+                                                                  <lightning:inputField fieldName="Scale_2_Volume__c" variant="label-hidden"  value="{!product.Scale_2_Volume__c}"  disabled="{!v.sapRecord.Product_Stewardship_Status__c == 'Customer Submitted'}"/> 
+                                                            </div>
+                                                             <div class="slds-col slds-size_4-of-12 slds-m-top_small slds-p-left_small">
+                                                                  <lightning:inputField fieldName="Scale_2_Price__c" variant="label-hidden"  value="{!product.Scale_2_Price__c}"  disabled="{!v.sapRecord.Product_Stewardship_Status__c == 'Customer Submitted'}"/> 
+                                                            </div>
+                                                             <div class="slds-col slds-size_4-of-12 slds-m-top_small"> 	
+                                                               <label class="slds-form-element__label slds-no-flex">Scale 3</label>
+                                                            </div>
+                                                             <div class="slds-col slds-size_4-of-12 slds-m-top_small"> 
+                                                                  <lightning:inputField fieldName="Scale_3_Volume__c" variant="label-hidden"  value="{!product.Scale_3_Volume__c}"  disabled="{!v.sapRecord.Product_Stewardship_Status__c == 'Customer Submitted'}"/> 
+                                                            </div>
+                                                             <div class="slds-col slds-size_4-of-12 slds-m-top_small slds-p-left_small">
+                                                                  <lightning:inputField fieldName="Scale_3_Price__c" variant="label-hidden"  value="{!product.Scale_3_Price__c}"  disabled="{!v.sapRecord.Product_Stewardship_Status__c == 'Customer Submitted'}"/> 
+                                                            </div>
+                                                             <div class="slds-col slds-size_4-of-12 slds-m-top_small"> 	
+                                                               <label class="slds-form-element__label slds-no-flex">Scale 4</label>
+                                                            </div>
+                                                             <div class="slds-col slds-size_4-of-12 slds-m-top_small"> 
+                                                                  <lightning:inputField fieldName="Scale_4_Volume__c" variant="label-hidden"  value="{!product.Scale_4_Volume__c}"  disabled="{!v.sapRecord.Product_Stewardship_Status__c == 'Customer Submitted'}"/> 
+                                                            </div>
+                                                             <div class="slds-col slds-size_4-of-12 slds-m-top_small slds-p-left_small">
+                                                                  <lightning:inputField fieldName="Scale_4_Price__c" variant="label-hidden"  value="{!product.Scale_4_Price__c}"  disabled="{!v.sapRecord.Product_Stewardship_Status__c == 'Customer Submitted'}"/> 
+                                                            </div>
+                                                             <div class="slds-col slds-size_4-of-12 slds-m-top_small"> 	
+                                                               <label class="slds-form-element__label slds-no-flex">Scale 5</label>
+                                                            </div>
+                                                             <div class="slds-col slds-size_4-of-12 slds-m-top_small"> 
+                                                                  <lightning:inputField fieldName="Scale_5_Volume__c" variant="label-hidden"  value="{!product.Scale_5_Volume__c}"  disabled="{!v.sapRecord.Product_Stewardship_Status__c == 'Customer Submitted'}"/> 
+                                                            </div>
+                                                             <div class="slds-col slds-size_4-of-12 slds-m-top_small slds-p-left_small">
+                                                                  <lightning:inputField fieldName="Scale_5_Price__c" variant="label-hidden"  value="{!product.Scale_5_Price__c}"  disabled="{!v.sapRecord.Product_Stewardship_Status__c == 'Customer Submitted'}"/> 
+                                                            </div> 
+                                                            </aura:if>
+                                                        </div>
+                                                    </div> 
+                                                      <div class="slds-size_5-of-12">
+                                                    </div>
+                                                    <div class="slds-size_12-of-12" style="border-top: dotted 2px grey;margin-top: 30px;">
+                                                        <div class="slds-grid slds-wrap">
+                                                            <div class=" slds-col slds-size_1-of-12 slds-m-top_small">
+                                                                 <lightning:inputField fieldName="Additional_Ship_From_Price__c" value="{!product.Additional_Ship_From_Price__c}" class="slds-hide"/>
+                                                       <lightning:input type="checkbox" variant="label-hidden"  checked="{!product.Additional_Ship_From_Price__c}"  disabled="{!v.sapRecord.Product_Stewardship_Status__c == 'Customer Submitted'}"/> 
+                                                            </div>
+                                                             <div class=" slds-col slds-size_11-of-12 slds-m-top_small">
+                                                                   <label class="slds-form-element__label slds-no-flex">Additional Ship-From/Price?</label>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <aura:if isTrue="{!product.Additional_Ship_From_Price__c}">
+                                                        <div class="slds-size_6-of-12 slds-m-top_small">
+                                                            <lightning:select aura:id="Additional_Alternate_ship_From__c" value="{!product.Additional_Alternate_ship_From__c}"  label="Additional/Alternate Ship From" disabled="{!or(or(product.selectedProd == '',v.sapRecord.Product_Stewardship_Status__c == 'Customer Submitted'), product.selectedProd == 'undefined')}" required="{!product.prodFamily == 'CAPV'}">
+                                                                <option value="">--None--</option>
+                                                                <aura:iteration items="{!v.shipFromPlantList}" var="acc">
+                                                                    <option value="{!acc.Id}" selected="{!acc.Id == product.Additional_Alternate_ship_From__c}">{!acc.Name}-{!acc.AccountNumber_R1__c}-{!acc.BillingCity}-{!acc.BillingState}</option>
+                                                                </aura:iteration>
+                                                        </lightning:select>
+                                                       </div>
+                                                    <div class="slds-size_3-of-12 slds-m-top_small">
+                                                           <lightning:inputField fieldName="Additional_Volume__c"  value="{!product.Additional_Volume__c}"  disabled="{!v.sapRecord.Product_Stewardship_Status__c == 'Customer Submitted'}"/> 
+                                                    </div>
+                                                    <div class="slds-size_3-of-12 slds-m-top_small">
+                                                           <lightning:inputField fieldName="Additional_Price__c"  value="{!product.Additional_Price__c}"  disabled="{!v.sapRecord.Product_Stewardship_Status__c == 'Customer Submitted'}"/> 
+                                                    </div>
+                                                     <!--div class="slds-size_6-of-12">
+                                                    </div--> 
+                                                  
+                                                     <div class="slds-size_7-of-12">
+                                                        <div class="slds-grid slds-wrap">
+                                                            <div class=" slds-col slds-size_1-of-12"> 
+                                                            <lightning:inputField fieldName="X2nd_Scales__c" value="{!product.X2nd_Scales__c}" class="slds-hide"/>
+                                                       <lightning:input type="checkbox" variant="label-hidden"  checked="{!product.X2nd_Scales__c}"  disabled="{!v.sapRecord.Product_Stewardship_Status__c == 'Customer Submitted'}"/> 
+                                                     
+                                                            </div>
+                                                            <div class=" slds-col slds-size_7-of-12">
+                                                                <label class="slds-form-element__label slds-no-flex">Additional Scales?</label>
+                                                            </div>
+                                                                  <aura:if isTrue="{!product.X2nd_Scales__c}">
+                                                            <div class="slds-col slds-size_4-of-12"> 	
+                                                                 <label class="slds-form-element__label slds-no-flex">Scale UOM <span style="color:red;">*</span> </label>
+                                                                <lightning:inputField fieldName="X2nd_Scale_UOM__c" variant="label-hidden" value="{!product.X2nd_Scale_UOM__c}" required="{!product.X2nd_Scales__c}" disabled="{!v.sapRecord.Product_Stewardship_Status__c == 'Customer Submitted'}"/>
+                                                            </div>
+                                                              <div class="slds-col slds-size_4-of-12 slds-m-top_small"> 	
+                                                            </div>
+                                                             <div class="slds-col slds-size_4-of-12 slds-m-top_small"> 
+                                                                 <label class="slds-form-element__label slds-no-flex">Scale Volume</label> 
+                                                            </div>
+                                                             <div class=" slds-col slds-size_4-of-12 slds-m-top_small slds-p-left_small">
+                                                                   <label class="slds-form-element__label slds-no-flex">Scale Price</label> 
+                                                            </div>
+                                                             <div class="slds-col slds-size_4-of-12"> 	
+                                                               <label class="slds-form-element__label slds-no-flex">Scale 1 <span style="color:red;">*</span></label>
+                                                            </div>
+                                                             <div class="slds-col slds-size_4-of-12"> 
+                                                                  <lightning:inputField fieldName="X2nd_Scale_1_Volume__c" variant="label-hidden" required="{!product.X2nd_Scales__c}" value="{!product.X2nd_Scale_1_Volume__c}"  disabled="{!v.sapRecord.Product_Stewardship_Status__c == 'Customer Submitted'}"/> 
+                                                            </div>
+                                                             <div class=" slds-col slds-size_4-of-12 slds-p-left_small">
+                                                                  <lightning:inputField fieldName="X2nd_Scale_1_Price__c" variant="label-hidden" required="{!product.X2nd_Scales__c}"  value="{!product.X2nd_Scale_1_Price__c}"  disabled="{!v.sapRecord.Product_Stewardship_Status__c == 'Customer Submitted'}"/> 
+                                                            </div>
+                                                              <div class="slds-col slds-size_4-of-12 slds-m-top_small"> 	
+                                                               <label class="slds-form-element__label slds-no-flex">Scale 2</label>
+                                                            </div>
+                                                             <div class="slds-col slds-size_4-of-12 slds-m-top_small"> 
+                                                                  <lightning:inputField fieldName="X2nd_Scale_2_Volume__c" variant="label-hidden"  value="{!product.X2nd_Scale_2_Volume__c}"  disabled="{!v.sapRecord.Product_Stewardship_Status__c == 'Customer Submitted'}"/> 
+                                                            </div>
+                                                             <div class="slds-col slds-size_4-of-12 slds-m-top_small slds-p-left_small">
+                                                                  <lightning:inputField fieldName="X2nd_Scale_2_Price__c" variant="label-hidden"  value="{!product.X2nd_Scale_2_Price__c}"  disabled="{!v.sapRecord.Product_Stewardship_Status__c == 'Customer Submitted'}"/> 
+                                                            </div>
+                                                             <div class="slds-col slds-size_4-of-12 slds-m-top_small"> 	
+                                                               <label class="slds-form-element__label slds-no-flex">Scale 3</label>
+                                                            </div>
+                                                             <div class="slds-col slds-size_4-of-12 slds-m-top_small"> 
+                                                                  <lightning:inputField fieldName="X2nd_Scale_3_Volume__c" variant="label-hidden"  value="{!product.X2nd_Scale_3_Volume__c}"  disabled="{!v.sapRecord.Product_Stewardship_Status__c == 'Customer Submitted'}"/> 
+                                                            </div>
+                                                             <div class="slds-col slds-size_4-of-12 slds-m-top_small slds-p-left_small">
+                                                                  <lightning:inputField fieldName="X2nd_Scale_3_Price__c" variant="label-hidden"  value="{!product.X2nd_Scale_3_Price__c}"  disabled="{!v.sapRecord.Product_Stewardship_Status__c == 'Customer Submitted'}"/> 
+                                                            </div>
+                                                             <div class="slds-col slds-size_4-of-12 slds-m-top_small"> 	
+                                                               <label class="slds-form-element__label slds-no-flex">Scale 4</label>
+                                                            </div>
+                                                             <div class="slds-col slds-size_4-of-12 slds-m-top_small"> 
+                                                                  <lightning:inputField fieldName="X2nd_Scale_4_Volume__c" variant="label-hidden"  value="{!product.X2nd_Scale_4_Volume__c}"  disabled="{!v.sapRecord.Product_Stewardship_Status__c == 'Customer Submitted'}"/> 
+                                                            </div>
+                                                             <div class="slds-col slds-size_4-of-12 slds-m-top_small slds-p-left_small">
+                                                                  <lightning:inputField fieldName="X2nd_Scale_4_Price__c" variant="label-hidden"  value="{!product.X2nd_Scale_4_Price__c}"  disabled="{!v.sapRecord.Product_Stewardship_Status__c == 'Customer Submitted'}"/> 
+                                                            </div>
+                                                             <div class="slds-col slds-size_4-of-12 slds-m-top_small"> 	
+                                                               <label class="slds-form-element__label slds-no-flex">Scale 5</label>
+                                                            </div>
+                                                             <div class="slds-col slds-size_4-of-12 slds-m-top_small"> 
+                                                                  <lightning:inputField fieldName="X2nd_Scale_5_Volume__c" variant="label-hidden"  value="{!product.X2nd_Scale_5_Volume__c}"  disabled="{!v.sapRecord.Product_Stewardship_Status__c == 'Customer Submitted'}"/> 
+                                                            </div>
+                                                             <div class="slds-col slds-size_4-of-12 slds-m-top_small slds-p-left_small">
+                                                                  <lightning:inputField fieldName="X2nd_Scale_5_Price__c" variant="label-hidden"  value="{!product.X2nd_Scale_5_Price__c}"  disabled="{!v.sapRecord.Product_Stewardship_Status__c == 'Customer Submitted'}"/> 
+                                                            </div>
+                                                            </aura:if>
+                                                        </div>
+                                                    </div>
+                                                    <div class="slds-size_5-of-12">
+                                       
+                                                    </div>
+                                                    </aura:if>
+                                                    <div class="slds-size_12-of-12" style="border-top: dotted 2px grey;margin-top: 25px;">
+                                                           <lightning:inputField fieldName="Additional_Pricing_Comments_Charges__c"  value="{!product.Additional_Pricing_Comments_Charges__c}"  disabled="{!v.sapRecord.Product_Stewardship_Status__c == 'Customer Submitted'}"/> 
+                                                    </div> 
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <aura:if isTrue="{!product.prodFamily == 'CAPV'}">
+                                        <div class="slds-section slds-is-open" aura:id="prodSection">
+                                            <h3 class="slds-section__title sectionHeader">
+                                                Product Quality
+                                            </h3>
+                                            <div class="slds-section__content">
+                                                <div class="slds-grid slds-wrap">
+                                                    <aura:if isTrue="{!product.prodFamily == 'CAPV'}">
+                                                        <div class="slds-size_12-of-12">
+                                                            <lightning:inputField fieldName="Any_Specific_Quality_Standards__c" disabled="{!v.sapRecord.Product_Stewardship_Status__c == 'Customer Submitted'}"/>
+                                                        </div>
+                                                        <!--div class="slds-size_6-of-12">
+                                                            <lightning:inputField fieldName="Is_Customer_a_Direct_EUP_End_User__c"/>
+                                                        </div-->
+                                                        <!--div class="slds-size_6-of-12"></div-->
+                                                        <div class="slds-size_6-of-12">
+                                                            <lightning:inputField fieldName="Specific_Quality_Standards_Other__c" disabled="{!v.sapRecord.Product_Stewardship_Status__c == 'Customer Submitted'}"/>
+                                                        </div>
+                                                        <!--div class="slds-size_6-of-12">
+                                                            <lightning:inputField fieldName="Have_a_label_or_Establishment_MUP__c"/>
+                                                            <lightning:inputField fieldName="Is_this_a_Cross_Border_Shipment__c"/>
+                                                        </div-->
+                                                        <div class="slds-size_6-of-12">
+                                                            
+                                                        </div>
+                                                         <div class="slds-size_6-of-12">
+                                                            <lightning:inputField fieldName="Any_Non_Standard_Product_Specifications__c" disabled="{!v.sapRecord.Product_Stewardship_Status__c == 'Customer Submitted'}" required="true"/>
+                                                        </div>
+                                                          <div class="slds-size_6-of-12">
+                                                            
+                                                        </div>
+                                                         <div class="slds-size_6-of-12">
+                                                            <lightning:inputField fieldName="Any_Customer_Specifications__c" disabled="{!v.sapRecord.Product_Stewardship_Status__c == 'Customer Submitted'}" required="true"/>
+                                                        </div>
+                                                          <div class="slds-size_6-of-12">
+                                                            
+                                                        </div>
+                                                    </aura:if>
+                                                    <div class="slds-size_12-of-12  slds-grid slds-wrap slds-m-bottom_small">
+                                                        <lightning:input name="{!(j)+'/'+(k)}" aura:id="prodSepcificationFile" label="Product Specification Attachment" type="file" multiple="true" onchange="{!c.handleProdFileChange }"/>
+                                                    </div>
+                                                    <div class="slds-size_12-of-12">
+                                                        <aura:iteration items="{!product.Attachments}" var="file" indexVar="fileNo">
+                                                            <p style="color:black;border-bottom:1px solid lightgrey;padding-top:4px">
+                                                                <aura:if isTrue="{!file.Id != ''}">
+                                                                    <b>File.&nbsp;</b>
+                                                                    <a href="{!'/'+file.Id}" target="_blank" style="color:black;">{!file.Name}</a>
+                                                                    <a href="" onclick="{!c.deleteFile}" id="{!(j)+'/'+(k)+'/'+(fileNo)+'/'+(file.Id)}" class="slds-float_right">Delete</a>
+                                                                    <aura:set attribute="else">
+                                                                        <b>File&nbsp;</b> {!file.Name}
+                                                                        <lightning:icon iconName="utility:close" id="{!(j)+'/'+(k)+'/'+(fileNo)}" title="Remove File" size="xx-small" class="slds-float_right" style="cursor:pointer;" onclick="{!c.removeFile}"/>
+                                                                    </aura:set>
+                                                                </aura:if>
+                                                            </p>
+                                                        </aura:iteration>
+                                                    </div>
+                                                    <div class="slds-size_12-of-12">
+                                                        <!--lightning:fileUpload label="Product Specification Attachment"
+                                                                              name="fileUploader"
+                                                                              multiple="true"
+                                                                              recordId="{!v.sapId}"
+                                                                              disabled="{!v.sapRecord.Product_Stewardship_Status__c == 'Customer Submitted'}"
+                                                                              onuploadfinished="{!c.handleUploadFinished}" />
+                                                        <div>
+                                                            <aura:iteration items="{!v.prodFiles}" var="file" indexVar="idx">
+                                                                <a href="{!file.link}" target="_blank" style="color:black;">{!idx+1}.{!file.name}</a>
+                                                                <a href="" onclick="{!c.deleteFile}" id="{!file.documentId}" name="{!idx}" class="slds-float_right">Delete</a>
+                                                            </aura:iteration>
+                                                        </div-->
+                                                        <!--lightning:inputField fieldName="Any_Customer_Specifications__c" required="true" value="No" disabled="{!v.sapRecord.Product_Stewardship_Status__c == 'Customer Submitted'}"/-->
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        </aura:if>
+                                        <div class="slds-section slds-is-open" aura:id="prodSection">
+                                            <!-- <h3 class="slds-section__title sectionHeader">Contacts</h3>
+                                            <div class="slds-section_content">
+                                                <div class="slds-grid slds-wrap">
+                                                    <div class="slds-grid slds-grid-vertical slds-size_6-of-12">
+                                                        <lightning:select label="Product Stewardship | Contact" aura:id="Regulatory_Contact__c" name="{!'Regulatory_Contact__c/'+j+'/'+k}" onchange="{!c.onValueChange}" value="{!product.Regulatory_Contact__c}" class="slds-p-left_xx-small slds-p-right_xx-small" disabled="{!v.sapRecord.Product_Stewardship_Status__c == 'Customer Submitted'}">
+                                                            <option value="">-None-</option>
+                                                            <aura:iteration items="{!v.relatedContacts}" var="con">
+                                                                <option selected = "{!product.Regulatory_Contact__c == con.Id}" value="{!con.Id}">{!con.Name} ({!con.Email != null ? con.Email : 'Email is missing'})</option>
+                                                            </aura:iteration>
+                                                        </lightning:select>
+                                                        <lightning:inputField fieldName="Regulatory_Contact__c" class="slds-hide" value="{!product.Regulatory_Contact__c}" disabled="{!v.sapRecord.Product_Stewardship_Status__c == 'Customer Submitted'}"/>
+                                                        <lightning:inputField fieldName="Regulatory_First_Name__c" value="{!product.Regulatory_First_Name__c}" disabled="{!v.sapRecord.Product_Stewardship_Status__c == 'Customer Submitted'}"/>
+                                                        <lightning:inputField fieldName="Regulatory_Last_Name__c" value="{!product.Regulatory_Last_Name__c}" disabled="{!v.sapRecord.Product_Stewardship_Status__c == 'Customer Submitted'}"/>
+                                                        <lightning:inputField fieldName="Regulatory_Title__c" value="{!product.Regulatory_Title__c}" disabled="{!v.sapRecord.Product_Stewardship_Status__c == 'Customer Submitted'}"/>
+                                                        <lightning:inputField fieldName="Regulatory_Phone__c" value="{!product.Regulatory_Phone__c}" disabled="{!v.sapRecord.Product_Stewardship_Status__c == 'Customer Submitted'}"/>
+                                                        <lightning:inputField fieldName="Regulatory_Email__c" value="{!product.Regulatory_Email__c}" disabled="{!v.sapRecord.Product_Stewardship_Status__c == 'Customer Submitted'}"/>
+                                                        <lightning:inputField fieldName="Regulatory_Contact_Fax__c" value="{!product.Regulatory_Contact_Fax__c}" disabled="{!v.sapRecord.Product_Stewardship_Status__c == 'Customer Submitted'}"/>
+                                                    </div>
+                                                </div>
+                                            </div> -->
+                                            <div class="slds-hide">
+                                                <lightning:inputField fieldName="Purchased_Product__c" value="{!product.selectedProd}"/>
+                                                <lightning:inputField fieldName="Product_Name_Form__c" value="{!product.Product_Name_Form__c}"/>
+                                            </div>
+                                        </div>
+                                        <div class="slds-size_12-of-12 slds-text-align_right">
+                                            <aura:if isTrue="{!v.sapRecord.Product_Stewardship_Status__c != 'Customer Submitted'}">
+                                                <lightning:button label="Save" type="submit" variant="brand"/>
+                                                <lightning:button label="Add Another Product" variant="brand" onclick="{!c.addProduct}" name="{!shipTo.Id}"  disabled="{!product.Id == null}" />
+                                            </aura:if>
+                                        </div>
+                                        <div class="slds-p-top_medium slds-size_12-of-12 slds-text-align_center"><b>Please scroll back up to the top.</b></div>
+                                    </lightning:recordEditForm>
+                                </lightning:tab>
+                            </aura:if>
+                        </aura:iteration>
+                    </lightning:tabset>
+                </lightning:tab>
+            </aura:iteration>
+        </lightning:tabset>
+    </div>
+</aura:component>

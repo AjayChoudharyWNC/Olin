@@ -1,0 +1,318 @@
+<aura:component implements="force:appHostable">
+    <aura:attribute name="psaId" type="String"/>
+    <aura:attribute name="ques" type="Questionnaire__c"/>
+    <aura:attribute name="sapRecord" type="SAP_Onboarding__c"/>
+    <aura:attribute name="languageLabelMap" type="Object"/>
+    
+    <div class="subHeader">{!v.languageLabelMap.PSA_48}</div>
+    <div class="slds-grid slds-wrap">
+        <div class="slds-large-size_6-of-12 slds-small-size_12-of-12 slds-medium-size_5-of-12 slds-p-right_small">
+            <label class="slds-form-element__label slds-no-flex"><span><abbr  title="required" class="slds-required">*</abbr></span>
+                {!v.languageLabelMap.PSA_18} </label>
+            <lightning:inputField disabled="{!and(v.sapRecord.Product_Stewardship_Status__c != 'Started By Sales', v.sapRecord.Product_Stewardship_Status__c != 'Customer In Progress')}"  fieldName="Is_There_An_Operations_Manual_Approved__c" variant="label-hidden" required="true" aura:id="psaField"/>
+        </div>
+        <div class="slds-large-size_6-of-12 slds-small-size_12-of-12 slds-medium-size_5-of-12 slds-p-left_small">
+            <label class="slds-form-element__label slds-no-flex">{!v.languageLabelMap.PS_30}</label>
+            <lightning:inputField disabled="{!and(v.sapRecord.Product_Stewardship_Status__c != 'Started By Sales', v.sapRecord.Product_Stewardship_Status__c != 'Customer In Progress')}" fieldName="Operations_Manual_Approved_Comments__c" variant="label-hidden"/>
+        </div>
+    </div>
+    <div class="subHeader" style="width:100%;margin-top:2rem;margin-bottom:2rem;"></div>
+    <div class="slds-grid slds-wrap">
+        <div class="slds-large-size_6-of-12 slds-small-size_12-of-12 slds-medium-size_5-of-12 slds-p-right_small">
+            <label class="slds-form-element__label slds-no-flex"><span><abbr  title="required" class="slds-required">*</abbr></span>
+                {!v.languageLabelMapPSA_19} </label>
+            <lightning:inputField disabled="{!and(v.sapRecord.Product_Stewardship_Status__c != 'Started By Sales', v.sapRecord.Product_Stewardship_Status__c != 'Customer In Progress')}" fieldName="Employess_Trained_for_Hazards__c" variant="label-hidden" required="true" aura:id="psaField"/>
+        </div>
+        <div class="slds-large-size_6-of-12 slds-small-size_12-of-12 slds-medium-size_5-of-12 slds-p-left_small">
+            <label class="slds-form-element__label slds-no-flex">{!v.languageLabelMap.PS_30}</label>
+            <lightning:inputField disabled="{!and(v.sapRecord.Product_Stewardship_Status__c != 'Started By Sales', v.sapRecord.Product_Stewardship_Status__c != 'Customer In Progress')}" fieldName="Employess_Trained_for_Hazards_Comment__c" variant="label-hidden"/>
+        </div>
+    </div>
+    <div class="subHeader" style="width:100%;margin-top:2rem;margin-bottom:2rem;"></div>
+    <div class="slds-grid slds-wrap">
+        <div class="slds-large-size_6-of-12 slds-small-size_12-of-12 slds-medium-size_5-of-12 slds-p-right_small">
+            <label class="slds-form-element__label slds-no-flex"><span><abbr  title="required" class="slds-required">*</abbr></span>
+                {!v.languageLabelMap.PSA_20} </label>
+            <lightning:inputField disabled="{!and(v.sapRecord.Product_Stewardship_Status__c != 'Started By Sales', v.sapRecord.Product_Stewardship_Status__c != 'Customer In Progress')}" fieldName="Emergency_Action_Plan__c" variant="label-hidden" required="true" aura:id="psaField"/>
+        </div>
+        <div class="slds-large-size_6-of-12 slds-small-size_12-of-12 slds-medium-size_5-of-12 slds-p-left_small">
+            <label class="slds-form-element__label slds-no-flex">{!v.languageLabelMap.PS_30}</label>
+            <lightning:inputField disabled="{!and(v.sapRecord.Product_Stewardship_Status__c != 'Started By Sales', v.sapRecord.Product_Stewardship_Status__c != 'Customer In Progress')}" fieldName="Emergency_Action_Plan_Comment__c" variant="label-hidden"/>
+        </div>
+    </div>
+    <div class="subHeader" style="width:100%;margin-top:2rem;margin-bottom:2rem;"></div>
+    <div class="slds-grid slds-wrap">
+        <div class="slds-large-size_6-of-12 slds-small-size_12-of-12 slds-medium-size_5-of-12 slds-p-right_small">
+            <label class="slds-form-element__label slds-no-flex"><span><abbr  title="required" class="slds-required">*</abbr></span>
+                {!v.languageLabelMap.PSA_21} </label>
+            <lightning:inputField disabled="{!and(v.sapRecord.Product_Stewardship_Status__c != 'Started By Sales', v.sapRecord.Product_Stewardship_Status__c != 'Customer In Progress')}" fieldName="Do_You_have_an_Approved_Security_Plan__c" variant="label-hidden" required="true" aura:id="psaField"/>
+        </div>
+        <div class="slds-large-size_6-of-12 slds-small-size_12-of-12 slds-medium-size_5-of-12 slds-p-left_small">
+            <label class="slds-form-element__label slds-no-flex">{!v.languageLabelMap.PS_30}</label>
+            <lightning:inputField disabled="{!and(v.sapRecord.Product_Stewardship_Status__c != 'Started By Sales', v.sapRecord.Product_Stewardship_Status__c != 'Customer In Progress')}" fieldName="Approved_Security_Plans_Comments__c" variant="label-hidden"/>
+        </div>
+    </div>
+    <div class="subHeader" style="width:100%;margin-top:2rem;margin-bottom:2rem;"></div>
+    <div class="slds-grid slds-wrap">
+        <div class="slds-large-size_6-of-12 slds-small-size_12-of-12 slds-medium-size_5-of-12 slds-p-right_small">
+            <label class="slds-form-element__label slds-no-flex"><span><abbr  title="required" class="slds-required">*</abbr></span>
+                {!v.languageLabelMap.PSA_107}  </label>
+            <lightning:inputField disabled="{!and(v.sapRecord.Product_Stewardship_Status__c != 'Started By Sales', v.sapRecord.Product_Stewardship_Status__c != 'Customer In Progress')}" fieldName="Will_Customer_Employees_Perform_Transfer__c" variant="label-hidden" required="true" aura:id="psaField"/>
+        </div>
+        <div class="slds-large-size_6-of-12 slds-small-size_12-of-12 slds-medium-size_5-of-12 slds-p-left_small">
+            <label class="slds-form-element__label slds-no-flex">{!v.languageLabelMap.PS_30}</label>
+            <lightning:inputField disabled="{!and(v.sapRecord.Product_Stewardship_Status__c != 'Started By Sales', v.sapRecord.Product_Stewardship_Status__c != 'Customer In Progress')}" fieldName="Customer_Employee_Transfer_Comments__c" variant="label-hidden"/>
+        </div>
+    </div>
+    <div class="subHeader" style="width:100%;margin-top:2rem;margin-bottom:2rem;"></div>
+    <div class="slds-grid slds-wrap">
+        <div class="slds-large-size_6-of-12 slds-small-size_12-of-12 slds-medium-size_5-of-12 slds-p-right_small">
+            <label class="slds-form-element__label slds-no-flex"><span><abbr  title="required" class="slds-required">*</abbr></span>
+                {!v.languageLabelMap.PSA_23}  </label>
+            <lightning:inputField disabled="{!and(v.sapRecord.Product_Stewardship_Status__c != 'Started By Sales', v.sapRecord.Product_Stewardship_Status__c != 'Customer In Progress')}" fieldName="Will_The_Contractor_Perform_Transfer__c" variant="label-hidden" required="true" aura:id="psaField"/>
+        </div>
+        <div class="slds-large-size_6-of-12 slds-small-size_12-of-12 slds-medium-size_5-of-12 slds-p-left_small">
+            <label class="slds-form-element__label slds-no-flex">{!v.languageLabelMap.PS_30}</label>
+            <lightning:inputField disabled="{!and(v.sapRecord.Product_Stewardship_Status__c != 'Started By Sales', v.sapRecord.Product_Stewardship_Status__c != 'Customer In Progress')}" fieldName="Contractor_Perform_Transfer_Comments__c" variant="label-hidden"/>
+        </div>
+    </div>
+    <div class="subHeader" style="width:100%;margin-top:2rem;margin-bottom:2rem;"></div>
+    <div class="slds-grid slds-wrap">
+        <div class="slds-large-size_6-of-12 slds-small-size_12-of-12 slds-medium-size_5-of-12 slds-p-right_small">
+            <label class="slds-form-element__label slds-no-flex"><span><abbr  title="required" class="slds-required">*</abbr></span>
+                {!v.languageLabelMap.PSA_24}</label>
+            <lightning:inputField disabled="{!and(v.sapRecord.Product_Stewardship_Status__c != 'Started By Sales', v.sapRecord.Product_Stewardship_Status__c != 'Customer In Progress')}" fieldName="Do_Vessel_Person_Has_Certification__c" variant="label-hidden" required="true" aura:id="psaField"/>
+        </div>
+        <div class="slds-large-size_6-of-12 slds-small-size_12-of-12 slds-medium-size_5-of-12 slds-p-left_small">
+            <label class="slds-form-element__label slds-no-flex">{!v.languageLabelMap.PS_30}</label>
+            <lightning:inputField disabled="{!and(v.sapRecord.Product_Stewardship_Status__c != 'Started By Sales', v.sapRecord.Product_Stewardship_Status__c != 'Customer In Progress')}" fieldName="Vessel_Person_Certification_Comments__c" variant="label-hidden"/>
+        </div>
+    </div>
+    <div class="subHeader">{!v.languageLabelMap.PSA_25}</div>
+    <div class="slds-grid slds-wrap">
+        <div class="slds-large-size_6-of-12 slds-small-size_12-of-12 slds-medium-size_5-of-12 slds-p-right_small">
+            <label class="slds-form-element__label slds-no-flex"><span><abbr  title="required" class="slds-required">*</abbr></span>
+                {!v.languageLabelMap.PSA_26}</label>
+            <lightning:inputField disabled="{!and(v.sapRecord.Product_Stewardship_Status__c != 'Started By Sales', v.sapRecord.Product_Stewardship_Status__c != 'Customer In Progress')}" fieldName="Tank_Shows_No_Evidence_of_Leaks__c" variant="label-hidden" required="true" aura:id="psaField"/>
+        </div>
+        <div class="slds-large-size_6-of-12 slds-small-size_12-of-12 slds-medium-size_5-of-12 slds-p-left_small">
+            <label class="slds-form-element__label slds-no-flex"><span><abbr  title="required" class="slds-required">*</abbr></span> {!v.languageLabelMap.PS_30}</label>
+            <lightning:inputField disabled="{!and(v.sapRecord.Product_Stewardship_Status__c != 'Started By Sales', v.sapRecord.Product_Stewardship_Status__c != 'Customer In Progress')}" fieldName="Tank_Shows_No_Evidence_of_Leaks_Comment__c" variant="label-hidden" aura:id="psaField" required="true"/>
+        </div>
+    </div>
+    <div class="subHeader" style="width:100%;margin-top:2rem;margin-bottom:2rem;"></div>
+    <div class="slds-grid slds-wrap">
+        <div class="slds-large-size_6-of-12 slds-small-size_12-of-12 slds-medium-size_5-of-12 slds-p-right_small">
+            <label class="slds-form-element__label slds-no-flex"><span><abbr  title="required" class="slds-required">*</abbr></span>
+                {!v.languageLabelMap.PSA_27} </label>
+            <lightning:inputField disabled="{!and(v.sapRecord.Product_Stewardship_Status__c != 'Started By Sales', v.sapRecord.Product_Stewardship_Status__c != 'Customer In Progress')}" fieldName="Tank_Undergone_a_Mechanical_Inspection__c" variant="label-hidden" required="true" aura:id="psaField"/>
+        </div>
+        <div class="slds-large-size_6-of-12 slds-small-size_12-of-12 slds-medium-size_5-of-12 slds-p-left_small">
+            <label class="slds-form-element__label slds-no-flex">{!v.languageLabelMap.PS_30}</label>
+            <lightning:inputField disabled="{!and(v.sapRecord.Product_Stewardship_Status__c != 'Started By Sales', v.sapRecord.Product_Stewardship_Status__c != 'Customer In Progress')}" fieldName="Tank_Mechanical_Inspection_Comments__c" variant="label-hidden"/>
+        </div>
+    </div>
+    <div class="subHeader" style="width:100%;margin-top:2rem;margin-bottom:2rem;"></div>
+    <div class="slds-grid slds-wrap">
+        <div class="slds-large-size_6-of-12 slds-small-size_12-of-12 slds-medium-size_5-of-12 slds-p-right_small">
+            <label class="slds-form-element__label slds-no-flex"><span><abbr  title="required" class="slds-required">*</abbr></span>
+                {!v.languageLabelMap.PSA_28} </label>
+            <lightning:inputField disabled="{!and(v.sapRecord.Product_Stewardship_Status__c != 'Started By Sales', v.sapRecord.Product_Stewardship_Status__c != 'Customer In Progress')}" fieldName="Tank_Fill_Pipe_is_at_the_Top__c" variant="label-hidden" required="true" aura:id="psaField"/>
+        </div>
+        <div class="slds-large-size_6-of-12 slds-small-size_12-of-12 slds-medium-size_5-of-12 slds-p-left_small">
+            <label class="slds-form-element__label slds-no-flex"><span><abbr  title="required" class="slds-required">*</abbr></span> {!v.languageLabelMap.PS_30}</label>
+            <lightning:inputField disabled="{!and(v.sapRecord.Product_Stewardship_Status__c != 'Started By Sales', v.sapRecord.Product_Stewardship_Status__c != 'Customer In Progress')}" fieldName="Tank_Fill_Pipe_is_at_the_Top_Comment__c" variant="label-hidden" required="true" aura:id="psaField"/>
+        </div>
+    </div>
+    <div class="subHeader" style="width:100%;margin-top:2rem;margin-bottom:2rem;"></div>
+    <div class="slds-grid slds-wrap">
+        <div class="slds-large-size_6-of-12 slds-small-size_12-of-12 slds-medium-size_5-of-12 slds-p-right_small">
+            <label class="slds-form-element__label slds-no-flex"><span><abbr  title="required" class="slds-required">*</abbr></span>
+                {!v.languageLabelMap.PSA_29} </label>
+            <lightning:inputField disabled="{!and(v.sapRecord.Product_Stewardship_Status__c != 'Started By Sales', v.sapRecord.Product_Stewardship_Status__c != 'Customer In Progress')}" fieldName="Are_Physical_Tank_Level_Reading_Taken__c" variant="label-hidden" required="true" aura:id="psaField"/>
+        </div>
+        <div class="slds-large-size_6-of-12 slds-small-size_12-of-12 slds-medium-size_5-of-12 slds-p-left_small">
+            <label class="slds-form-element__label slds-no-flex">{!v.languageLabelMap.PS_30}</label>
+            <lightning:inputField disabled="{!and(v.sapRecord.Product_Stewardship_Status__c != 'Started By Sales', v.sapRecord.Product_Stewardship_Status__c != 'Customer In Progress')}" fieldName="Physical_Tank_Level_Reading_Comments__c" variant="label-hidden"/>
+        </div>
+    </div>
+    <div class="subHeader" style="width:100%;margin-top:2rem;margin-bottom:2rem;"></div>
+    <div class="slds-grid slds-wrap">
+        <div class="slds-large-size_6-of-12 slds-small-size_12-of-12 slds-medium-size_5-of-12 slds-p-right_small">
+            <label class="slds-form-element__label slds-no-flex"><span><abbr  title="required" class="slds-required">*</abbr></span>
+                {!v.languageLabelMap.PSA_55} </label>
+            <lightning:inputField disabled="{!and(v.sapRecord.Product_Stewardship_Status__c != 'Started By Sales', v.sapRecord.Product_Stewardship_Status__c != 'Customer In Progress')}" fieldName="Controls_of_Material_Spill__c" variant="label-hidden" required="true" aura:id="psaField"/>
+        </div>
+        <div class="slds-large-size_6-of-12 slds-small-size_12-of-12 slds-medium-size_5-of-12 slds-p-left_small">
+            <label class="slds-form-element__label slds-no-flex"> <span><abbr  title="required" class="slds-required">*</abbr></span> {!v.languageLabelMap.PS_30}</label>
+            <lightning:inputField disabled="{!and(v.sapRecord.Product_Stewardship_Status__c != 'Started By Sales', v.sapRecord.Product_Stewardship_Status__c != 'Customer In Progress')}" fieldName="Controls_of_Material_Spill_Comment__c" variant="label-hidden" required="true" aura:id="psaField"/>
+        </div>
+    </div>
+    <div class="subHeader" style="width:100%;margin-top:2rem;margin-bottom:2rem;"></div>
+    <div class="slds-grid slds-wrap">
+        <div class="slds-large-size_6-of-12 slds-small-size_12-of-12 slds-medium-size_5-of-12 slds-p-right_small">
+            <label class="slds-form-element__label slds-no-flex"><span><abbr  title="required" class="slds-required">*</abbr></span>
+                {!v.languageLabelMap.PSA_70}</label>
+            <lightning:inputField disabled="{!and(v.sapRecord.Product_Stewardship_Status__c != 'Started By Sales', v.sapRecord.Product_Stewardship_Status__c != 'Customer In Progress')}" fieldName="Stored_NAOH_with_Other_Chemicals__c" variant="label-hidden" required="true" aura:id="psaField" value="{!v.ques.Stored_NAOH_with_Other_Chemicals__c}"/>
+        </div>
+        <div class="slds-large-size_6-of-12 slds-small-size_12-of-12 slds-medium-size_5-of-12 slds-p-left_small">
+            <label class="slds-form-element__label slds-no-flex"><aura:if isTrue="{!v.ques.Stored_NAOH_with_Other_Chemicals__c == 'Yes'}"><span><abbr  title="required" class="slds-required">*</abbr></span></aura:if> {!v.languageLabelMap.PS_30}</label>
+            <lightning:inputField disabled="{!and(v.sapRecord.Product_Stewardship_Status__c != 'Started By Sales', v.sapRecord.Product_Stewardship_Status__c != 'Customer In Progress')}" fieldName="Stored_NaOH_with_Other_Chemicals_Comment__c" variant="label-hidden" aura:id="psaField" required="{!v.ques.Stored_NAOH_with_Other_Chemicals__c == 'Yes'}"/>
+        </div>
+    </div>
+    <div class="subHeader" style="width:100%;margin-top:2rem;margin-bottom:2rem;"></div>
+    <div class="slds-grid slds-wrap">
+        <div class="slds-large-size_6-of-12 slds-small-size_12-of-12 slds-medium-size_5-of-12 slds-p-right_small">
+            <label class="slds-form-element__label slds-no-flex"><span><abbr  title="required" class="slds-required">*</abbr></span>
+                {!v.languageLabelMap.PSA_30} </label>
+            <lightning:inputField disabled="{!and(v.sapRecord.Product_Stewardship_Status__c != 'Started By Sales', v.sapRecord.Product_Stewardship_Status__c != 'Customer In Progress')}" fieldName="MOC_Valves_Fittings__c" variant="label-hidden" required="true" aura:id="psaField"/>
+        </div>
+        
+    </div>
+    <div class="subHeader">{!v.languageLabelMap.PSA_31}</div>
+    <div class="slds-grid slds-wrap">
+        <div class="slds-large-size_6-of-12 slds-small-size_12-of-12 slds-medium-size_5-of-12 slds-p-right_small">
+            <label class="slds-form-element__label slds-no-flex"><span><abbr  title="required" class="slds-required">*</abbr></span>
+                {!v.languageLabelMap.PSA_32} </label>
+            <lightning:inputField disabled="{!and(v.sapRecord.Product_Stewardship_Status__c != 'Started By Sales', v.sapRecord.Product_Stewardship_Status__c != 'Customer In Progress')}" fieldName="Are_Transfer_Hoses_Tested_Manually__c" variant="label-hidden" required="true" aura:id="psaField"/>
+        </div>
+        <div class="slds-large-size_6-of-12 slds-small-size_12-of-12 slds-medium-size_5-of-12 slds-p-left_small">
+            <label class="slds-form-element__label slds-no-flex">{!v.languageLabelMap.PS_30}</label>
+            <lightning:inputField disabled="{!and(v.sapRecord.Product_Stewardship_Status__c != 'Started By Sales', v.sapRecord.Product_Stewardship_Status__c != 'Customer In Progress')}" fieldName="Transfer_Hoses_Tested_Annually_Comments__c" variant="label-hidden"/>
+        </div>
+    </div>
+    <div class="subHeader" style="width:100%;margin-top:2rem;margin-bottom:2rem;"></div>
+    <div class="slds-grid slds-wrap">
+        <div class="slds-large-size_6-of-12 slds-small-size_12-of-12 slds-medium-size_5-of-12 slds-p-right_small">
+            <label class="slds-form-element__label slds-no-flex"><span><abbr  title="required" class="slds-required">*</abbr></span>
+                {!v.languageLabelMap.PSA_33} </label>
+            <lightning:inputField disabled="{!and(v.sapRecord.Product_Stewardship_Status__c != 'Started By Sales', v.sapRecord.Product_Stewardship_Status__c != 'Customer In Progress')}" fieldName="Are_Devices_Placed_Under_Transfer_Hoses__c" variant="label-hidden" required="true" aura:id="psaField"/>
+        </div>
+        <div class="slds-large-size_6-of-12 slds-small-size_12-of-12 slds-medium-size_5-of-12 slds-p-left_small">
+            <label class="slds-form-element__label slds-no-flex">{!v.languageLabelMap.PS_30}</label>
+            <lightning:inputField disabled="{!and(v.sapRecord.Product_Stewardship_Status__c != 'Started By Sales', v.sapRecord.Product_Stewardship_Status__c != 'Customer In Progress')}" fieldName="Devices_Placed_Under_Transfer_Hose_Cmnts__c" variant="label-hidden"/>
+        </div>
+    </div>
+    <div class="subHeader" style="width:100%;margin-top:2rem;margin-bottom:2rem;"></div>
+    <div class="slds-grid slds-wrap">
+        <div class="slds-large-size_6-of-12 slds-small-size_12-of-12 slds-medium-size_5-of-12 slds-p-right_small">
+            <label class="slds-form-element__label slds-no-flex"><span><abbr  title="required" class="slds-required">*</abbr></span>
+                {!v.languageLabelMap.PSA_34} </label>
+            <lightning:inputField disabled="{!and(v.sapRecord.Product_Stewardship_Status__c != 'Started By Sales', v.sapRecord.Product_Stewardship_Status__c != 'Customer In Progress')}" fieldName="Hose_Independently_Supported_to_Prevent__c" variant="label-hidden" required="true" aura:id="psaField"/>
+        </div>
+        <div class="slds-large-size_6-of-12 slds-small-size_12-of-12 slds-medium-size_5-of-12 slds-p-left_small">
+            <label class="slds-form-element__label slds-no-flex">{!v.languageLabelMap.PS_30}</label>
+            <lightning:inputField disabled="{!and(v.sapRecord.Product_Stewardship_Status__c != 'Started By Sales', v.sapRecord.Product_Stewardship_Status__c != 'Customer In Progress')}" fieldName="Hose_Independently_Supported_Comments__c" variant="label-hidden"/>
+        </div>
+    </div>
+    <div class="subHeader" style="width:100%;margin-top:2rem;margin-bottom:2rem;"></div>
+    <div class="slds-grid slds-wrap">
+        <div class="slds-large-size_6-of-12 slds-small-size_12-of-12 slds-medium-size_5-of-12 slds-p-right_small">
+            <label class="slds-form-element__label slds-no-flex"><span><abbr  title="required" class="slds-required">*</abbr></span>
+                {!v.languageLabelMap.PSA_35} </label>
+            <lightning:inputField disabled="{!and(v.sapRecord.Product_Stewardship_Status__c != 'Started By Sales', v.sapRecord.Product_Stewardship_Status__c != 'Customer In Progress')}" fieldName="Is_There_Proper_Fall_Protection__c" variant="label-hidden" required="true" aura:id="psaField"/>
+        </div>
+        <div class="slds-large-size_6-of-12 slds-small-size_12-of-12 slds-medium-size_5-of-12 slds-p-left_small">
+            <label class="slds-form-element__label slds-no-flex">{!v.languageLabelMap.PS_30}</label>
+            <lightning:inputField disabled="{!and(v.sapRecord.Product_Stewardship_Status__c != 'Started By Sales', v.sapRecord.Product_Stewardship_Status__c != 'Customer In Progress')}" fieldName="Proper_Fall_Protection_Comments__c" variant="label-hidden"/>
+        </div>
+    </div>
+    <div class="subHeader">{!v.languageLabelMap.PSA_37}</div>
+    <div class="slds-grid slds-wrap">
+        <div class="slds-large-size_6-of-12 slds-small-size_12-of-12 slds-medium-size_5-of-12 slds-p-right_small">
+            <label class="slds-form-element__label slds-no-flex"><span><abbr  title="required" class="slds-required">*</abbr></span>
+                {!v.languageLabelMap.PSA_36} </label>
+            <lightning:inputField disabled="{!and(v.sapRecord.Product_Stewardship_Status__c != 'Started By Sales', v.sapRecord.Product_Stewardship_Status__c != 'Customer In Progress')}" fieldName="Are_Required_Inspection_Forms_Completed__c" variant="label-hidden" required="true" aura:id="psaField"/>
+        </div>
+        <div class="slds-large-size_6-of-12 slds-small-size_12-of-12 slds-medium-size_5-of-12 slds-p-left_small">
+            <label class="slds-form-element__label slds-no-flex">{!v.languageLabelMap.PS_30}</label>
+            <lightning:inputField disabled="{!and(v.sapRecord.Product_Stewardship_Status__c != 'Started By Sales', v.sapRecord.Product_Stewardship_Status__c != 'Customer In Progress')}" fieldName="Required_Inspection_Comments__c" variant="label-hidden"/>
+        </div>
+    </div>
+    <div class="subHeader" style="width:100%;margin-top:2rem;margin-bottom:2rem;"></div>
+    <div class="slds-grid slds-wrap">
+        <div class="slds-large-size_6-of-12 slds-small-size_12-of-12 slds-medium-size_5-of-12 slds-p-right_small">
+            <label class="slds-form-element__label slds-no-flex"><span><abbr  title="required" class="slds-required">*</abbr></span>
+                {!v.languageLabelMap.PSA_39}</label>
+            <lightning:inputField disabled="{!and(v.sapRecord.Product_Stewardship_Status__c != 'Started By Sales', v.sapRecord.Product_Stewardship_Status__c != 'Customer In Progress')}" fieldName="Is_There_Emergency_Shutdown_Provision__c" variant="label-hidden" required="true" aura:id="psaField"/>
+        </div>
+        <div class="slds-large-size_6-of-12 slds-small-size_12-of-12 slds-medium-size_5-of-12 slds-p-left_small">
+            <label class="slds-form-element__label slds-no-flex">{!v.languageLabelMap.PS_30}</label>
+            <lightning:inputField disabled="{!and(v.sapRecord.Product_Stewardship_Status__c != 'Started By Sales', v.sapRecord.Product_Stewardship_Status__c != 'Customer In Progress')}" fieldName="Emergency_Shutdown_Comments__c" variant="label-hidden"/>
+        </div>
+    </div>
+    <div class="subHeader" style="width:100%;margin-top:2rem;margin-bottom:2rem;"></div>
+    <div class="slds-grid slds-wrap">
+        <div class="slds-large-size_6-of-12 slds-small-size_12-of-12 slds-medium-size_5-of-12 slds-p-right_small">
+            <label class="slds-form-element__label slds-no-flex"><span><abbr  title="required" class="slds-required">*</abbr></span>
+                {!v.languageLabelMap.PSA_40} </label>
+            <lightning:inputField disabled="{!and(v.sapRecord.Product_Stewardship_Status__c != 'Started By Sales', v.sapRecord.Product_Stewardship_Status__c != 'Customer In Progress')}" fieldName="Is_The_Emergency_Shutdown_Tested__c" variant="label-hidden" required="true" aura:id="psaField"/>
+        </div>
+        <div class="slds-large-size_6-of-12 slds-small-size_12-of-12 slds-medium-size_5-of-12 slds-p-left_small">
+            <label class="slds-form-element__label slds-no-flex">{!v.languageLabelMap.PS_30}</label>
+            <lightning:inputField disabled="{!and(v.sapRecord.Product_Stewardship_Status__c != 'Started By Sales', v.sapRecord.Product_Stewardship_Status__c != 'Customer In Progress')}" fieldName="Emergency_Shutdown_Tested_Comments__c" variant="label-hidden"/>
+        </div>
+    </div>
+    <div class="subHeader" style="width:100%;margin-top:2rem;margin-bottom:2rem;"></div>
+    <div class="slds-grid slds-wrap">
+        <div class="slds-large-size_6-of-12 slds-small-size_12-of-12 slds-medium-size_5-of-12 slds-p-right_small">
+            <label class="slds-form-element__label slds-no-flex"><span><abbr  title="required" class="slds-required">*</abbr></span>
+                {!v.languageLabelMap.PSA_41} </label>
+            <lightning:inputField disabled="{!and(v.sapRecord.Product_Stewardship_Status__c != 'Started By Sales', v.sapRecord.Product_Stewardship_Status__c != 'Customer In Progress')}" fieldName="Is_The_Barge_Secured__c" variant="label-hidden" required="true" aura:id="psaField"/>
+        </div>
+        <div class="slds-large-size_6-of-12 slds-small-size_12-of-12 slds-medium-size_5-of-12 slds-p-left_small">
+            <label class="slds-form-element__label slds-no-flex">{!v.languageLabelMap.PS_30}</label>
+            <lightning:inputField disabled="{!and(v.sapRecord.Product_Stewardship_Status__c != 'Started By Sales', v.sapRecord.Product_Stewardship_Status__c != 'Customer In Progress')}" fieldName="Safe_Access_Comments__c" variant="label-hidden"/>
+        </div>
+    </div>
+    <div class="subHeader" style="width:100%;margin-top:2rem;margin-bottom:2rem;"></div>
+    <div class="slds-grid slds-wrap">
+        <div class="slds-large-size_6-of-12 slds-small-size_12-of-12 slds-medium-size_5-of-12 slds-p-right_small">
+            <label class="slds-form-element__label slds-no-flex"><span><abbr  title="required" class="slds-required">*</abbr></span>
+                {!v.languageLabelMap.PSA_42}</label>
+            <lightning:inputField disabled="{!and(v.sapRecord.Product_Stewardship_Status__c != 'Started By Sales', v.sapRecord.Product_Stewardship_Status__c != 'Customer In Progress')}" fieldName="Are_Mooring_Lines_Monitored_Continuously__c" variant="label-hidden" required="true" aura:id="psaField"/>
+        </div>
+        <div class="slds-large-size_6-of-12 slds-small-size_12-of-12 slds-medium-size_5-of-12 slds-p-left_small">
+            <label class="slds-form-element__label slds-no-flex">{!v.languageLabelMap.PS_30}</label>
+            <lightning:inputField disabled="{!and(v.sapRecord.Product_Stewardship_Status__c != 'Started By Sales', v.sapRecord.Product_Stewardship_Status__c != 'Customer In Progress')}" fieldName="Mooring_Line_Monitored_Comments__c" variant="label-hidden"/>
+        </div>
+    </div>
+    <div class="subHeader" style="width:100%;margin-top:2rem;margin-bottom:2rem;"></div>
+    <div class="slds-grid slds-wrap">
+        <div class="slds-large-size_6-of-12 slds-small-size_12-of-12 slds-medium-size_5-of-12 slds-p-right_small">
+            <label class="slds-form-element__label slds-no-flex"><span><abbr  title="required" class="slds-required">*</abbr></span>
+                {!v.languageLabelMap.PSA_43} </label>
+            <lightning:inputField disabled="{!and(v.sapRecord.Product_Stewardship_Status__c != 'Started By Sales', v.sapRecord.Product_Stewardship_Status__c != 'Customer In Progress')}" fieldName="Is_The_Barg_Cargo_Tank_Vented__c" variant="label-hidden" required="true" aura:id="psaField"/>
+        </div>
+        <div class="slds-large-size_6-of-12 slds-small-size_12-of-12 slds-medium-size_5-of-12 slds-p-left_small">
+            <label class="slds-form-element__label slds-no-flex">{!v.languageLabelMap.PS_30}</label>
+            <lightning:inputField disabled="{!and(v.sapRecord.Product_Stewardship_Status__c != 'Started By Sales', v.sapRecord.Product_Stewardship_Status__c != 'Customer In Progress')}" fieldName="Barg_Cargo_Tank_Vented_Comments__c" variant="label-hidden"/>
+        </div>
+    </div>
+    <div class="subHeader">{!v.languageLabelMap.PSA_44}</div>
+    <div class="slds-grid slds-wrap">
+        <div class="slds-large-size_6-of-12 slds-small-size_12-of-12 slds-medium-size_5-of-12 slds-p-right_small">
+            <label class="slds-form-element__label slds-no-flex"><span><abbr  title="required" class="slds-required">*</abbr></span>
+                {!v.languageLabelMap.PSA_45} </label>
+            <lightning:inputField disabled="{!and(v.sapRecord.Product_Stewardship_Status__c != 'Started By Sales', v.sapRecord.Product_Stewardship_Status__c != 'Customer In Progress')}" fieldName="Safety_Equipment__c" variant="label-hidden" required="true" aura:id="psaField" value="{!v.ques.Safety_Equipment__c}"/>
+        </div>
+        <div class="slds-large-size_6-of-12 slds-small-size_12-of-12 slds-medium-size_5-of-12 slds-p-left_small">
+            <label class="slds-form-element__label slds-no-flex"><aura:if isTrue="{!v.ques.Safety_Equipment__c == 'No'}"><span><abbr  title="required" class="slds-required">*</abbr></span></aura:if>{!v.languageLabelMap.PS_30}</label>
+            <lightning:inputField disabled="{!and(v.sapRecord.Product_Stewardship_Status__c != 'Started By Sales', v.sapRecord.Product_Stewardship_Status__c != 'Customer In Progress')}" fieldName="Safety_Equipment_Comment__c" variant="label-hidden" aura:id="psaField" required="{!v.ques.Safety_Equipment__c == 'No'}"/>
+        </div>
+    </div>
+    <div class="subHeader">{!v.languageLabelMap.PSA_46}</div>
+    <div class="slds-grid slds-wrap">
+        <div class="slds-large-size_6-of-12 slds-small-size_12-of-12 slds-medium-size_5-of-12 slds-p-right_small">
+            <label class="slds-form-element__label slds-no-flex"><span><abbr  title="required" class="slds-required">*</abbr></span>
+                {!v.languageLabelMap.PSA_47} </label>
+            <lightning:inputField disabled="{!and(v.sapRecord.Product_Stewardship_Status__c != 'Started By Sales', v.sapRecord.Product_Stewardship_Status__c != 'Customer In Progress')}" fieldName="Safety_Shower_Eyewash__c" variant="label-hidden" required="true" aura:id="psaField"/>
+        </div>
+        <div class="slds-large-size_6-of-12 slds-small-size_12-of-12 slds-medium-size_5-of-12 slds-p-left_small">
+            <label class="slds-form-element__label slds-no-flex">{!v.languageLabelMap.PS_30}</label>
+            <lightning:inputField disabled="{!and(v.sapRecord.Product_Stewardship_Status__c != 'Started By Sales', v.sapRecord.Product_Stewardship_Status__c != 'Customer In Progress')}" fieldName="Safety_Shower_Eyewash_Comment__c" variant="label-hidden"/>
+        </div>
+    </div>
+    <div class="subHeader" style="width:100%;margin-top:2rem;margin-bottom:2rem;"></div>
+    
+</aura:component>

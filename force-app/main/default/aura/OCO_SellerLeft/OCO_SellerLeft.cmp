@@ -1,0 +1,163 @@
+<aura:component implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,force:lightningQuickAction" access="global" controller="OCO_SellerController">
+    <aura:attribute name="recordId" type="String"/>
+    <aura:attribute name="mainAccount" type="Account"/>
+    <aura:attribute name="tempSapRecord" type="SAP_Onboarding__c"/>
+    <aura:attribute name="sapRecord" type="SAP_Onboarding__c" default="{'sObjectType' : 'SAP_Onboarding__c', 'Name': '', 'Customer_Information_Status__c' : 'New', 'Order_Placement_Status__c' : 'New', 'Credit_Application_Status__c' : 'New', 'Product_Stewardship_Status__c' : 'New', 
+                                                                       'Customer_Information_Form_Check__c' : false, 'Credit_Application_Form_Check__c' : false, 'Document_Delivery_Form_Check__c' : false, 'Product_Stewardship_Form_Check__c' : false }"/>
+    <aura:attribute name="sapId" type="String"/>
+    <aura:attribute name="salesRep" type="String"/>
+    <aura:attribute name="toEmails" type="String"/>
+    <aura:attribute name="ccEmails" type="String"/>
+    <aura:attribute name="bccEmails" type="String"/>
+    <aura:attribute name="emailSubject" type="String"/>
+    <aura:attribute name="emailBody" type="String"/>
+    <aura:attribute name="emailTemplate" type="EmailTemplate"/>
+    <aura:attribute name="sapType" type="String"/>
+    <aura:attribute name="showEmailComposer" type="boolean"/>
+    <aura:attribute name="shareFileList" type="List"/>
+    <aura:attribute name="spinner" type="boolean"/>
+    <aura:attribute name="creditType" type="String"/>
+    <aura:attribute name="oldCreditType" type="String"/>
+    <aura:attribute name="selectedLanguage" type="String" default="English"/>
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    <aura:handler event="c:OCO_Seller_CheckboxUpdateEvt" action="{!c.handleCheckboxes}"/>
+    <aura:handler event="c:OCO_Seller_UpdateSapIdInLeft" action="{!c.handleSapId}"/>
+    <aura:if isTrue="{!v.spinner}">
+        <div aura:id="spinnerId" class="slds-spinner_container">
+            <div class="slds-spinner--brand  slds-spinner slds-spinner--large slds-is-relative" role="alert">
+                <span class="slds-assistive-text">Loading</span>
+                <div class="slds-spinner__dot-a"></div>
+                <div class="slds-spinner__dot-b"></div>
+            </div>
+        </div>
+    </aura:if> 
+    <aura:if isTrue ="{!v.showEmailComposer}">
+        <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+            <div class="slds-modal__container" style="width: 70%;">
+                <div class="slds-modal__header">
+                    Email
+                </div>
+                <div class="slds-modal__content slds-p-around--medium" style="padding:15px !important;overflow-y:auto !important;">
+                    <p style="color:blue">NOTE: Use semicolon(;) with no spcaes to add multiple email addresses</p>
+                    <div class="slds-form-element">
+                        <label class="slds-form-element__label" for="CC">To</label>
+                        <div class="slds-form-element__control">
+                            <ui:inputEmail class="slds-input" aura:id="email"  value="{!v.toEmails}" required="true"/>
+                        </div>
+                    </div>
+                    <div class="slds-form-element">
+                        <label class="slds-form-element__label" for="CC">cc</label>
+                        <div class="slds-form-element__control">
+                            <ui:inputEmail class="slds-input" aura:id="email3"  value="{!v.ccEmails}" />
+                        </div>
+                    </div>
+                    <div class="slds-form-element">
+                        <label class="slds-form-element__label" for="CC">bcc</label>
+                        <div class="slds-form-element__control">
+                            <ui:inputEmail class="slds-input" aura:id="email2"  value="{!v.bccEmails}"/>
+                        </div>
+                    </div>
+                    
+                    <div class="slds-form-element">
+                        <label class="slds-form-element__label" for="CC">Subject</label>
+                        <div class="slds-form-element__control">
+                            <ui:inputText class="slds-input" aura:id="subject"  value="{!v.emailSubject}" placeholder="Subject"/>
+                        </div>
+                    </div>
+                    <div class="slds-form-elemen slds-size_6-of-6 slds-m-bottom_small">
+                        <lightning:input aura:id="shareFileInput" type="file" label="Additional Attachments" multiple="true" onchange="{! c.handleFileChange }" />
+                    </div>
+                    <div class="slds-form-elemen slds-size_6-of-6 slds-m-bottom_small">
+                        <aura:iteration items="{!v.shareFileList}" var="file" indexVar="fileNo">
+                            <p style="color:black;border-bottom:1px solid lightgrey;padding-top:4px" id="shareFileName">
+                                <b>File.&nbsp;</b> {!file.name}
+                                <lightning:icon iconName="utility:close" id="{!fileNo}" title="Remove File" size="xx-small" class="slds-float_right" style="cursor:pointer;" onclick="{!c.removeFile}"/>
+                            </p>
+                        </aura:iteration>
+                    </div>
+                    <div class="slds-form-element">
+                        <label class="slds-form-element__label" for="textareaSample2">Mail Body</label>
+                        
+                        <div class="slds-form-element__control">
+                            <lightning:inputRichText aura:id="body" value="{!v.emailBody}" />
+                        </div>
+                    </div>
+                    <div class="slds-form-element slds-p-top_small">    
+                        
+                        
+                    </div>   
+                </div>
+                <div class="modal-footer slds-modal__footer">
+                    <div class="forceChangeRecordTypeFooter">
+                        <lightning:button variant="neutral" label="Cancel" onclick="{!c.closeEmailModal}" />
+                        <button class="slds-button slds-button--brand" type="button" onclick="{!c.sendEmailToCustomer}">Send</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </aura:if>
+    <div class="slds-wrap" style="background:#fff;min-height:100vh;">
+        <div class="slds-col slds-size_1-of-1 slds-p-around_small">
+            <div class="slds-col slds-size_3-of-4">
+                <span><b>#{!v.sapRecord.Name}</b></span><br/>
+                <span>{!v.mainAccount.Name}</span><br/>
+                <span style="color:#bfc8d6;font-size:12px">{!v.mainAccount.BillingStreet}<br/>{!v.mainAccount.BillingCity}, {!v.mainAccount.BillingState}<br/>{!v.mainAccount.BillingCountry}</span>
+            </div>
+        </div>
+        <div class="slds-col slds-size_1-of-1 slds-p-top_medium" style="border-top:1px solid lightgrey;">
+            <div class="slds-grid slds-wrap slds-size_1-of-1 slds-p-left_small slds-p-bottom_small">
+                <lightning:button  label="Customer Info" iconName="utility:user" iconPosition="left" disabled="true" variant="container" class="slds-size_6-of-12 navBtn"/>
+                <ui:outputText value="{!v.sapRecord.Customer_Information_Status__c}" class="slds-size_5-of-12 alignPadding"/>
+                <lightning:input type="checkbox" variant="label-hidden" aura:id="customerInfoCheck" 
+                                 checked="{!v.sapRecord.Customer_Information_Status__c != 'New'}" 
+                                 class="alignPadding slds-size_1-of-12" disabled="{!v.sapRecord.Customer_Information_Form_Check__c == false}"/>
+            </div>
+            <aura:if isTrue="{!and(v.sapType != 'Modify Sold-To', v.sapType != 'Modify Ship-To')}">
+                <!--div class="slds-grid slds-wrap slds-size_1-of-1 slds-p-left_small slds-p-bottom_small">
+                    <lightning:button label="Document Delivery" iconName="utility:text_template" iconPosition="left" disabled="true" variant="container" class="slds-size_6-of-12 navBtn" />
+                    <ui:outputText value="{!v.sapRecord.Order_Placement_Status__c}" class="slds-size_5-of-12 alignPadding"/>
+                    <lightning:input type="checkbox" variant="label-hidden" aura:id="documentDeliveryCheck" 
+                                     checked="{!v.sapRecord.Order_Placement_Status__c != 'New'}" 
+                                     class="alignPadding slds-size_1-of-12" disabled="{!v.sapRecord.Document_Delivery_Form_Check__c == false}"/>
+                </div-->
+                <aura:if isTrue="{!or(v.sapType == 'New Sold-To w/ Ship-to &amp; Product', v.creditType != 'No Credit')}">
+                    <div class="slds-grid slds-wrap slds-size_1-of-1 slds-p-left_small slds-p-bottom_small">
+                        <lightning:button label="Credit App" iconName="utility:edit_form" iconPosition="left" disabled="true" variant="container" class="slds-size_6-of-12 navBtn" />
+                        <ui:outputText value="{!v.sapRecord.Credit_Application_Status__c}" class="slds-size_5-of-12 alignPadding"/>
+                        <lightning:input type="checkbox" variant="label-hidden" aura:id="creditCheck" 
+                                         checked="{!and(v.sapRecord.Credit_Application_Status__c != 'New', v.oldCreditType == v.creditType)}" 
+                                         class="alignPadding slds-size_1-of-12" disabled="{!v.sapRecord.Credit_Application_Form_Check__c == false}"/>
+                    </div>
+                </aura:if>
+                <div class="slds-grid slds-wrap slds-size_1-of-1 slds-p-left_small slds-p-bottom_small ">
+                    <lightning:button label="Product Info" iconName="utility:omni_channel" iconPosition="left" disabled="true" variant="container" class="slds-size_6-of-12 navBtn" />
+                    <ui:outputText value="{!v.sapRecord.Product_Stewardship_Status__c}" class="slds-size_5-of-12 alignPadding"/>
+                    <lightning:input type="checkbox" variant="label-hidden" aura:id="PSAInfoCheck" class="slds-size_1-of-12 alignPadding" 
+                                     checked="{!v.sapRecord.Product_Stewardship_Status__c != 'New'}" 
+                                     disabled="{!v.sapRecord.Product_Stewardship_Form_Check__c == false}"/>
+                </div>
+            </aura:if>
+            <aura:if isTrue="{!or(or(v.sapRecord.Product_Stewardship_Status__c != 'Customer Submitted', v.sapRecord.Credit_Application_Status__c != 'Customer Submitted'), v.sapRecord.Order_Placement_Status__c != 'Customer Submitted', v.sapRecord.Customer_Information_Status__c != 'Customer Submitted')}">
+                <div class="slds-grid slds-wrap slds-size_1-of-1 slds-p-left_xx-large">
+                    <lightning:select label="Email Language" value="{!v.selectedLanguage}" class="slds-size_2-of-4">
+                        <option value="English">English</option>
+                        <option value="French">French</option>
+                        <option value="Italian">Italian</option>
+                        <option value="Spanish">Spanish</option>
+                        <option value="German">German</option>
+                        <option value="Portuguese">Portuguese</option>
+                    </lightning:select>
+                </div>
+                <div class="slds-grid slds-wrap slds-size_1-of-1 slds-p-left_xx-large slds-p-bottom_small slds-p-top_large slds-text-align_center">
+                    <lightning:button label="Send To Customer" aura:id="finalSubmitBtn" variant="brand" class="slds-size_6-of-12 customerBtn" 
+                                      onclick="{!c.sendFormToCustomer}" iconName="standard:sales_path"/>
+                </div>
+            </aura:if>
+            <div class="slds-grid slds-wrap slds-size_1-of-1 slds-p-left_xx-large slds-p-bottom_small slds-p-top_small slds-text-align_center" >
+                <lightning:button label="Cancel Entire Form"  variant="destructive" class="slds-size_6-of-12" onclick="{!c.cancelAll}"
+                                  iconName="action:remove"/>
+            </div>
+        </div>
+    </div>
+</aura:component>

@@ -1,0 +1,165 @@
+<aura:component controller="ForecastingGridController">
+    <aura:attribute type="Object" name="lineItem" />
+    <aura:attribute type="Decimal" name="listIndex" />
+    <aura:attribute name="dragid" type="Integer" />
+    <!-- Added by Ajay Choudhary on 30 Sept 2022 **********Edit Filter Functionality**************Start******-->
+    <aura:attribute name="isEditFilter" type="Boolean"/>
+     <aura:attribute name="inputField" type="String" />
+    <aura:attribute name="selectedFilter" type="List" />
+    <aura:attribute name="filterCompareSTRING"      type="List"     default="[
+                                                                        {'label': 'starts with', 'value': 'starts with'},
+                                                                        {'label': 'ends with', 'value': 'ends with'},
+                                                                        {'label': 'contains', 'value': 'contains'},
+                                                                        {'label': 'equals', 'value': 'equals'},
+                                                                        {'label': 'not equals', 'value': 'not equals'},
+                                                                        {'label': 'is null', 'value': 'is null'},
+                                                                        {'label': 'not null', 'value': 'not null'}
+                                                                        ]"/>
+    <aura:attribute name="filterCompareDOUBLE"      type="List"     default="[
+                                                                        {'label': 'greater than', 'value': 'gt'},
+                                                                        {'label': 'less than', 'value': 'lt'},
+                                                                        {'label': 'equal', 'value': 'eq'},
+                                                                        ]"/>
+
+    <aura:attribute name="filterComparePICKLIST"    type="List"     default="[
+                                                                        {'label': 'equals', 'value': 'equals'},
+                                                                        {'label': 'not equals', 'value': 'not equals'},
+                                                                        {'label': 'is null', 'value': 'is null'},
+                                                                        {'label': 'not null', 'value': 'not null'}
+                                                                        ]"/><!--Changed By Ajay (label = equals, value = equals, piorvalue = equal) -->
+    <aura:attribute name="filterCompareDATE"        type="List"     default="[
+                                                                        {'label': 'before', 'value': 'before'},
+                                                                        {'label': 'after', 'value': 'after'},
+                                                                        {'label': 'equal', 'value': 'equal'},
+                                                                        {'label': 'equal or after', 'value': 'equal or after'},
+                                                                        {'label': 'equal or before', 'value': 'equal or before'}
+                                                                        ]"/>
+    <aura:attribute name="filterCompareDATETIME"    type="List"     default="[
+                                                                        {'label': 'before', 'value': 'before'},
+                                                                        {'label': 'after', 'value': 'after'},
+                                                                        {'label': 'equal', 'value': 'equal'},
+                                                                        {'label': 'equal or after', 'value': 'equal or after'},
+                                                                        {'label': 'equal or before', 'value': 'equal or before'}
+                                                                        ]"/>
+    <aura:attribute name="filterCompareCURRENCY"    type="List"     default="[
+                                                                        {'label': 'greater than', 'value': 'gt'},
+                                                                        {'label': 'less than', 'value': 'lt'},
+                                                                        {'label': 'equal', 'value': 'eq'}
+                                                                        ]"/>
+    <aura:attribute name="filterCompareREFERENCE"  type="List"      default="[
+                                                                        {'label': 'starts with', 'value': 'starts with'},
+                                                                        {'label': 'ends with', 'value': 'ends with'},
+                                                                        {'label': 'contains', 'value': 'contains'},
+                                                                        {'label': 'equals', 'value': 'equals'}
+                                                                        ]"/>
+    <!-- Added by Ajay Choudhary on 30 Sept 2022 **********Edit Filter Functionality**************End******-->
+    <aura:registerEvent name="startLoading" type="c:SimplusGrid_PushUp"/>
+    <aura:registerEvent name="pushUpdate" type="c:SimplusGrid_PushUp"/>
+    <aura:registerEvent name="dragFilter" type="c:SimplusGrid_PushUp"/>
+    <aura:registerEvent name="dropFilter" type="c:SimplusGrid_PushUp"/>
+    <tr
+        draggable="true"
+        ondragstart="{!c.dragstart}"
+        data-drag-id="{!v.listIndex}"
+        ondragover="{!c.cancel}" 
+        ondragenter="{!c.cancel}"
+        ondrop="{!c.drop}">
+        <td>
+            <aura:if isTrue="{! !v.lineItem.isGlobal}">
+                <div class="slds-form-element">
+                    <div class="slds-form-element__control">
+                        <div class="slds-checkbox">
+                            <input type="checkbox" name="{!v.lineItem.Id}" id="{!v.lineItem.id}" checked="{!v.lineItem.isActive}" value="{!v.lineItem.isActive}" onchange="{!c.toggleButtonClick}"/>
+                            <label class="slds-checkbox__label" for="{!v.lineItem.id}">
+                                <span class="slds-checkbox_faux"></span>
+                                <span class="slds-form-element__label" />
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <aura:set attribute="else">
+                    <lightning:icon iconName="utility:world" alternativeText="Global" name="Global filter" size="x-small"/>
+                </aura:set>
+            </aura:if>
+            <!-- lightning:buttonIcon iconName="{!v.lineItem.isActive ? 'utility:check' : 'utility:steps'}" alternativeText="{!v.lineItem.isActive ? 'Deactivate' : 'Activate'}"  onclick="{!c.toggleButtonClick}"/ -->
+        </td>
+            <td style="word-break: break-word;max-width: 90px;overflow: hidden;white-space: nowrap;text-overflow: ellipsis;">
+                <aura:if isTrue="{!v.lineItem.isGlobal}">
+                    {!v.lineItem.filterColumnName}
+                    <aura:set attribute="else">
+                    <a href="" onclick="{!c.openEditPopup}">{!v.lineItem.filterColumnName}</a>
+                    </aura:set>
+                </aura:if>
+            </td>
+        <td>{!v.lineItem.filterOperation}</td>
+        <td title="{!v.lineItem.filterValue}" style="word-break: break-word;max-width: 90px;overflow: hidden;white-space: nowrap;text-overflow: ellipsis;">
+            {!v.lineItem.filterValue}
+        </td>
+        <td class="actions">
+            <aura:if isTrue="{!v.lineItem.isGlobal}">
+                <lightning:helptext content="Global variables cannot be edited or deleted" />
+                <aura:set attribute="else">
+                    <lightning:buttonIcon iconName="utility:delete"  variant="bare" alternativeText="Delete"  onclick="{!c.deleteButtonClick}"/>
+                </aura:set>
+            </aura:if>
+        </td>
+    </tr>
+    <!-- Added by Ajay Choudhary on 30 Sept 2022 **********Edit Filter Functionality**************Start******-->
+    <aura:if isTrue="{!v.isEditFilter}">
+            <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+                <div class="slds-modal__container">
+                    <!-- Modal/Popup Box Header Starts here-->
+                    <header class="slds-modal__header">
+                        <lightning:buttonIcon iconName="utility:close"
+                                              onclick="{! c.closeEditPopup }"
+                                              alternativeText="close"
+                                              variant="bare-inverse"
+                                              class="slds-modal__close"/>
+                        <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">Edit Filter</h2>
+                    </header>
+                    <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                        <div class="slds-grid slds-gutters">
+                            <div class="slds-col">
+                               <lightning:input name="Field" label="Field" value="{!v.lineItem.filterColumnName}" disabled="true"/> 
+                            </div>
+                            <div class="slds-col">
+                                <lightning:select name="filterOperation" label="Operation" value="{!v.lineItem.filterOperation}" aura:id="selectedFilterOperation">
+                                    <option value=""> Operation </option>
+                                    <aura:iteration items="{!v.selectedFilter}" var="filter">
+                                        <option value="{!filter.value}">{!filter.label}</option>
+                                    </aura:iteration>
+                                </lightning:select>
+                            </div>
+                            
+                            <div class="slds-col">
+                                <aura:if isTrue="{!v.inputField == 'String' || v.inputField == 'Picklist' || v.inputField == 'Reference'}">
+                                    <lightning:input name="input1" label="Value" aura:id="inputText" value="{!v.lineItem.filterValue}"/>
+                                </aura:if>
+                                <aura:if isTrue="{!v.inputField == 'Date'}">
+                                    <lightning:input type="date" name="input1" label="Value" aura:id="inputDate" value="{!v.lineItem.filterValue}"/>
+                                </aura:if>
+                                <aura:if isTrue="{!v.inputField == 'DateTime'}">
+                                    <lightning:input type="datetime" name="input1" label="Value" aura:id="inputDateTime" value="{!v.lineItem.filterValue}"/>
+                                </aura:if>
+                                <aura:if isTrue="{!v.inputField == 'Currency' || v.inputField == 'Double'}">
+                                    <lightning:input type="number" name="input1" label="Value" aura:id="inputCurrency" value="{!v.lineItem.filterValue}"/>
+                                </aura:if>
+                            </div>
+                        </div>
+                    </div>
+                    <footer class="slds-modal__footer">
+                        <lightning:button variant="neutral"
+                                          label="Cancel"
+                                          title="Cancel"
+                                          onclick="{! c.closeEditPopup }"/>
+                        <lightning:button variant="brand"
+                                          label="Save"
+                                          title="Save"
+                                          onclick="{!c.saveFilter}"/>
+                    </footer>
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open"></div>
+        </aura:if>
+    <!-- Added by Ajay Choudhary on 30 Sept 2022 **********Edit Filter Functionality**************End******-->
+</aura:component>

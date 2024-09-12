@@ -1,0 +1,38 @@
+.THIS .navBtn{
+    color: grey !important;
+    font-weight : bold !important;
+    font-size: 15px !important;
+}
+
+.THIS .navBtn:focus {
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+    color: #4fb0b6 !important;
+     font-size: 15px !important;
+}
+
+.THIS .navBtn:hover{
+     font-size: 15px !important;
+    color: #4fb0b6 !important;
+    font-weight : bold !important;
+}
+
+.THIS .customerBtn{
+    background-color: #4fb0b6 !important;
+    border-color: #4fb0b6 !important;
+}
+
+.THIS .alignPadding{
+    padding-top : 7px !important;
+}
+.THIS table{
+    width : 100% !important;
+}
+
+.THIS td, .THIS th{
+    text-align : -webkit-center;
+}
+.THIS .ql-editor.slds-rich-text-area__content {
+    min-height:400px;
+}

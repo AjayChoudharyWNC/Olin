@@ -1,0 +1,35 @@
+<apex:component controller="ComponentQuoteLineScaleController" access="global">
+  <apex:attribute name="Qid" type="Id" description="Id of the quoteline" assignTo="{!quotelineId}"/>
+  
+  <apex:outputPanel rendered="{!hasDiscount}">
+            <table  border = "1" cellspacing = "0">
+                <tr>
+                    <td>NAME</td>
+                    <td>DISCOUNT VALUE/PERCENT</td>
+                    <td>START DATE</td>
+                    <td>END DATE</td>
+                    
+                    
+                </tr>
+                
+                <apex:repeat value="{!quotelinesDiscount}" var="ql">
+                    <tr>
+                        
+                        <td>{!ql.productName}</td>
+                        <td>{!ql.discountPercentOrPrice}</td>
+                        <td>
+                            {!ql.startDate}                                                  
+                        </td>
+                        <td>
+                            {!ql.endDate}                           
+                        </td>     
+                        
+                                              
+                    </tr>       
+                </apex:repeat>      
+                
+              
+            </table> 
+    </apex:outputPanel>
+    <br/><br/>
+</apex:component>

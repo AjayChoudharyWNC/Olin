@@ -1,0 +1,107 @@
+<aura:component access="global" controller="SimplusGridController">
+	<aura:attribute name="record" type="sObject" description="record which is being displayed"/>
+    <aura:attribute name="field" type="Object" description="field object which is being rendered"/>
+
+    <aura:attribute name="previousValue" type="Object" />
+    <aura:attribute name="hasUpdate" type="Boolean" default="false" />
+    <aura:attribute name="hasPendingMassChange" type="Boolean" default="false" />
+    <aura:attribute name="isLineSelected" type="Boolean" default="false" />
+
+    <aura:attribute name="cellValue" type="Object"/>
+    <aura:attribute name="cellLabel" type="String"/>
+    <aura:attribute name="currency" type="String"/>
+
+    <aura:attribute name="isTextField" type="boolean" default="false"/>
+    <aura:attribute name="isReferenceField" type="boolean" default="false"/>
+    <aura:attribute name="isDateField" type="boolean" default="false"/>
+    <aura:attribute name="isDateTimeField" type="boolean" default="false"/>
+    <aura:attribute name="isCurrencyField" type="boolean" default="false"/>
+    <aura:attribute name="isNumberField" type="boolean" default="false"/>
+
+    <aura:attribute name="isEditable" type="boolean" default="false"/>
+    <aura:attribute name="isLocked" type="boolean" default="false"/>
+    <aura:attribute name="editToggle" type="boolean" default="false"/>
+    <aura:attribute name="isSaving" type="boolean" default="false"/>
+    <aura:attribute name="error" type="String" />
+
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    <aura:handler event="c:SimplusGrid_ColumnToggleEdit" action="{!c.catchToggleEditAll}"/>
+
+    <div title="{!v.cellValue}" class="{!(v.hasUpdate ? 'has-update' : '') + (v.hasPendingMassChange ? ' pendingChange' : '') + (v.record.util.hasChange ? ' recordHasChange' : ' noRecordChange')}">
+        <aura:if isTrue="{!and(v.isEditable, v.editToggle, or(and(v.hasPendingMassChange, v.isLineSelected), not(v.hasPendingMassChange), not(v.isLocked)))}">
+            <div style="display: flex;">
+                <div style="flex: 1;">
+                    <aura:if isTrue="{!v.isTextField}">
+                        <ui:inputText value="{!v.cellValue}" change="{!c.fieldChange}" disabled="{!v.isSaving}" blur="{!c.disableEdit}"/>
+                    </aura:if>
+                    <aura:if isTrue="{!v.isDateField}"> 
+                        <ui:inputDate value="{!v.cellValue}" displayDatePicker="true"  change="{!c.fieldChange}" disabled="{!v.isSaving}" blur="{!c.disableEdit}"/>
+                    </aura:if>
+                    <aura:if isTrue="{!v.isDateTimeField}">
+                        <ui:inputDateTime value="{!v.cellValue}" change="{!c.fieldChange}" disabled="{!v.isSaving}" blur="{!c.disableEdit}"/>
+                    </aura:if>
+                    <aura:if isTrue="{!v.isCurrencyField}">
+                        <ui:inputCurrency value="{!v.cellValue}" change="{!c.fieldChange}" disabled="{!v.isSaving}" blur="{!c.disableEdit}"/>
+                    </aura:if>
+                    <aura:if isTrue="{!v.isNumberField}">
+                        <ui:inputNumber value="{!v.cellValue}" change="{!c.fieldChange}" disabled="{!v.isSaving}" blur="{!c.disableEdit}"/>
+                    </aura:if>
+                    <aura:if isTrue="{!v.isReferenceField}">
+                        <!-- TODO: Add lookup input here -->
+                        <ui:outputURL value="{!'/one/one.app?#/sObject/'+ v.cellValue + '/view'}" target="_blank" label="{!v.cellLabel}"/>
+                    </aura:if>
+                    <aura:if isTrue="{!v.isSaving}">
+                        <div role="status" class="slds-spinner slds-spinner_brand slds-spinner_xx-small">
+                            <div class="slds-spinner__dot-a" />
+                            <div class="slds-spinner__dot-b" />
+                        </div>
+                    </aura:if>
+                </div>
+            </div>
+            <aura:set attribute="else">
+                <span class="detailView">
+                    <aura:if isTrue="{!v.isTextField}">
+                        <ui:outputText value="{!v.cellValue}"/>
+                    </aura:if>
+                    <aura:if isTrue="{!v.isDateField}">
+                        <ui:outputDate value="{!v.cellValue}"/>
+                    </aura:if>
+                    <aura:if isTrue="{!v.isDateTimeField}">
+                        <ui:outputDateTime value="{!v.cellValue}"/>
+                    </aura:if>
+                    <aura:if isTrue="{!v.isCurrencyField}">
+                        <!-- ui:outputNumber value="{!v.cellValue}"/ -->
+                        <aura:if isTrue="{!v.cellValue}">
+                            {!v.currency} <span style="margin-right: .3em;" />
+                            <ui:outputNumber value="{!v.cellValue}" format="#,##0.00" />
+                        </aura:if>
+                    </aura:if>
+                    <aura:if isTrue="{!v.isNumberField}">
+                        <ui:outputNumber value="{!v.cellValue}"/>
+                    </aura:if>
+                    <aura:if isTrue="{!v.isReferenceField}">
+                        <ui:outputURL value="{!'/one/one.app?#/sObject/'+ v.cellValue + '/view'}" target="_blank" label="{!v.cellLabel}"/>
+                    </aura:if>
+                    <span class="flexer" />
+                    
+                    <aura:if isTrue="{!v.isSaving}">
+                        <div role="status" class="slds-spinner slds-spinner_brand slds-spinner_xx-small">
+                            <div class="slds-spinner__dot-a" />
+                            <div class="slds-spinner__dot-b" />
+                        </div>
+                    </aura:if>
+                    <!-- aura:if isTrue="{!v.hasUpdate}">
+                        <button class="inlineEditToggle slds-button slds-button_icon slds-button_icon-container" title="undo" onclick="{!c.revertValue}">
+                            <lightning:icon iconName="utility:undo" size="xx-small"  alternativeText="Undo Change" />
+                        </button>
+                    </aura:if -->
+                    <aura:if isTrue="{!and(v.isEditable, or(and(v.hasPendingMassChange, v.isLineSelected), not(v.hasPendingMassChange), not(v.isLocked)))}">
+                        <button class="inlineEditToggle slds-button slds-button_icon slds-button_icon-container" title="edit" onclick="{!c.toggleEdit}">
+                            <lightning:icon iconName="utility:edit" size="xx-small"  alternativeText="Toggle edit all" />
+                        </button>
+                    </aura:if>
+                </span>
+            </aura:set>
+        </aura:if>
+    </div>
+</aura:component>

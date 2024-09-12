@@ -1,0 +1,218 @@
+<aura:component controller="OCO_CustomerController">
+    <aura:attribute name="sapId" type="String"/>
+    <aura:attribute name="sapRecord" type="SAP_Onboarding__c"/>
+    <aura:attribute name="spinner" type="boolean"/>
+    <aura:attribute name="screenName" type="String"/>
+    <aura:attribute name="appUserId" type="String"/>
+    <aura:attribute name="sapNo" type="String" default=""/>
+    <aura:attribute name="languageLabelMap" type="Object"/>
+    <aura:attribute name="parent" type="aura.component" required="true"/>
+    <aura:attribute name="isDisabledForProfile" type="boolean"/>
+    <aura:attribute name="confirmMessage" type="String" default=""/>
+    <aura:attribute name="showConfirmDialog" type="boolean"/>
+    <aura:registerEvent name="treeRefreshEvent" type="c:OCO_TreeRefreshEvt"/>
+    <aura:registerEvent name="refreshSapRecordEvent" type="c:OCO_Customer_RefreshSapRecord"/>
+    
+    <aura:if isTrue="{!v.spinner}">
+        <div aura:id="spinnerId" style="position:fixed;" class="slds-spinner_container">
+            <div class="slds-spinner--brand  slds-spinner slds-spinner--large slds-is-relative" role="alert">
+                <span class="slds-assistive-text">{!v.languageLabelMap.PS_45}</span>   <!--Changed by Neeraj-->
+                <div class="slds-spinner__dot-a"></div>
+                <div class="slds-spinner__dot-b"></div>
+            </div>
+        </div>
+    </aura:if>
+    <aura:if isTrue="{!v.showConfirmDialog}">
+        <div role="dialog" class="slds-modal slds-fade-in-open ">
+            <div class="slds-modal__container">
+                <header class="slds-modal__header">
+                    <h1 class="slds-text-heading--medium">{!v.languageLabelMap.HP_30}</h1>
+                </header>
+                <div class="slds-modal__content slds-p-around--medium">
+                    <center><b>{!v.confirmMessage}</b></center>
+                </div>
+                <footer class="slds-modal__footer">
+                    <lightning:button name='Cancel' label='{!v.languageLabelMap.PS_41}' onclick='{!c.handleConfirmDialog}'/>
+                    <lightning:button variant="brand" name='Submit' label='{!v.languageLabelMap.CI_5}' onclick='{!c.handleConfirmDialog}'/>
+                </footer>
+            </div>
+        </div>
+        <div class="slds-backdrop slds-backdrop--open"></div>            
+    </aura:if>
+    <lightning:recordEditForm objectApiName="SAP_Onboarding__c" recordId="{!v.sapId}" aura:id="CIForm" onsuccess="{!c.handleFormSuccess}" onsubmit="{!c.handleFormSubmit}" onerror="{!c.handleError}">
+        <div class="slds-grid slds-wrap" style="min-width:100%;">
+            <div class="slds-col slds-large-size_3-of-8 slds-medium-size_8-of-8 slds-small-size_8-of-8">
+                <b><span style="color:#767676;font-size:18px;">{!v.languageLabelMap.CI_1}: {!v.sapNo}</span><br/><span style="color:#a1a1a1;font-size:16px;">{!v.screenName == 'Customer Information' ? v.languageLabelMap.CI_2 : v.screenName == 'Document Delivery' ? v.languageLabelMap.DD_7 : v.screenName == 'Product Stewardship' ? v.languageLabelMap.CA_83 : v.screenName == 'Credit Application' ? v.languageLabelMap.HP_6 : v.screenName}</span></b>
+            </div>
+            <div class="slds-col slds-large-size_5-of-8 slds-medium-size_8-of-8 slds-small-size_8-of-8 slds-grid slds-wrap slds-text-align_right slds-m-top_small">
+                <div class="slds-col slds-large-size_1-of-1 slds-medium-size_1-of-1 slds-small-size_1-of-1">
+                    <button class="slds-button slds-button_neutral btn" onclick="{!c.handleSaveProgress}"   disabled="{!or(and(v.sapRecord.Customer_Information_Status__c != 'Sent To Customer', v.sapRecord.Customer_Information_Status__c != 'Customer In Progress'),v.isDisabledForProfile)}" type="button">
+                        <lightning:icon iconName="utility:save" size="x-small" class="shareIcon" style="margin-right:5px;"/>{!v.languageLabelMap.CI_3}
+                    </button>
+                    <button class="slds-button slds-button_neutral btn" type="button" onclick="{!c.handleShareWithColleague}" disabled="{!or(and(v.sapRecord.Customer_Information_Status__c != 'Sent To Customer', v.sapRecord.Customer_Information_Status__c != 'Customer In Progress'),v.isDisabledForProfile)}">
+                        <lightning:icon iconName="utility:socialshare" size="x-small" class="shareIcon" style="margin-right:5px;"/>{!v.languageLabelMap.CI_4}
+                    </button>
+                    <button class="slds-button slds-button_neutral btn" type="submit" disabled="{!or(and(v.sapRecord.Customer_Information_Status__c != 'Sent To Customer', v.sapRecord.Customer_Information_Status__c != 'Customer In Progress'),v.isDisabledForProfile)}">
+                        <lightning:icon iconName="utility:success" size="x-small" class="shareIcon" style="margin-right:5px;"/>{!v.languageLabelMap.CI_5}
+                    </button>
+                </div>
+            </div>
+            <div class="slds-col slds-size_1-of-1 slds-m-top_large" style="border-bottom:2px solid #767676;color:#767676;font-size: 14px;font-weight:bold;">{!v.languageLabelMap.CI_6}</div>
+            <div class="slds-col slds-large-size_3-of-4 slds-medium-size_2-of-4 slds-small-size_4-of-4">
+                <label  class="slds-form-element__label slds-no-flex"><abbr lightning-input_input="" title="required" class="slds-required">*</abbr> {!v.languageLabelMap.CI_7}</label>
+                <lightning:inputField disabled="{!or(and(v.sapRecord.Customer_Information_Status__c != 'Sent To Customer', v.sapRecord.Customer_Information_Status__c != 'Customer In Progress'), v.sapRecord.On_boarding_Request_Type__c != 'New Sold-To w/ Ship-to &amp; Product')}"  fieldName="Full_Legal_Name__c" variant="label-hidden" value="{!v.sapRecord.Full_Legal_Name__c}"/>
+            </div>
+            <div class="slds-col slds-large-size_1-of-4 slds-medium-size_2-of-4 slds-small-size_4-of-4">
+                <label  class="slds-form-element__label slds-no-flex"> {!v.languageLabelMap.CI_8}</label>
+                <lightning:inputField disabled="{!or(and(v.sapRecord.Customer_Information_Status__c != 'Sent To Customer', v.sapRecord.Customer_Information_Status__c != 'Customer In Progress'), v.sapRecord.On_boarding_Request_Type__c != 'New Sold-To w/ Ship-to &amp; Product')}" fieldName="DUNS_No__c" variant="label-hidden" value="{!v.sapRecord.DUNS_No__c}" />
+            </div>
+            <div class="slds-col slds-large-size_1-of-4 slds-medium-size_2-of-4 slds-small-size_4-of-4">
+                <label  class="slds-form-element__label slds-no-flex"><abbr lightning-input_input="" title="required" class="slds-required">*</abbr> {!v.languageLabelMap.CI_9}</label>
+                <lightning:inputField disabled="{!or(and(v.sapRecord.Customer_Information_Status__c != 'Sent To Customer', v.sapRecord.Customer_Information_Status__c != 'Customer In Progress'), v.sapRecord.On_boarding_Request_Type__c != 'New Sold-To w/ Ship-to &amp; Product')}" fieldName="Sold_To_Company_Name__c" variant="label-hidden" value="{!v.sapRecord.Sold_To_Company_Name__c}" required="true"/>
+            </div>
+            <div class="slds-col slds-large-size_1-of-4 slds-medium-size_2-of-4 slds-small-size_4-of-4">
+                <label  class="slds-form-element__label slds-no-flex"><abbr lightning-input_input="" title="required" class="slds-required">*</abbr> {!v.languageLabelMap.CI_10}</label>
+                <lightning:inputField disabled="{!or(and(v.sapRecord.Customer_Information_Status__c != 'Sent To Customer', v.sapRecord.Customer_Information_Status__c != 'Customer In Progress'), v.sapRecord.On_boarding_Request_Type__c != 'New Sold-To w/ Ship-to &amp; Product')}" fieldName="Sold_To_Street__c" variant="label-hidden" value="{!v.sapRecord.Sold_To_Street__c}" required="true"/>
+            </div>
+            <div class="slds-col slds-large-size_1-of-4 slds-medium-size_2-of-4 slds-small-size_4-of-4">
+                <label  class="slds-form-element__label slds-no-flex">{!v.languageLabelMap.CI_11}</label>
+                <lightning:inputField disabled="{!or(and(v.sapRecord.Customer_Information_Status__c != 'Sent To Customer', v.sapRecord.Customer_Information_Status__c != 'Customer In Progress'), v.sapRecord.On_boarding_Request_Type__c != 'New Sold-To w/ Ship-to &amp; Product')}" fieldName="Sold_To_Street_2__c" variant="label-hidden" value="{!v.sapRecord.Sold_To_Street_2__c}" />
+            </div>
+            <div class="slds-col slds-large-size_1-of-4 slds-medium-size_2-of-4 slds-small-size_4-of-4">
+                <label  class="slds-form-element__label slds-no-flex"><abbr lightning-input_input="" title="required" class="slds-required">*</abbr> {!v.languageLabelMap.CI_12}</label>
+                <lightning:inputField disabled="{!or(and(v.sapRecord.Customer_Information_Status__c != 'Sent To Customer', v.sapRecord.Customer_Information_Status__c != 'Customer In Progress'), v.sapRecord.On_boarding_Request_Type__c != 'New Sold-To w/ Ship-to &amp; Product')}" fieldName="Sold_To_City__c" variant="label-hidden" value="{!v.sapRecord.Sold_To_City__c}" required="true"/>
+            </div>
+            <div class="slds-col slds-large-size_1-of-4 slds-medium-size_2-of-4 slds-small-size_4-of-4">
+                <label  class="slds-form-element__label slds-no-flex"><aura:if isTrue="{!or(v.sapRecord.Sold_To_Country__c == 'United States', v.sapRecord.Sold_To_Country__c == 'Canada')}"><abbr lightning-input_input="" title="required" class="slds-required">*</abbr></aura:if> {!v.languageLabelMap.CI_13}</label>
+                <lightning:inputField disabled="{!or(and(v.sapRecord.Customer_Information_Status__c != 'Sent To Customer', v.sapRecord.Customer_Information_Status__c != 'Customer In Progress'), v.sapRecord.On_boarding_Request_Type__c != 'New Sold-To w/ Ship-to &amp; Product')}" fieldName="Sold_To_State_Province__c" variant="label-hidden" value="{!v.sapRecord.Sold_To_State_Province__c}" required="{!or(v.sapRecord.Sold_To_Country__c == 'United States', v.sapRecord.Sold_To_Country__c == 'Canada')}"/>
+            </div>
+            <div class="slds-col slds-large-size_1-of-4 slds-medium-size_2-of-4 slds-small-size_4-of-4">
+                <label  class="slds-form-element__label slds-no-flex"><abbr lightning-input_input="" title="required" class="slds-required">*</abbr> {!v.languageLabelMap.CI_14}</label>
+                <lightning:inputField disabled="{!or(and(v.sapRecord.Customer_Information_Status__c != 'Sent To Customer', v.sapRecord.Customer_Information_Status__c != 'Customer In Progress'), v.sapRecord.On_boarding_Request_Type__c != 'New Sold-To w/ Ship-to &amp; Product')}" fieldName="Sold_To_Postal_Code__c" variant="label-hidden" value="{!v.sapRecord.Sold_To_Postal_Code__c}" required="true"/>
+            </div>
+            <div class="slds-col slds-large-size_1-of-4 slds-medium-size_2-of-4 slds-small-size_4-of-4">
+                <label  class="slds-form-element__label slds-no-flex"><abbr lightning-input_input="" title="required" class="slds-required">*</abbr> {!v.languageLabelMap.CI_15}</label>
+                <lightning:inputField disabled="{!or(and(v.sapRecord.Customer_Information_Status__c != 'Sent To Customer', v.sapRecord.Customer_Information_Status__c != 'Customer In Progress'), v.sapRecord.On_boarding_Request_Type__c != 'New Sold-To w/ Ship-to &amp; Product')}" fieldName="Sold_To_Country__c" variant="label-hidden" value="{!v.sapRecord.Sold_To_Country__c}" required="true"/>
+            </div>
+            <div class="slds-col slds-large-size_1-of-4 slds-medium-size_2-of-4 slds-small-size_4-of-4"></div>
+            <!--div class="slds-col slds-size_1-of-1" style="min-width:100%;border: 1px solid #d8d8d8;margin: 5px 0;"></div>
+            <div class="slds-col slds-large-size_4-of-4 slds-medium-size_4-of-4 slds-small-size_4-of-4">
+                <div class="slds-form-element">
+                    <label class="slds-form-element__label" for="text-input-id-1">&nbsp;</label>
+                    <div class="slds-form-element__control">
+                        <button class="slds-button slds-button_brand copyBtn" id="billToSameSoldTo" onclick="{!c.handleCopyAddresses}" type="button" disabled="{!and(v.sapRecord.Customer_Information_Status__c != 'Sent To Customer', v.sapRecord.Customer_Information_Status__c != 'Customer In Progress')}">
+                            <lightning:icon iconName="utility:copy" class="copyBtnIcon" size="x-small" style="margin-right:5px;"/><b>Copy Sold-To Details to Bill-To</b>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="slds-col slds-large-size_1-of-4 slds-medium-size_2-of-4 slds-small-size_4-of-4">
+                <lightning:inputField disabled ="{!and(v.sapRecord.Customer_Information_Status__c != 'Sent To Customer', v.sapRecord.Customer_Information_Status__c != 'Customer In Progress')}" fieldName="Bill_To_Company_Name__c" variant="label-stacked" value="{!v.sapRecord.Bill_To_Company_Name__c}" required="true"/>
+            </div>
+            <div class="slds-col slds-large-size_1-of-4 slds-medium-size_2-of-4 slds-small-size_4-of-4">
+                <lightning:inputField disabled ="{!and(v.sapRecord.Customer_Information_Status__c != 'Sent To Customer', v.sapRecord.Customer_Information_Status__c != 'Customer In Progress')}" fieldName="Bill_To_Street__c" variant="label-stacked" value="{!v.sapRecord.Bill_To_Street__c}" required="true"/>
+            </div>
+            <div class="slds-col slds-large-size_1-of-4 slds-medium-size_2-of-4 slds-small-size_4-of-4">
+                <lightning:inputField disabled ="{!and(v.sapRecord.Customer_Information_Status__c != 'Sent To Customer', v.sapRecord.Customer_Information_Status__c != 'Customer In Progress')}" fieldName="Bill_To_Street_2__c" variant="label-stacked" value="{!v.sapRecord.Bill_To_Street_2__c}" />
+            </div>
+            <div class="slds-col slds-large-size_1-of-4 slds-medium-size_2-of-4 slds-small-size_4-of-4">
+                <lightning:inputField disabled ="{!and(v.sapRecord.Customer_Information_Status__c != 'Sent To Customer', v.sapRecord.Customer_Information_Status__c != 'Customer In Progress')}" fieldName="Bill_To_City__c" variant="label-stacked" value="{!v.sapRecord.Bill_To_City__c}" required="true"/>
+            </div>
+            <div class="slds-col slds-large-size_1-of-4 slds-medium-size_2-of-4 slds-small-size_4-of-4">
+                <lightning:inputField disabled ="{!and(v.sapRecord.Customer_Information_Status__c != 'Sent To Customer', v.sapRecord.Customer_Information_Status__c != 'Customer In Progress')}" fieldName="Bill_To_State_Province__c" variant="label-stacked" value="{!v.sapRecord.Bill_To_State_Province__c}" required="{!or(v.sapRecord.Bill_To_Country__c == 'United States', v.sapRecord.Bill_To_Country__c == 'Canada')}"/>
+            </div>
+            <div class="slds-col slds-large-size_1-of-4 slds-medium-size_2-of-4 slds-small-size_4-of-4">
+                <lightning:inputField disabled ="{!and(v.sapRecord.Customer_Information_Status__c != 'Sent To Customer', v.sapRecord.Customer_Information_Status__c != 'Customer In Progress')}" fieldName="Bill_To_Postal_Code__c" variant="label-stacked" value="{!v.sapRecord.Bill_To_Postal_Code__c}" required="true"/>
+            </div>
+            <div class="slds-col slds-large-size_1-of-4 slds-medium-size_2-of-4 slds-small-size_4-of-4">
+                <lightning:inputField disabled ="{!and(v.sapRecord.Customer_Information_Status__c != 'Sent To Customer', v.sapRecord.Customer_Information_Status__c != 'Customer In Progress')}" fieldName="Bill_To_Country__c" variant="label-stacked" value="{!v.sapRecord.Bill_To_Country__c}" required="true"/>
+            </div-->
+            <div class="slds-col slds-size_1-of-1 slds-m-top_medium" style="border-bottom:2px solid #767676;color:#767676;font-size: 14px;font-weight:bold;">{!v.languageLabelMap.CI_16}</div>
+            <!--div class="slds-grid slds-wrap slds-size_1-of-1">
+                <label  class="slds-col slds-large-size_1-of-5 slds-medium-size_3-of-6 slds-small-size_5-of-5 slds-form-element__label slds-no-flex"><abbr lightning-input_input="" title="required" class="slds-required">*</abbr> {!v.languageLabelMap.CI_17}</label>
+                <label  class="slds-col slds-large-size_1-of-5 slds-medium-size_3-of-6 slds-small-size_5-of-5 slds-form-element__label slds-no-flex"><abbr lightning-input_input="" title="required" class="slds-required">*</abbr> {!v.languageLabelMap.CI_18}</label>
+                <label  class="slds-col slds-large-size_1-of-5 slds-medium-size_3-of-6 slds-small-size_5-of-5 slds-form-element__label slds-no-flex"><abbr lightning-input_input="" title="required" class="slds-required">*</abbr> {!v.languageLabelMap.CI_19}</label>
+                <label  class="slds-col slds-large-size_1-of-5 slds-medium-size_3-of-6 slds-small-size_5-of-5 slds-form-element__label slds-no-flex"><abbr lightning-input_input="" title="required" class="slds-required">*</abbr> {!v.languageLabelMap.CI_20}</label>
+                <label  class="slds-col slds-large-size_1-of-5 slds-medium-size_3-of-6 slds-small-size_5-of-5 slds-form-element__label slds-no-flex"><abbr lightning-input_input="" title="required" class="slds-required">*</abbr> {!v.languageLabelMap.CI_21}</label>
+            </div>
+            <div class="slds-grid slds-wrap slds-size_1-of-1">
+                <lightning:inputField class="slds-col slds-large-size_1-of-5 slds-medium-size_3-of-6 slds-small-size_5-of-5" disabled ="{!and(v.sapRecord.Customer_Information_Status__c != 'Sent To Customer', v.sapRecord.Customer_Information_Status__c != 'Customer In Progress')}" fieldName="Order_Placement_First_Name__c" variant="label-hidden" value="{!v.sapRecord.Order_Placement_First_Name__c}" required="true"/>
+                <lightning:inputField class="slds-col slds-large-size_1-of-5 slds-medium-size_3-of-6 slds-small-size_5-of-5" disabled ="{!and(v.sapRecord.Customer_Information_Status__c != 'Sent To Customer', v.sapRecord.Customer_Information_Status__c != 'Customer In Progress')}" fieldName="Order_Placement_Last_Name__c" variant="label-hidden" value="{!v.sapRecord.Order_Placement_Last_Name__c}"  required="true"/>
+                <lightning:inputField class="slds-col slds-large-size_1-of-5 slds-medium-size_3-of-6 slds-small-size_5-of-5" disabled ="{!and(v.sapRecord.Customer_Information_Status__c != 'Sent To Customer', v.sapRecord.Customer_Information_Status__c != 'Customer In Progress')}" fieldName="Order_Placement_Title__c" variant="label-hidden" value="{!v.sapRecord.Order_Placement_Title__c}"  required="true"/>
+                <lightning:inputField class="slds-col slds-large-size_1-of-5 slds-medium-size_3-of-6 slds-small-size_5-of-5" disabled ="{!and(v.sapRecord.Customer_Information_Status__c != 'Sent To Customer', v.sapRecord.Customer_Information_Status__c != 'Customer In Progress')}" fieldName="Order_Placement_Phone__c" variant="label-hidden" value="{!v.sapRecord.Order_Placement_Phone__c}"  required="true"/>
+                <lightning:inputField class="slds-col slds-large-size_1-of-5 slds-medium-size_3-of-6 slds-small-size_5-of-5" disabled ="{!and(v.sapRecord.Customer_Information_Status__c != 'Sent To Customer', v.sapRecord.Customer_Information_Status__c != 'Customer In Progress')}" fieldName="Order_Placement_Email__c" variant="label-hidden" value="{!v.sapRecord.Order_Placement_Email__c}"  required="true"/>
+            </div-->
+            <!--div class="slds-col slds-large-size_2-of-6 slds-medium-size_3-of-6 slds-small-size_5-of-5">
+                <label  class="slds-form-element__label slds-no-flex"><abbr lightning-input_input="" title="required" class="slds-required">*</abbr> {!v.languageLabelMap.CI_17}</label>
+                <lightning:inputField disabled ="{!and(v.sapRecord.Customer_Information_Status__c != 'Sent To Customer', v.sapRecord.Customer_Information_Status__c != 'Customer In Progress')}" fieldName="Order_Placement_First_Name__c" variant="label-hidden" value="{!v.sapRecord.Order_Placement_First_Name__c}" required="true"/>
+            </div>
+            <div class="slds-col slds-large-size_2-of-6 slds-medium-size_3-of-6 slds-small-size_5-of-5">
+                <label  class="slds-form-element__label slds-no-flex"><abbr lightning-input_input="" title="required" class="slds-required">*</abbr> {!v.languageLabelMap.CI_18}</label>
+                <lightning:inputField disabled ="{!and(v.sapRecord.Customer_Information_Status__c != 'Sent To Customer', v.sapRecord.Customer_Information_Status__c != 'Customer In Progress')}" fieldName="Order_Placement_Last_Name__c" variant="label-hidden" value="{!v.sapRecord.Order_Placement_Last_Name__c}"  required="true"/>
+            </div>
+            <div class="slds-col slds-large-size_2-of-6 slds-medium-size_3-of-6 slds-small-size_5-of-5">
+                <label  class="slds-form-element__label slds-no-flex"><abbr lightning-input_input="" title="required" class="slds-required">*</abbr> {!v.languageLabelMap.CI_19}</label>
+                <lightning:inputField disabled ="{!and(v.sapRecord.Customer_Information_Status__c != 'Sent To Customer', v.sapRecord.Customer_Information_Status__c != 'Customer In Progress')}" fieldName="Order_Placement_Title__c" variant="label-hidden" value="{!v.sapRecord.Order_Placement_Title__c}"  required="true"/>
+            </div>
+            <div class="slds-col slds-large-size_2-of-6 slds-medium-size_3-of-6 slds-small-size_5-of-5">
+                <label  class="slds-form-element__label slds-no-flex"><abbr lightning-input_input="" title="required" class="slds-required">*</abbr> {!v.languageLabelMap.CI_20}</label>
+                <lightning:inputField disabled ="{!and(v.sapRecord.Customer_Information_Status__c != 'Sent To Customer', v.sapRecord.Customer_Information_Status__c != 'Customer In Progress')}" fieldName="Order_Placement_Phone__c" variant="label-hidden" value="{!v.sapRecord.Order_Placement_Phone__c}"  required="true"/>
+            </div>
+            <div class="slds-col slds-large-size_2-of-6 slds-medium-size_3-of-6 slds-small-size_5-of-5">
+                <label  class="slds-form-element__label slds-no-flex"><abbr lightning-input_input="" title="required" class="slds-required">*</abbr> {!v.languageLabelMap.CI_21}</label>
+                <lightning:inputField disabled ="{!and(v.sapRecord.Customer_Information_Status__c != 'Sent To Customer', v.sapRecord.Customer_Information_Status__c != 'Customer In Progress')}" fieldName="Order_Placement_Email__c" variant="label-hidden" value="{!v.sapRecord.Order_Placement_Email__c}"  required="true"/>
+            </div>
+            <div class="slds-col slds-size_5-of-5" style="border: 1px solid #d8d8d8;margin: 10px 0;"></div-->
+            <div class="slds-col slds-large-size_2-of-6 slds-medium-size_3-of-6 slds-small-size_5-of-5">
+                <label  class="slds-form-element__label slds-no-flex"><abbr lightning-input_input="" title="required" class="slds-required">*</abbr> {!v.languageLabelMap.CI_22}</label>
+                <lightning:inputField disabled ="{!and(v.sapRecord.Customer_Information_Status__c != 'Sent To Customer', v.sapRecord.Customer_Information_Status__c != 'Customer In Progress')}" fieldName="Contract_Notification_First_Name__c" variant="label-hidden" value="{!v.sapRecord.Contract_Notification_First_Name__c}"  required="true"/>
+            </div>
+            <div class="slds-col slds-large-size_2-of-6 slds-medium-size_3-of-6 slds-small-size_5-of-5">
+                <label  class="slds-form-element__label slds-no-flex"><abbr lightning-input_input="" title="required" class="slds-required">*</abbr> {!v.languageLabelMap.CI_23}</label>
+                <lightning:inputField disabled ="{!and(v.sapRecord.Customer_Information_Status__c != 'Sent To Customer', v.sapRecord.Customer_Information_Status__c != 'Customer In Progress')}" fieldName="Contract_Notification_Last_Name__c" variant="label-hidden" value="{!v.sapRecord.Contract_Notification_Last_Name__c}"  required="true"/>
+            </div>
+            
+            <div class="slds-col slds-large-size_2-of-6 slds-medium-size_3-of-6 slds-small-size_5-of-5">
+                <label  class="slds-form-element__label slds-no-flex"><abbr lightning-input_input="" title="required" class="slds-required">*</abbr> {!v.languageLabelMap.CI_24}</label>
+                <lightning:inputField disabled ="{!and(v.sapRecord.Customer_Information_Status__c != 'Sent To Customer', v.sapRecord.Customer_Information_Status__c != 'Customer In Progress')}" fieldName="Contract_Notification_Title__c" variant="label-hidden" value="{!v.sapRecord.Contract_Notification_Title__c}"  required="true"/>
+            </div>
+            <div class="slds-col slds-large-size_2-of-6 slds-medium-size_3-of-6 slds-small-size_5-of-5">
+                <label  class="slds-form-element__label slds-no-flex"><abbr lightning-input_input="" title="required" class="slds-required">*</abbr> {!v.languageLabelMap.CI_25}</label>
+                <lightning:inputField disabled ="{!and(v.sapRecord.Customer_Information_Status__c != 'Sent To Customer', v.sapRecord.Customer_Information_Status__c != 'Customer In Progress')}" fieldName="Contract_Notification_Phone__c" variant="label-hidden" value="{!v.sapRecord.Contract_Notification_Phone__c}"  required="true"/>
+            </div>
+            <div class="slds-col slds-large-size_2-of-6 slds-medium-size_3-of-6 slds-small-size_5-of-5">
+                <label  class="slds-form-element__label slds-no-flex"><abbr lightning-input_input="" title="required" class="slds-required">*</abbr> {!v.languageLabelMap.CI_26}</label>
+                <lightning:inputField disabled ="{!and(v.sapRecord.Customer_Information_Status__c != 'Sent To Customer', v.sapRecord.Customer_Information_Status__c != 'Customer In Progress')}" fieldName="Contract_Notification_Email__c" variant="label-hidden" value="{!v.sapRecord.Contract_Notification_Email__c}"  required="true"/>
+            </div> 
+            <div class="slds-col slds-size_5-of-5" style="border: 1px solid #d8d8d8;margin: 10px 0;"></div>
+            <div class="slds-col slds-large-size_6-of-6 slds-medium-size_6-of-6 slds-small-size_5-of-5">
+                <label  class="slds-form-element__label slds-no-flex">{!v.languageLabelMap.CI_181}</label>
+                <lightning:inputField fieldName="Invoice_Contact_is_Not_a_Person__c" value="{!v.sapRecord.Invoice_Contact_is_Not_a_Person__c}" class="slds-hide"/>
+                <lightning:input disabled="{!and(v.sapRecord.Customer_Information_Status__c != 'Sent To Customer', v.sapRecord.Customer_Information_Status__c != 'Customer In Progress')}"  type="checkbox" checked="{!v.sapRecord.Invoice_Contact_is_Not_a_Person__c}" variant="label-hidden" style="float:left;"/>
+            </div>
+            <aura:if isTrue="{!not(v.sapRecord.Invoice_Contact_is_Not_a_Person__c)}">
+                <div class="slds-col slds-large-size_2-of-6 slds-medium-size_3-of-6 slds-small-size_5-of-5">
+                    <label  class="slds-form-element__label slds-no-flex"><abbr lightning-input_input="" title="required" class="slds-required">*</abbr> {!v.languageLabelMap.DD_2}</label>
+                    <lightning:inputField disabled="{!and(v.sapRecord.Customer_Information_Status__c != 'Sent To Customer', v.sapRecord.Customer_Information_Status__c != 'Customer In Progress')}"  fieldName="Email_Invoice_First_Name__c" value="{!v.sapRecord.Email_Invoice_First_Name__c}" variant="label-hidden" required="true"/>
+                </div>
+                <div class="slds-col slds-large-size_2-of-6 slds-medium-size_3-of-6 slds-small-size_5-of-5">
+                    <label  class="slds-form-element__label slds-no-flex"><abbr lightning-input_input="" title="required" class="slds-required">*</abbr> {!v.languageLabelMap.DD_3}</label>
+                    <lightning:inputField disabled="{!and(v.sapRecord.Customer_Information_Status__c != 'Sent To Customer', v.sapRecord.Customer_Information_Status__c != 'Customer In Progress')}" fieldName="Email_Invoice_Last_Name__c" value="{!v.sapRecord.Email_Invoice_Last_Name__c}" variant="label-hidden" required="true"/>
+                </div>
+                <div class="slds-col slds-large-size_2-of-6 slds-medium-size_3-of-6 slds-small-size_5-of-5">
+                    <label  class="slds-form-element__label slds-no-flex"><abbr lightning-input_input="" title="required" class="slds-required">*</abbr> {!v.languageLabelMap.DD_4}</label>
+                    <lightning:inputField disabled="{!and(v.sapRecord.Customer_Information_Status__c != 'Sent To Customer', v.sapRecord.Customer_Information_Status__c != 'Customer In Progress')}" fieldName="Email_Invoice_Title__c" value="{!v.sapRecord.Email_Invoice_Title__c}" variant="label-hidden" required="true"/>
+                </div>
+                <div class="slds-col slds-large-size_2-of-6 slds-medium-size_3-of-6 slds-small-size_5-of-5">
+                    <label  class="slds-form-element__label slds-no-flex"><abbr lightning-input_input="" title="required" class="slds-required">*</abbr> {!v.languageLabelMap.DD_5}</label>
+                    <lightning:inputField disabled="{!and(v.sapRecord.Customer_Information_Status__c != 'Sent To Customer', v.sapRecord.Customer_Information_Status__c != 'Customer In Progress')}" fieldName="Email_Invoice_Phone__c" value="{!v.sapRecord.Email_Invoice_Phone__c}" variant="label-hidden" required="true"/>
+                </div>
+            </aura:if>
+            <div class="slds-col slds-large-size_2-of-6 slds-medium-size_3-of-6 slds-small-size_5-of-5">
+                <label  class="slds-form-element__label slds-no-flex"><abbr lightning-input_input="" title="required" class="slds-required">*</abbr> {!v.languageLabelMap.DD_6}</label>
+                <lightning:inputField disabled="{!and(v.sapRecord.Customer_Information_Status__c != 'Sent To Customer', v.sapRecord.Customer_Information_Status__c != 'Customer In Progress')}" fieldName="Email_Invoice_Email_Address__c" value="{!v.sapRecord.Email_Invoice_Email_Address__c}" variant="label-hidden" required="true"/>
+            </div>
+            <div class="slds-size_1-of-1 slds-p-top_large slds-text-align_center"><b>{!v.languageLabelMap.CI_142}</b></div>
+        </div>
+    </lightning:recordEditForm>
+</aura:component>

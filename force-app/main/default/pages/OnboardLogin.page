@@ -1,0 +1,182 @@
+<apex:page controller="OnboardLoginController" showHeader="false" sidebar="false" docType="html-5.0" cache="false" >
+    <apex:slds />
+    <apex:includeScript value="{!$Resource.PapaParse}"/>
+    <style type="text/css">
+        .body{margin:6% 4px 6% 4px;border-radius:5px}
+        .btn{color:#de3339!important;width:152px!important;border-radius:25px!important;border-color:#de3339!important}
+        .link{text-decoration:none!important;color:#949494!important}
+        .btnOnActive:hover{background-color:#de3339!important;color:#fff!important}
+        #errorMsg{color:#de3339}
+        .slds-checkbox_faux:active,.slds-checkbox_faux:focus,.slds-combobox__input:active,.slds-combobox__input:focus,.slds-input:active,.slds-input:focus,.slds-textarea:active,.slds-textarea:focus,slds-checkbox:active,slds-checkbox:focus,slds-checkbox_faux:focus{outline:0;border-color:#da291c!important;background-color:#fff;box-shadow:0 0 3px #da291c!important}
+        .slds-input{box-shadow:1px 3px 5px -3px grey!important}
+        .signInBtn{background-color:#45b652!important;width:152px!important;border-radius:25px!important;border-color:#fff!important;color:#fff!important}
+        .signInBtn:hover{background-color:#fff!important;color:#45b652!important;border-color:#45b652!important}
+    </style>
+    
+    <script>
+    window.addEventListener('DOMContentLoaded', (event) => {
+        console.log('DOM fully loaded and parsed');
+        Papa.parse('{!$Resource.CustmerSetupTranslation}', {
+        header: true,
+        download : true,
+        complete: function(results) {
+            console.log("Finished:", results.data, results);
+            setLanguageHeders(JSON.stringify(results.meta.fields));
+            handleLanguageChange('English');
+        }
+    });
+    
+    });
+    window.onload  = function(){
+        if(mobileCheck()){
+            document.getElementById('mobileHeader').style.display = 'block';
+            document.getElementById('pcHeader').style.display = 'none';
+        }
+        else{
+            document.getElementById('pcHeader').style.display = 'block';
+            document.getElementById('mobileHeader').style.display = 'none';
+        }
+    }
+    function CloseWindow() {
+        var winMain=window.opener;
+        if (null==winMain) {
+            winMain=window.parent.opener;
+        }
+        winMain.closePopup();
+    }
+    function onAccessCodeChange(input){
+        input.value = input.value.replace(/\s/g,'');    
+    }
+    
+    function handleLanguageChange(selectedLanguage){
+        debugger;
+        var fileBodyInVf = {!fileBody};        
+        var pageLanguage = '{!pageLanguage}';
+        if(fileBodyInVf){
+            var translationMapObj = Papa.parse(fileBodyInVf,{'header' : true, 'skipEmptyLines' : true});
+            var languageTextMap = {};
+            var data = translationMapObj.data;
+            for(var i=0; i<data.length;i++){
+                languageTextMap[data[i]['ID']] = data[i][selectedLanguage];
+            }
+            console.log('languageTextMap',languageTextMap);
+            processLanguageTranslation(JSON.stringify(languageTextMap),selectedLanguage);
+            return false;
+        }
+        return false;
+    }
+    
+    </script>
+    <html>
+        
+        <body style="background:url({!URLFOR($Resource.SapOnboard_Background)});">
+            <c:OnboardHeader />
+            <!-- Body -->
+            <apex:outputPanel >
+                <apex:form >
+                    <apex:actionFunction action="{!setLanguageHeders}" name="setLanguageHeders" reRender="languageSelectList" oncomplete="return false;" status="myStatus">
+                        <apex:param name="languageHeaders" value="" assignTo="{!languageHeaderString}" />
+                    </apex:actionFunction>
+                    
+                    <div style="text-align:right;padding:5px;">
+                        <apex:selectList size="1" value="{!pagelanguage}" multiselect="false" id="languageSelectList" onchange="handleLanguageChange(this.value);" styleClass="slds-select" style="width:auto;">
+                            <b>Language:&nbsp;</b>  <apex:selectOptions value="{!languageOption}"/>
+                        </apex:selectList>    
+                    </div>
+                </apex:form>
+                <div class="slds-grid slds-wrap " style="height:100%;">
+                    <div class="slds-col slds-large-size_4-of-12 slds-small-size_1-of-12"></div>
+                    <apex:outputPanel id="form1" style="display:contents;">
+                        <div class="body slds-col slds-large-size_4-of-12 slds-small-size_10-of-12" style="display:{!if(isSignIn,'none','block')};">
+                            <apex:form id="logFm1" style="background: white;border-radius:5px;box-shadow: 5px 5px 5px #bfbebe;" html-autocomplete="off">
+                                <apex:actionFunction action="{!processTranslation}" name="processLanguageTranslation" oncomplete="return false;" reRender="form1,footer" status="myStatus">
+                                    <apex:param name="selectedlangMap" value="" assignTo="{!languageBody}" />
+                                    <apex:param name="language" value="" assignTo="{!pagelanguage}" />
+                                </apex:actionFunction>
+                                <apex:outputPanel id="loginForm1">
+                                    <div class="slds-box slds-grid slds-wrap" >
+                                        <div class="slds-col slds-size_12-of-12 slds-align_absolute-center" style="font-size:24px;"><b>{!languageBodyMap['VF_17']}</b></div>
+                                        <div class="slds-col slds-size_12-of-12 slds-text-align_center slds-align_absolute-center"><b>{!languageBodyMap['VF_1']}<br/>{!languageBodyMap['VF_2']}</b></div>
+                                        <div class="slds-col slds-size_12-of-12 slds-text-align_center slds-var-p-horizontal_xx-large" style="margin: 40px 0px 40px 0px;">{!languageBodyMap['VF_3']}<br/>
+                                            <apex:input type="email" styleClass="slds-input" value="{!email}"  html-autocomplete="off"/>
+                                            <div id="errorMsg">{!if(errorMsg != '', languageBodyMap[errorMsg], '')}</div>
+                                        </div>
+                                        <div class="slds-col slds-size_12-of-12 slds-align_absolute-center">
+                                            <apex:actionStatus id="myStatus" >
+                                                <apex:facet name="start">
+                                                    <div class="slds-spinner_container" style="position: fixed;" >
+                                                        <div role="status" class="slds-spinner slds-spinner--large slds-spinner--brand">
+                                                            <div class="slds-spinner__dot-a"></div>
+                                                            <div class="slds-spinner__dot-b"></div>
+                                                        </div>
+                                                    </div>
+                                                </apex:facet>
+                                            </apex:actionStatus>
+                                            <apex:actionStatus id="myStatus1" >
+                                                <apex:facet name="start" >
+                                                    <apex:image url="{!$Resource.OnboardLoadingIcon}" width="20" height="20"/>
+                                                </apex:facet>
+                                            </apex:actionStatus>
+                                        </div>
+                                        <div class="slds-col slds-size_12-of-12 slds-align_absolute-center">
+                                            <apex:commandButton styleClass="btn slds-button slds-button_neutral btnOnActive" action="{!sendAccessCode}" value="{!languageBodyMap['VF_18']}" rerender="form1" status="myStatus1" />
+                                        </div>
+                                        
+                                    </div>
+                                </apex:outputPanel>
+                            </apex:form>
+                            <div class="slds-col slds-size_12-of-12 slds-p-top_small" style="color:black;text-align:justify">
+                                <p>
+                                    <b>{!languageBodyMap['VF_4']} </b>{!languageBodyMap['VF_5']}
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <div class="body slds-col slds-large-size_4-of-12 slds-small-size_10-of-12" style="display:{!if(isSignIn,'block','none')};">
+                            <apex:form id="logFm" style="background: white;border-radius:5px;box-shadow: 5px 5px 5px #bfbebe;">
+                                <div class="slds-box slds-grid slds-wrap">
+                                    <div class="slds-col slds-size_12-of-12 slds-align_absolute-center" style="font-size:24px;"><b>{!languageBodyMap['VF_6']}</b></div>
+                                    <div class="slds-col slds-size_12-of-12 slds-text-align_center "><b>{!languageBodyMap['VF_7']} <br/> {!languageBodyMap['VF_8']} {!email}</b><br/><u><apex:commandLink styleClass="link" action="{!sendAccessCodeAgain}" value="{!languageBodyMap['VF_20']}"/></u></div>
+                                    <div class="slds-col slds-size_12-of-12 slds-text-align_center slds-var-p-horizontal_xx-large" style="margin: 40px 0px 40px 0px;">{!languageBodyMap['VF_9']} <br/>
+                                        <apex:input styleClass="slds-input" value="{!accessCode}" onchange="onAccessCodeChange(this);return false;" html-autocomplete="off"/><br/>
+                                        <div id="errorMsg">{!if(errorMsg != '', languageBodyMap[errorMsg], '')}</div>
+                                    </div>
+                                    <div class="slds-col slds-size_12-of-12 slds-align_absolute-center">
+                                        <apex:actionStatus id="myStatus" >
+                                            <apex:facet name="start">
+                                                <div class="slds-spinner_container" style="position: fixed;" >
+                                                    <div role="status" class="slds-spinner slds-spinner--large slds-spinner--brand">
+                                                        <div class="slds-spinner__dot-a"></div>
+                                                        <div class="slds-spinner__dot-b"></div>
+                                                    </div>
+                                                </div>
+                                            </apex:facet>
+                                        </apex:actionStatus>
+                                        <apex:actionStatus id="myStatus1" >
+                                            <apex:facet name="start" >
+                                                <apex:image url="{!$Resource.OnboardLoadingIcon}" width="20" height="20"/>
+                                            </apex:facet>
+                                        </apex:actionStatus>
+                                    </div>
+                                    <div class="slds-col slds-size_12-of-12 slds-align_absolute-center"><apex:commandButton styleClass="slds-button slds-button_neutral signInBtn" action="{!onBoardLogin}" rerender="form1" value="{!languageBodyMap['VF_18']}" status="myStatus1" oncomplete="CloseWindow()"/> </div>
+                                    <div class="slds-col slds-size_12-of-12 slds-text-align_center "><u><apex:commandLink styleClass="link" action="{!wrongEmail}" value="{!languageBodyMap['VF_19']}"/></u></div>
+                                </div>
+                            </apex:form>
+                            <div class="slds-col slds-size_12-of-12 slds-p-top_small" style="color:black;text-align:justify">
+                                <p>
+                                    <b>{!languageBodyMap['VF_4']} </b>{!languageBodyMap['VF_5']}
+                                </p>
+                            </div>
+                        </div>
+                        <div class="slds-col slds-large-size_4-of-12 slds-small-size_1-of-12"></div>
+                    </apex:outputPanel>
+                </div>
+                
+            </apex:outputPanel>
+            <!-- Footer -->
+            <apex:outputPanel id="footer">
+            <c:OnboardFooter myValue="{!languageBodyMap}"/>
+            </apex:outputPanel>
+        </body>
+    </html>
+</apex:page>

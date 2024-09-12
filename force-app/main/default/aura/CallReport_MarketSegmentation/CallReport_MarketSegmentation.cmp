@@ -1,0 +1,190 @@
+<aura:component implements="force:hasRecordId,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:appHostable,force:lightningQuickAction" controller="CallReport_MarketSegmentation">
+    <aura:attribute name="purchasedProdList" type="List"/>
+    <aura:attribute name="showMarketSegment" type="boolean"/>
+    <aura:attribute name="currentPurchasedProdid" type="String"/>
+    <aura:attribute name="recordId" type="String"/>
+    <aura:attribute name="accountIds" type="List" default="[]"/>
+    <aura:attribute name="soldToAccountList" type="List" default="[]"/>
+    <aura:attribute name="loaded" type="Boolean" default="false" />
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    <ltng:require styles="{!$Resource.ModalCSS}"/>
+    <aura:html tag="style">     
+        .slds-modal__content{  
+        height: unset !important;
+        max-height: unset !important;
+        } 
+       
+    </aura:html>
+    
+    <lightning:spinner variant="brand" alternativeText="Loading..." class="{!(not(v.loaded)? 'slds-show': 'slds-hide')}" />
+    
+    <aura:if isTrue="{!v.soldToAccountList.length > 0}">
+        <div class="slds-grid slds-wrap slds-p-bottom_small">
+            <lightning:select label="Sold-To Accounts" onchange="{!c.handleAccountChange}" class="slds-size_4-of-12">
+                <option value="All">All</option>
+                <aura:iteration items="{!v.soldToAccountList}" var="acc">
+                    <option value="{!acc.Id}">{!(acc.Name+' - '+acc.AccountNumber_R1__c+' - '+acc.BillingCity+' | '+acc.BillingStateCode+' | '+acc.BillingCountryCode)}</option>
+                </aura:iteration>
+            </lightning:select>
+            
+        </div>
+    </aura:if>
+    <div style="overflow-y:auto;height:40vh;">
+        <table class="slds-table slds-table_cell-buffer slds-table_bordered">
+            <thead>
+                <tr class="slds-line-height_reset">
+                    <th class="" scope="col">
+                        <div class="slds-truncate" title="Purchased Product">Purchased Product</div>
+                    </th>
+                    <th class="" scope="col">
+                        <div class="slds-truncate" title="Product Name">Product Name</div>
+                    </th>
+                    <th class="" scope="col">
+                        <div class="slds-truncate" title="Sold To">Sold To</div>
+                    </th>
+                    <th class="" scope="col">
+                        <div class="slds-truncate" title="Ship To">Ship To</div>
+                    </th>
+                    <th class="" scope="col">
+                        <div class="slds-truncate" title="Last Modified By/Date">Last Modified By/Date</div>
+                    </th>
+                    <th class="" scope="col">
+                        <div class="slds-truncate" title="Update New Share of Wallet">Update Market Segmentation</div>
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                <aura:if isTrue="{!v.purchasedProdList.length > 0}">
+                    <aura:iteration items="{!v.purchasedProdList}" var="prod">
+                        <tr class="slds-hint-parent">
+                            <th data-label="Purchased Product" scope="row">
+                                <div class="slds-truncate" title="{!prod.Name}">
+                                    <a href="{!'/'+prod.Id}" tabindex="-1" target="_blank">{!prod.Name}</a>
+                                </div>
+                            </th>
+                            <th data-label="Product Name" scope="row">
+                                <div class="slds-truncate" title="{!prod.Product_R1__r.Name}">
+                                    <a href="{!'/'+prod.Product_R1__r.Id}" tabindex="-1" target="_blank">{!prod.Product_R1__r.Name}</a>
+                                </div>
+                            </th>
+                            <th data-label="Sold To" scope="row">
+                                <div class="slds-truncate" title="{!prod.Account_R1__r.Name}">
+                                    <a href="{!'/'+prod.Account_R1__r.Id}" tabindex="-1" target="_blank">{!(prod.Account_R1__r.Name+' | '+prod.Account_R1__r.AccountNumber_R1__c+' | '+prod.Account_R1__r.BillingCity+' | '+prod.Account_R1__r.BillingStateCode+' | '+prod.Account_R1__r.BillingCountryCode)}</a>
+                                </div>
+                            </th>
+                            <th data-label="Ship To" scope="row">
+                                <div class="slds-truncate" title="{!prod.Ship_To__r.Name}">
+                                    <a href="{!'/'+prod.Ship_To__r.Id}" tabindex="-1" target="_blank">{!(prod.Ship_To__r.Name+' | '+prod.Ship_To__r.AccountNumber_R1__c+' | '+prod.Ship_To__r.BillingCity+' | '+prod.Ship_To__r.BillingStateCode+' | '+prod.Ship_To__r.BillingCountryCode)}</a>
+                                </div>
+                            </th>
+                            <td data-label="Last Modified By/Date">
+                                <div class="slds-truncate">{!prod.LastModifiedBy.Name}&nbsp;/&nbsp;<lightning:formattedDateTime value="{!prod.LastModifiedDate}"/></div>
+                            </td>
+                            <td data-label="Update New Share of Wallet">
+                                <div class="slds-truncate">
+                                    <lightning:button variant="brand" label="Update" name="{!prod.Id}" onclick="{!c.handleMarketSegmentUpdate}"/>
+                                </div>
+                            </td>
+                        </tr>
+                    </aura:iteration>
+                    <aura:set attribute="else">
+                        <tr class="slds-hint-parent">
+                            <td colspan="6" class="slds-text-align_center" style="padding:1rem;">
+                                <b>No Market Segmentation records found for the current account.</b>
+                            </td>
+                        </tr>
+                    </aura:set>
+                </aura:if>
+            </tbody>
+        </table>
+    </div>
+    <aura:if isTrue="{!v.showMarketSegment}">
+        
+        <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+            <div class="slds-modal__container">
+                <header class="slds-modal__header">
+                    <lightning:buttonIcon iconName="utility:close"
+                                          onclick="{! c.closeMarketSegment }"
+                                          alternativeText="close"
+                                          variant="bare-inverse"
+                                          class="slds-modal__close"/>
+                    <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">Market Segmentation</h2>
+                </header>
+                <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                    <lightning:recordEditForm objectApiName="PurchasedProduct_R1__c" recordId="{!v.currentPurchasedProdid}" aura:id="recordForm" onsuccess="{!c.handleFormSuccess}" onerror="{!c.handleError}">
+                        <div class="slds-section slds-is-open">
+                            <h3 class="slds-section__title sectionHeader">
+                                Market Segmentation
+                            </h3>
+                            <div class="slds-section__content">
+                                <div class="slds-grid slds-wrap">
+                                    <lightning:inputField fieldName="Business_Line__c" class="slds-size_1-of-1" variant="label-stacked"/>
+                                    <lightning:inputField fieldName="MarketSegmentParent_R1__c" class="slds-size_1-of-1" variant="label-stacked"/>
+                                    <lightning:inputField fieldName="MarketSegment_R1__c" class="slds-size_1-of-1" variant="label-stacked"/>
+                                    <lightning:inputField fieldName="Industry_Application_1__c" class="slds-size_1-of-1" variant="label-stacked"/>
+                                    <lightning:inputField fieldName="Process_Application_1__c" class="slds-size_1-of-1" variant="label-stacked"/>
+                                    <lightning:inputField fieldName="Market_Segment_Percent_1__c" class="slds-size_1-of-1" variant="label-stacked"/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="slds-section slds-is-open">
+                            <h3 class="slds-section__title sectionHeader">
+                                Market Segmentation 2
+                            </h3>
+                            <div class="slds-section__content">
+                                <div class="slds-grid slds-wrap">
+                                    <lightning:inputField fieldName="MarketSegmentParent_R2__c" class="slds-size_1-of-1" variant="label-stacked"/>
+                                    <lightning:inputField fieldName="MarketSegment_R2__c" class="slds-size_1-of-1" variant="label-stacked"/>
+                                    <lightning:inputField fieldName="Industry_Application_2__c" class="slds-size_1-of-1" variant="label-stacked"/>
+                                    <lightning:inputField fieldName="Process_Application_2__c" class="slds-size_1-of-1" variant="label-stacked"/>
+                                    <lightning:inputField fieldName="Market_Segment_Percent_2__c" class="slds-size_1-of-1" variant="label-stacked"/>
+                                </div>
+                            </div>
+                        </div>
+                        
+                         <div class="slds-section slds-is-open">
+                            <h3 class="slds-section__title sectionHeader">
+                                Market Segmentation 3
+                            </h3>
+                            <div class="slds-section__content">
+                                <div class="slds-grid slds-wrap">
+                                    <lightning:inputField fieldName="MarketSegmentParent_R3__c" class="slds-size_1-of-1" variant="label-stacked"/>
+                                    <lightning:inputField fieldName="MarketSegment_R3__c" class="slds-size_1-of-1" variant="label-stacked"/>
+                                    <lightning:inputField fieldName="Industry_Application_3__c" class="slds-size_1-of-1" variant="label-stacked"/>
+                                    <lightning:inputField fieldName="Process_Application_3__c" class="slds-size_1-of-1" variant="label-stacked"/>
+                                    <lightning:inputField fieldName="Market_Segment_Percent_3__c" class="slds-size_1-of-1" variant="label-stacked"/>
+                                </div>
+                            </div>
+                        </div>
+                         <div class="slds-section slds-is-open">
+                            <h3 class="slds-section__title sectionHeader">
+                                Market Segmentation 4
+                            </h3>
+                            <div class="slds-section__content">
+                                <div class="slds-grid slds-wrap">
+                                    <lightning:inputField fieldName="MarketSegmentParent_R4__c" class="slds-size_1-of-1" variant="label-stacked"/>
+                                    <lightning:inputField fieldName="MarketSegment_R4__c" class="slds-size_1-of-1" variant="label-stacked"/>
+                                    <lightning:inputField fieldName="Industry_Application_4__c" class="slds-size_1-of-1" variant="label-stacked"/>
+                                    <lightning:inputField fieldName="Process_Application_4__c" class="slds-size_1-of-1" variant="label-stacked"/>
+                                    <lightning:inputField fieldName="Market_Segment_Percent_4__c" class="slds-size_1-of-1" variant="label-stacked"/>
+                                </div>
+                            </div>
+                        </div>
+                    
+                    </lightning:recordEditForm>
+                </div>
+                <footer class="slds-modal__footer">
+                    <lightning:button variant="neutral"
+                                      label="Cancel"
+                                      title="Cancel"
+                                      onclick="{! c.closeMarketSegment }"/>
+                    <lightning:button variant="brand"
+                                      label="Save"
+                                      title="Save"
+                                      onclick="{! c.saveMarketSegment }"/>
+                </footer>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </aura:if>
+</aura:component>

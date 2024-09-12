@@ -1,0 +1,17 @@
+<aura:component implements="flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:appHostable,force:lightningQuickActionWithoutHeader,force:hasRecordId" access="global">
+    <div class="slds-grid slds-gutters" aura:id="formulaBase">
+        <div class="slds-col">
+            <div class="test-id__section slds-section  full forcePageBlockSection forcePageBlockSectionView" data-aura-rendered-by="561:537;a" data-aura-class="forcePageBlockSection forcePageBlockSectionView">
+                <h3 class="slds-section__title  test-id__section-header-container" data-aura-rendered-by="563:537;a">
+                    <button class="slds-button test-id__section-header-button slds-section__title-action" type="button" data-aura-rendered-by="572:537;a" aria-controls="378:537;a" aria-expanded="false"><!--render facet: 573:537;a-->
+                        <span class="test-id__section-header-title slds-truncate" data-aura-rendered-by="569:537;a">Formula Creation Tool</span>
+                    </button>
+                </h3>
+                <div class="test-id__section-content slds-section__content section__content invisibleEl" data-aura-rendered-by="577:537;a" id="378:537;a" aria-hidden="true" style="transition: none 0s ease 0s;">
+                    <div class="slds-form form-horizontal " role="list" data-aura-rendered-by="578:537;a"></div>
+                </div>
+            </div>
+            <c:SimplusFormula recordId="{!v.recordId}"/>
+        </div>
+    </div>
+</aura:component>

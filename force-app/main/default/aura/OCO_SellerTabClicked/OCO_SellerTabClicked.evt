@@ -1,0 +1,5 @@
+<!-- Triggered from "OCO_SellerLeft" and handled from "OCO_SellerRight" component  -->
+<aura:event type="APPLICATION" description="Event template">
+    <aura:attribute name="tabClicked" type="String"/>
+    <aura:attribute name="sapRecord" type="SAP_Onboarding__c"/>
+</aura:event>

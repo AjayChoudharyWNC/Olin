@@ -1,0 +1,20 @@
+<apex:component controller="approvalRequestQuotelineItemsclass" access="global">
+    <apex:attribute name="Qid" type="Id" description="Id of the account" assignTo="{!quotelineId}"/>
+    <table border = "1" cellspacing = "0">
+        <tr>
+            <td>PRODUCT</td>
+            <td>COMMODITY INDEX</td>
+            <td>ADJUSTMENT FACTOR</td>
+            <td>FORMULA DESCRIPTION</td>
+        </tr>
+        <apex:repeat value="{!quotelines}" var="ql">
+            <tr>
+                <td>{!ql.SBQQ__ProductName__c}</td>                 
+                <td>{!ql.Product_Commodity_Index_Name__c    }</td>
+                <td>{!ql.Adjustment_Factor__c}</td>
+                <td>{!ql.Formula_Description__c}</td>
+           
+            </tr>
+        </apex:repeat>        
+    </table>
+</apex:component>

@@ -1,0 +1,83 @@
+<aura:component controller="SimplusGridController">
+    <aura:attribute type="List" name="quoteList" />
+    <aura:attribute type="List" name="fixedList" />
+    <aura:handler name="init" value="{!this}" action="{!c.onInit}" />
+    <aura:registerEvent name="pushClose" type="c:SimplusGrid_PushUp"/>
+    <aura:registerEvent name="pushClone" type="c:SimplusGrid_PushUp"/>
+    <aura:registerEvent name="pushCloneandSubmit" type="c:SimplusGrid_PushUp"/>
+    <div>
+        <div class="modalClose">
+            <lightning:buttonIcon size="x-large" iconName="utility:close" onclick="{!c.close}"/>
+        </div>
+        <div class="modal">
+            <h3>Quote Cloning</h3>
+            <div class="modalQuoteList">
+                <div class="quoteItem">
+                    <table class="slds-table">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th>Validation</th>
+                                <th>Quote Number</th>
+                                <th>Quote Line Name</th>
+                                <th>Sold To</th>
+                                <th>Ship To</th>
+                                <th>Product</th>
+                                <th>Current Price</th>
+                                <th>New Price</th>
+                                <th>New Price Start Date</th>
+                                <th>New Price Expiration Date</th>
+                                <th>CUPS End User</th>
+                                <th>CUPS End User 2</th>
+                                <th>CUPS End User 3</th>
+                                <th>CUPS End User 4</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <aura:iteration items="{!v.fixedList}" var="q" indexVar="qIdx">
+                                <tr class="lineItem">
+                                    <td>
+                                        <div class="slds-form-element" style="display: inline-block;">
+                                            <div class="slds-form-element__control">
+                                                <div class="slds-checkbox">
+                                                    <input type="checkbox" name="{!q.line.Name}" value="{!q.isSelected}" checked="{!q.isSelected}"/>
+                                                    <label class="slds-checkbox__label" for="{!q.line.Name}">
+                                                        <span class="slds-checkbox_faux" data-idx="{!qIdx}" onclick="{!c.updateSelect}"></span>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <lightning:helptext iconName="{!q.icon}" content="{!q.validationMsg}" iconVariant="{!q.variant}"/>
+                                    </td>
+                                    <td>
+                                        <ui:outputURL value="{!'/one/one.app?#/sObject/'+ q.line.SBQQ__Quote__r.Id + '/view'}" target="_blank" label="{!q.line.SBQQ__Quote__r.Name}"/>
+                                    </td>
+                                    <td>
+                                        <ui:outputURL value="{!'/one/one.app?#/sObject/'+ q.line.Id + '/view'}" target="_blank" label="{!q.line.Name}"/>
+                                    </td>
+                                    <td>{!q.line.Price_Request_Account__r.Name != null ? q.line.Price_Request_Account__r.Name : ''}</td>
+                                    <td>{!q.line.Ship_To_Account__r.Name != null ? q.line.Ship_To_Account__r.Name : ''}</td>
+                                    <td>{!q.line.SBQQ__ProductName__c}</td>
+                                    <td><ui:outputNumber value="{!q.line.SBQQ__ListPrice__c }" format="¤#,##0.####"/></td>
+                                    <td><ui:outputNumber value="{!q.line.New_Delivered_Price__c != NULL ? q.line.New_Delivered_Price__c : q.line.SBQQ__ListPrice__c}" format="¤#,##0.####"/></td>
+                                    <td><lightning:formattedDateTime value="{!q.line.New_Price_Start_Date__c}"/></td>
+                                    <td><lightning:formattedDateTime value="{!q.line.New_Price_Firm_Date__c}"/></td>
+                                    <td>{!q.line.CUPS_End_User__c != null ? q.line.CUPS_End_User__r.Name : ''}</td>
+                                    <td>{!q.line.CUPS_End_User2__c != null ? q.line.CUPS_End_User2__r.Name : ''}</td>
+                                    <td>{!q.line.CUPS_End_User3__c != null ? q.line.CUPS_End_User3__r.Name : ''}</td>
+                                    <td>{!q.line.CUPS_End_User4__c != null ? q.line.CUPS_End_User4__r.Name : ''}</td>
+                                </tr>
+                            </aura:iteration>
+                        </tbody>
+                    </table>    
+                </div>
+            </div>
+            <div class="controls" style="text-align: right; margin-top: 10px;">
+                  <lightning:button label="Clone" aura:id="btnClone" title="Clone" onclick="{! c.doClone }"/>
+                  <lightning:button label="Clone and Submit" aura:id="btnCloneSubmit" title="Clone and Submit" onclick="{! c.doCloneandSubmit }"/>
+            </div>
+        </div>
+    </div>
+</aura:component>

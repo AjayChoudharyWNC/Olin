@@ -1,0 +1,121 @@
+.THIS .slds-show{
+    height:-webkit-fill-available;
+}
+.THIS .slds-show#firstTab {
+    
+}
+
+
+.THIS .button {
+    padding-top: 24px;
+    margin-right: 10px;
+    display: flex;
+}
+.THIS .flexer {
+    flex: 1;
+}
+.THIS .content{
+    height:1000px;
+}
+.THIS .dynamicClass{
+    display:block;
+}
+.THIS .sortFilterActionColumns {
+    width: 250px;
+}
+.THIS .spacer {
+    margin-left: 5px;
+}
+.THIS .slds-accordion__summary-heading {
+    padding-bottom: 5px;
+    border-bottom: 1px solid rgba(0,0,0,.2);
+    margin-bottom: 10px;
+    line-height: 1.8;
+}
+.THIS .sortFilterTable {
+    margin-bottom: 15px;
+}
+
+
+.THIS.controlsButton {    
+    position: fixed;
+    top: 150px;
+    z-index: 301;
+    background-color: white;
+    border: none;
+    border-radius: 0 0 1000px 1000px;
+    transition: .3s;
+    cursor: pointer;
+    height: 90px;
+    max-height: 72%;
+    width: 25px;
+    box-shadow: -3px 0 3px 0 rgba(0,0,0,0.2);
+    border-radius: 10px 0 0 10px;
+}
+.THIS.controlsButton .buttonText {
+    transform: rotateZ(90deg);
+    width: 75px;
+    position: relative;
+    top: 40px;
+    left: -25px;
+}
+.THIS.controlsButton:hover .slds-icon-text-default {
+    fill: rgb(75,75,75);
+}
+.THIS.controlsButton.shown {
+    right: 450px;
+}
+.THIS.controlsButton.hidden {
+    right: 0px;
+}
+.THIS.rightPanelContainer {
+    position: fixed;
+    top: 150px;
+    width: 450px;
+    background-color: white;
+    padding: 10px 20px;
+    z-index: 300;
+    box-shadow: 0px 0px 19px -4px rgba(0,0,0,0.7);
+    height: 10000px;
+    max-height: 72%;
+    overflow-y: scroll;
+    overflow-x: hidden;
+    transition: .3s;
+}
+.THIS.rightPanelContainer.shown {
+    right: 0;
+}
+.THIS.rightPanelContainer.hidden {
+    right: -460px;
+}
+.THIS.rightPanelContainer .slds-form-element__label {
+    font-size: 7pt;
+}
+.THIS.rightPanelContainer .slds-select, .THIS .rightPanelContainer .slds-input {
+    height: calc(1.5rem + (1px * 2));
+    font-size: 7pt;
+} 
+.THIS.rightPanelContainer .button {
+    padding-top: 10px;
+    font-size: 7pt;
+    display: flex;
+}
+.THIS.rightPanelContainer .button button {
+    padding-left: 10px;
+    padding-right: 10px;
+    flex: 1;
+}
+.THIS.rightPanelContainer::-webkit-scrollbar {
+    width: 10px;
+    opacity: .5;
+}
+.THIS.rightPanelContainer::-webkit-scrollbar-track {
+    background: rgba(241,241,241,.5); 
+}
+.THIS.rightPanelContainer::-webkit-scrollbar-thumb {
+    background: rgba(136,136,136,.5);
+    border-radius: 100px;
+}
+.THIS.rightPanelContainer::-webkit-scrollbar-thumb:hover {
+    background: rgba(85,85,85,.5)
+}

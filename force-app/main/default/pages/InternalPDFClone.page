@@ -1,0 +1,355 @@
+<!--
+Property of Olin. Do not distribute without permission.
+Copyright (c) [2017] Olin, its affiliates and their licensors.
+@author Rajendran, Devanand
+@date   02/01/2018
+@description     : Contain the functions to create a report and show to the user in PDF
+Modification Log:
+--------------------------------------------------------------------------------------------
+Developer       Mod Number  Date    Description
+--------------------------------------------------------------------------------------------
+Alan Flores     M-001   02/07/2018  Add this tag and comments
+Alan Flores     M-002   02/15/2018  Added custom labels to header, footer and table headers
+Alan Flores     M-003   03/01/2018  Fixed issues with labels "Account Name", "Confidentiality Agreement Number", "Due Date", "Assigned To" & "Comments"
+
+-->
+
+<apex:page standardController="FCM_VisitReport__c" extensions="FCM_getAttendeesFromCallReport" showHeader="false" sidebar="false" standardStylesheets="false" renderAs="pdf"  applyBodyTag="false" applyHtmlTag="false">
+    <html>
+        <head>
+            <style type="text/css" media="print">
+                
+                <!--Some data is brough into report in hyperlink form. This CSS remove from them all hyperlink style-->
+                a:link {
+                text-decoration: none;
+                COLOR: Black;
+                }
+                a:visited {
+                COLOR: Black;
+                }
+                a:hover {
+                COLOR: Black;
+                }
+                a:active {
+                COLOR: Black;
+                }
+                body {
+                color: black;
+                }
+                
+                <!-- This CSS controls the place where the footer appear in the document-->
+                @page { size: 12in 14in;
+                margin-bottom: 2cm;
+                @bottom-center {
+                content: element(footer);
+                }
+                }
+                div.footer {
+                display: block;
+                padding: 10px;
+                position: running(footer);
+                }
+                
+                <!--This CSS give some data that comes with the original style one that match with the one in the PDF -->
+                th {    
+                font-weight: normal;
+                font-family: Verdana, Arial, sans-serif !important;
+                }
+                
+                <!-- Some table headers don't appear in bold font, this CSS turn all headers into bold style-->
+                .headerRow .TableTitle1 {
+                font-weight: bold;
+                background-color:#FFFFFF;
+                padding: 3px;
+                }
+                .headerRow .TableTitle {
+                font-weight: bold;
+                }
+                 html *
+                {
+                font-size: 1em !important;
+                color: #000 !important;
+                font-family: Verdana, Arial, sans-serif !important;
+                }
+                th{font-weight:bold;background-color:#d8d8d8;}
+                <!-- Table2 decoration-->
+                .table2{
+                border-collapse:collapse;
+                border-spacing: 1px;
+                }
+                .table2 td, .table2 th{
+                    padding: 4px;
+                }
+            </style>
+        </head>
+        <body>
+            <!-- This section creates the header with the call report code and olin logo-->
+            <div>
+                <table style="undefined;table-layout: fixed; width: 100%">
+                    <tr>
+                        <td style="width: 503px"><p style="font-size:24px"><b><apex:outputText value="{!$Label.InternalPDF_VF_internalcallreport_R1}" />&nbsp;<apex:outputField value="{!FCM_VisitReport__c.Name}"/></b></p></td>
+                        <td align = "center"><p style="font-size:24px"></p></td>
+                        <td align = "right"><p style=""><img  src="{!$Resource.OlinLogo}" width="80px;"/></p></td>
+                    </tr>
+                </table>
+            </div>
+            
+            <apex:pageBlock >   
+                
+                <!-- In this section is set what the footer is going to say-->
+                <div class="footer" align="center"> <apex:outputText value="{!$Label.InternalPDF_VF_footer_R1}" /> </div>
+                
+                <table border="1px solid black" style="border-collapse:collapse;margin-top:20px;" cellpadding="5" cellspacing="4" width="100%">
+                    <tr>
+                        <th width= "300px"><b><apex:outputText value="{!$Label.ExternalPDF_VF_accountname_R1}" /></b></th>
+                        <th width= "300px"><b><apex:outputText value="Call Report Owner" /></b></th>
+                    </tr>
+                    <tr>
+                        <td width= "300px"><apex:outputField title="Account Name :" value="{!FCM_VisitReport__c.FCM_Account__r.Name}"/></td>
+                        <td width= "300px"><apex:outputField title="Account Name :" value="{!FCM_VisitReport__c.Owner.Name}"/></td>
+                    </tr>
+                    <tr>
+                        <th width= "300px"><b><apex:outputText value="{!$ObjectType.FCM_VisitReport__c.Fields.Call_Type__c.Label}" /></b></th>
+                        <th width= "300px"><b><apex:outputText value="{!$ObjectType.FCM_VisitReport__c.Fields.FCM_VisitDate__c.Label}" /></b></th>
+                    </tr>
+                    <tr>
+                        <td width= "300px"><apex:outputField title="Call Type :" value="{!FCM_VisitReport__c.Call_Type__c}"/> </td>
+                         <td width= "300px"><apex:outputField title="Call Date :" value="{!FCM_VisitReport__c.FCM_VisitDate__c}"/></td>
+                    </tr>
+                    <!-- This section creates the Attendees list inside one of the cells of the table.-->
+                    <tr>
+                        <th width= "600px" colspan="2"><b><apex:outputText value="{!$Label.ExternalPDF_VF_attendees_R1}" /></b></th>
+                    </tr>
+                    <tr>
+                        <td width= "600px" colspan="2">
+                            <apex:pageBlock >    
+                                <apex:pageBlockTable value="{!Attendees}" var="d" border="0" columnsWidth="350,350">
+                                    <!--Special tags wasn't created for these two because their labels are called different from what is required to appear in the PDF -->
+                                    <apex:column style="text-align:left;padding: 3px;" headerClass="TableTitle1" headerValue="{!$Label.ExternalPDF_VF_name_R1}" value="{!d.FCM_Contact__r.name} "/>
+                                    <apex:column style="text-align:left;padding: 3px;" headerClass="TableTitle1" headerValue="Title" value="{!d.FCM_Contact__r.Title} "/>
+                                    <apex:column style="text-align:left;padding: 3px;" headerClass="TableTitle1" headerValue="{!$Label.ExternalPDF_VF_company_R1}" value="{!d.FCM_Contact__r.Account.Name}"/>
+                                </apex:pageBlockTable>          
+                            </apex:pageBlock>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th width= "600px" colspan="2"><b>{!$ObjectType.FCM_VisitReport__c.Fields.FCM_Objectives__c.Label}</b></th>
+                    </tr>
+                    <tr>
+                       <td width= "600px" colspan="2"><apex:outputField value="{!FCM_VisitReport__c.FCM_Objectives__c}"/></td>
+                    </tr>
+                    <tr>
+                        <th width= "600px" colspan="2"><b><apex:outputText value="{!$ObjectType.FCM_VisitReport__c.Fields.FCM_Summary__c.Label}" /></b></th>
+                    </tr>
+                    <tr>
+                       <td width= "600px" colspan="2"><apex:outputField style="font-size:150px" title="Call Date :" value="{!FCM_VisitReport__c.FCM_Summary__c}"/></td>
+                        
+                    </tr>
+                </table>
+                
+                <!-- This section creates a table showing all the discussed products related to this Call Report-->
+                <apex:pageBlock >    
+                    <table border="1px solid black" style="border-collapse:collapse;margin-top:20px;" cellpadding="5" cellspacing="4" width="100%">
+                        <tr>
+                        <th width= "600px" ><b><apex:outputText value="{!$Label.ExternalPDF_VF_discussedproducts_R1}" /></b></th>
+                    </tr>
+                    </table>
+                    <apex:pageBlockTable styleClass="table2" value="{!Products}" var="c" border="1 solid black" columnsWidth="480,220" width="100%">
+                        <apex:column style="text-align:left;" headerClass="TableTitle" headerValue="{!$ObjectType.Product2.Fields.Name.Label}" value="{!c.Name}" />
+                        <apex:column style="text-align:left;" headerClass="TableTitle" headerValue="{!$ObjectType.Product2.Fields.ProductCode.Label}" >
+                            <apex:outputText value="{!c.FCM_Product__r.ProductCode}"></apex:outputText>
+                        </apex:column>
+                    </apex:pageBlockTable>          
+                </apex:pageBlock>
+                
+                <br/>
+                
+                <table border="1px solid black" style="border-collapse:collapse;" width="100%" cellpadding="4" cellspacing="4">
+                    <tr>
+                        <th width= "600px"><b><apex:outputText value="{!$ObjectType.FCM_VisitReport__c.Fields.Call_Details__c.Label}" /></b></th>
+                    </tr>
+                    <tr>
+                        <td width= "600px"><apex:outputField title="Call Date :1" value="{!FCM_VisitReport__c.Call_Details__c}"/></td>
+                    </tr>
+                    <tr>
+                        <th width= "600px"><b><apex:outputText value="{!$Label.ExternalPDF_VF_confidentialagreementnumber_R1}" /></b></th>
+                    </tr>
+                    <tr>
+                        <td width= "600px"><apex:outputField style="text-align:right;font-size:400px;" value="{!FCM_VisitReport__c.ConfidentialityAgreement_R1__c}"/></td>
+                    </tr>
+                </table>
+                
+                <td>&nbsp;</td>
+                
+                <!-- This section create a table showing the data from the Task related to this Call Report. One table for each task related--> 
+                <apex:repeat value="{!Task}" var="t">
+                    <p style="font-size:18px;margin-top:20px;background:#d8d8d8;padding:5px;"><b><apex:outputText value="{!$Label.ExternalPDF_VF_tasks_R1}" /></b></p>
+                    <table border="1px solid black" style="border-collapse:collapse;" width="100%" cellpadding="4" cellspacing="4">
+                        <tr>
+                            <th width= "600px"><b><apex:outputText value="{!$ObjectType.Task.Fields.Subject.Label}" /></b></th>
+                        </tr> 
+                        <tr>
+                            <td width= "600px"> <apex:outputText style="text-align:left;" value="{!t.Subject}"/> </td>
+                        </tr>
+                        <tr>
+                            <th width= "600px"><b><apex:outputText value="{!$ObjectType.Task.Fields.Type.Label}" /></b></th>
+                        </tr> 
+                        <tr>
+                            <td width= "600px"> <apex:outputText style="text-align:left;" value="{!t.Type}"/> </td>
+                        </tr>
+                        <tr>
+                            <th width= "600px"><b><apex:outputText value="{!$Label.ExternalPDF_VF_duedate_R1}" /></b></th>
+                        </tr> 
+                        <tr>
+                            <td width= "600px"> <apex:outputText style="text-align:left;" value="{!t.ActivityDate}"/> </td>
+                        </tr>
+                        <tr>
+                            <th width= "600px"><b><apex:outputText value="{!$Label.ExternalPDF_VF_assignedto_R1}" /></b></th>
+                        </tr> 
+                        <tr>
+                            <td width= "600px"> <apex:outputText style="text-align:left;" value="{!IF(t.type == 'Customer Action Item',t.Who.Name,t.Owner.Name)}"/> </td>
+                        </tr>
+                        <tr>
+                            <th width= "600px"><b><apex:outputText value="{!$ObjectType.Task.Fields.Priority.Label}" /></b></th>
+                        </tr> 
+                        <tr>
+                            <td width= "600px"> <apex:outputText style="text-align:left;" value="{!t.Priority}"/> </td>
+                        </tr>
+                        <tr>
+                            <th width= "600px"><b><apex:outputText value="{!$ObjectType.Task.Fields.Status.Label}" /></b></th>
+                        </tr> 
+                        <tr>
+                            <td width= "600px"> <apex:outputText style="text-align:left;" value="{!t.Status}"/> </td>
+                        </tr>
+                        <tr>
+                            <th width= "600px"><b><apex:outputText value="{!$Label.ExternalPDF_VF_comments_R1}" /></b></th>
+                        </tr> 
+                        <tr>
+                            <td width= "600px"> <apex:outputText style="text-align:left;" value="{!t.Description}"/> </td>
+                        </tr>
+                    </table>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                </apex:repeat>
+                
+                
+                
+                <apex:variable value="{!Competitor}" var="ze"> </apex:variable>
+                
+                <!-- This section creates a list with the competitor date, one table for each competitor related to this Call Report-->
+                <apex:repeat value="{!Competitor}" var="z">
+                    
+                    <p style="font-size:18px;margin-top:20px;background:#d8d8d8;padding:5px;"><b><apex:outputText value="{!$Label.InternalPDF_VF_competitors_R1}" /></b></p>
+                    <table border="1px solid black" style="border-collapse:collapse;" width="100%" cellpadding="4" cellspacing="4">
+                        <tr>
+                            <th width= "600px"><b><apex:outputText value="{!$ObjectType.Competitor_R1__c.Fields.Competitor_R1__c.Label}" /></b></th>
+                        </tr> 
+                        <tr>
+                            <td width= "600px"> <apex:outputText style="text-align:left;" value="{!z.Competitor_R1__r.Name}"/> </td>
+                        </tr>
+                        <tr>
+                            <th width= "600px"><b><apex:outputText value="{!$ObjectType.Competitor_R1__c.Fields.Olin_Product__c.Label}" /></b></th>
+                        </tr> 
+                        <tr>
+                            <td width= "600px"> <apex:outputText style="text-align:left;" value="{!z.Olin_Product__r.Name}"/> </td>
+                        </tr>
+                        <tr>
+                            <th width= "600px"><b><apex:outputText value="{!$ObjectType.Competitor_R1__c.Fields.Producer_R1__c.Label}" /></b></th>
+                        </tr> 
+                        <tr>
+                            <td width= "600px"> <apex:outputText style="text-align:left;" value="{!z.Producer_R1__r.Name}"/> </td>
+                        </tr>
+                        <tr>
+                            <th width= "600px"><b><apex:outputText value="{!$ObjectType.Competitor_R1__c.Fields.Incoterms_R1__c.Label}" /></b></th>
+                        </tr> 
+                        <tr>
+                            <td width= "600px"> <apex:outputText style="text-align:left;" value="{!z.Incoterms_R1__c}"/> </td>
+                        </tr>
+                        <tr>
+                            <th width= "600px"><b><apex:outputText value="{!$ObjectType.Competitor_R1__c.Fields.OriginOfGoods_R1__c.Label}" /></b></th>
+                        </tr> 
+                        <tr>
+                            <td width= "600px"> <apex:outputText style="text-align:left;" value="{!z.OriginOfGoods_R1__c}"/> </td>
+                        </tr>
+                        <tr>
+                            <th width= "600px"><b><apex:outputText value="{!$ObjectType.Competitor_R1__c.Fields.Ship_Mode__c.Label}" /></b></th>
+                        </tr> 
+                        <tr>
+                            <td width= "600px"> <apex:outputText style="text-align:left;" value="{!z.Ship_Mode__c}"/> </td>
+                        </tr>
+                        <tr>
+                            <th width= "600px"><b><apex:outputText value="{!$ObjectType.Competitor_R1__c.Fields.Price_R1__c.Label}" /></b></th>
+                        </tr> 
+                        <tr>
+                            <td width= "600px"> <apex:outputText style="text-align:left;" value="{!z.Price_R1__c}"/> </td>
+                        </tr>
+                        <tr>
+                            <th width= "600px"><b><apex:outputText value="{!$ObjectType.Competitor_R1__c.Fields.CurrencyIsoCode.Label}" /></b></th>
+                        </tr> 
+                        <tr>
+                            <td width= "600px"> <apex:outputText style="text-align:left;" value="{!z.CurrencyIsoCode}"/> </td>
+                        </tr>
+                        <tr>
+                            <th width= "600px"><b><apex:outputText value="{!$ObjectType.Competitor_R1__c.Fields.OfferType_R1__c.Label}" /></b></th>
+                        </tr> 
+                        <tr>
+                            <td width= "600px"> <apex:outputText style="text-align:left;" value="{!z.OfferType_R1__c}"/> </td>
+                        </tr>
+                        <tr>
+                            <th width= "600px"><b><apex:outputText value="{!$ObjectType.Competitor_R1__c.Fields.PriceFirmDate_R1__c.Label}" /></b></th>
+                        </tr> 
+                        <tr>
+                            <td width= "600px"> <apex:outputText style="text-align:left;" value="{!z.PriceFirmDate_R1__c}"/> </td>
+                        </tr>
+                        <tr>
+                            <th width= "600px"><b><apex:outputText value="{!$ObjectType.Competitor_R1__c.Fields.VolumeofDeal_R1__c.Label}" /></b></th>
+                        </tr> 
+                        <tr>
+                            <td width= "600px"> <apex:outputText style="text-align:left;" value="{!z.VolumeofDeal_R1__c}"/> </td>
+                        </tr>
+                        <tr>
+                            <th width= "600px"><b><apex:outputText value="{!$ObjectType.Competitor_R1__c.Fields.UnitofMeasure_R1__c.Label}" /></b></th>
+                        </tr> 
+                        <tr>
+                            <td width= "600px"> <apex:outputText style="text-align:left;" value="{!z.UnitofMeasure_R1__c}"/> </td>
+                        </tr>
+                        <tr>
+                            <th width= "600px"><b><apex:outputText value="{!$ObjectType.Competitor_R1__c.Fields.Customer_R1__c.Label}" /></b></th>
+                        </tr>
+                        <tr>
+                            <td width= "600px"> <apex:outputText style="text-align:left;" value="{!z.Customer_R1__r.Name}"/> </td>
+                        </tr>
+                        <tr>
+                            <th width= "600px"><b><apex:outputText value="{!$ObjectType.Competitor_R1__c.Fields.CallReport_R1__c.Label}" /></b></th>
+                        </tr>
+                        <tr>
+                            <td width= "600px"> <apex:outputText style="text-align:left;" value="{!z.CallReport_R1__r.Name}"/> </td>
+                        </tr>
+                    </table>
+                    <td>&nbsp;</td>
+                </apex:repeat>
+                
+                <table border="1px solid black" style="border-collapse:collapse;" width="100%" cellpadding="4" cellspacing="4">
+                    <tr>
+                        <th width= "600px"><b><apex:outputText value="{!$ObjectType.FCM_VisitReport__c.Fields.Internal_Comments_R1__c.Label}" /></b></th>
+                    </tr>
+                    <tr>
+                        <td width= "600px"><apex:outputField title="Call Date :" value="{!FCM_VisitReport__c.Internal_Comments_R1__c}"/></td>
+                    </tr>
+                </table>
+                <td>&nbsp;</td>
+                <table border="1px solid black" style="border-collapse:collapse;" width="100%" cellpadding="4" cellspacing="4">
+                    <tr>
+                        <th width= "600px"><b><apex:outputText value="{!$ObjectType.FCM_VisitReport__c.Fields.Key_Subjects__c.Label}" /></b></th>
+                    </tr>
+                    <tr>
+                        <td width= "600px"><apex:outputField title="Call Date :" value="{!FCM_VisitReport__c.Key_Subjects__c}"/></td>
+                    </tr>
+                </table>
+                
+                <td>&nbsp;</td>
+                
+            </apex:pageBlock>
+        </body>
+    </html>
+</apex:page>

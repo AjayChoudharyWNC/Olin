@@ -1,0 +1,36 @@
+<apex:component controller="approvalRequestQuotelineItemsclass" access="global">
+    <apex:attribute name="Qid" type="Id" description="Id of the account" assignTo="{!quotelineId}"/>
+    <table border = "1" cellspacing = "0">
+        <tr>
+            <td>PRODUCT AND GRADE</td>
+            <td>NEW PRICE</td>
+            <td>OLD PRICE</td>
+            <td>CURRENCY</td>
+            <td>VOLUME</td>
+            <td>SHIP DETAILS</td>
+            <td>SOURCE</td>
+            <td>DESTINATION</td>
+            <td>INCOTERM</td>
+            <td>VALIDITY PERIOD</td>
+        </tr>
+        <apex:repeat value="{!quotelines}" var="ql">
+            <tr>
+                <td>{!ql.ProductName_Concatenated__c}</td>     
+                <td>{!IF(ql.Discount_Field__c == FALSE, ql.Quote_Document_Currency__c,  NULL)}<apex:outputText value="{!IF(ql.Discount_Field__c == FALSE,IF(ql.Per_Quantity__c == '1','{0, number,###,###,###,##0.00}', '{0, number,###,###,###,##0.0000}'),ql.Discount_Percent_Template__c)}">
+                    <apex:param value="{!ql.New_Price_with_Multiplier_Conversion__c}"/></apex:outputText> {!IF(ql.Discount_Field__c == TRUE || ISBLANK(ql.UOM__c), NULL,'per '+ ql.UOM__c) }
+</td>
+                <td>{!IF(ql.Discount_Field__c == TRUE|| ISBLANK(ql.Initial_Product_Price__c),  NULL, ql.Quote_Document_Currency__c)}
+                    <apex:outputText value="{!IF(ql.Discount_Field__c == FALSE,IF(ql.Per_Quantity__c == '1','{0, number,###,###,###,##0.00}', '{0, number,###,###,###,##0.0000}'), ql.Discount_Percent_Template__c)}">
+                        <apex:param value="{!ql.Initial_Product_Price__c}"/></apex:outputText> {!IF(ql.Discount_Field__c == TRUE || ISBLANK(ql.Initial_Product_Price__c) || ql.Product_Level__c <> "GMID", NULL,'per '+ ql.UOM__c)}
+										</td>
+                <td>{!ql.CurrencyIsoCode}</td>
+                <td>{!ql.Volume_Template_Output__c} {!ql.UOM__c} {!IF(ql.Product_Level__c <> "GMID", NULL,'/' + ql.Volume_Period__c)}</td>
+                <td>{!ql.Shipping_Condition_Label__c}</td>
+                <td>{!ql.Ship_From_Plant_List__r.Name}</td>
+                <td>{!ql.Destination_City_State_Country_Ship_To__c}</td>
+                <td>{!ql.Incoterm__c}</td>
+                <td>{!ql.Validity_Period__c}</td>
+            </tr>
+        </apex:repeat>        
+    </table>
+</apex:component>

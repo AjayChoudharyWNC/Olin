@@ -1,0 +1,251 @@
+<apex:page controller="FCM_VRAttendeeEntryCtrl" lightningStylesheets="{!$User.UIThemeDisplayed == 'Theme4d'}" showHeader="false" sidebar="false" cache="false">
+    <html xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <apex:slds />
+
+    <div>
+        <div class="slds-scope">
+            <br/>
+            <div class="slds-media slds-no-space slds-grow">
+                <div class=" slds-media__figure">
+                    <svg aria-hidden="true" class=" slds-icon slds-icon-action-map" style="background-color: #7F8DE1;">
+                        <use xlink:href="{!URLFOR($Asset.SLDS, 'assets/icons/action-sprite/svg/symbols.svg#new_contact')}"></use>
+                    </svg>
+                </div>
+                <br/>
+                <div class=" slds-media__body">
+                    <p class=" slds-text-heading--label">{!$Label.Manage} {!$ObjectType.Contact.LabelPlural}</p>
+                   <!-- <h1 class=" slds-page-header__title slds-m-right--small slds-truncate slds-align-middle">{!opportunity.Name}</h1><br/>-->
+                </div>
+            </div>
+        </div>
+
+    </div><br/>
+    <apex:messages style="color:red"/> 
+    <apex:includeScript value="{!URLFOR($Resource.JQuery)}" />
+   <!-- <apex:sectionHeader Title="{!$Label.Manage} {!$ObjectType.Contact.LabelPlural}"/> -->
+    <style>
+        .search{
+            font-size:14pt;
+            margin-right: 20px;    
+        }
+        .fyi{
+            color:red;
+            font-style:italic;
+        }
+        .inputCell{
+            margin-left:5px;
+        }
+        .labelCell{
+            margin-right:5px;
+            text-align:right;
+            font-weight:bold;
+        }
+        .label{
+            margin-right:10px;
+            font-weight:bold;
+        }
+        .isHundredPercent{
+            width:100%;
+        }
+        .Primary{
+            width:50px;
+        }
+        .isHeightyFivePercent{
+            width:85%;
+        }
+        .isFifthyPlusPx{
+            width: 64px;
+            white-space: pre-line !important;
+        }
+        
+        .slds-scope  input[type='text']{
+            min-width:40px;
+        }
+        
+        .slds-scope  textarea{
+            min-width:150px;
+            height:50px;
+        }
+            
+        .slds-scope .search-text td{
+            padding:3px;
+        }
+        </style>
+    <script type='text/javascript'>
+        // This script assists the search bar functionality
+        // It will execute a search only after the user has stopped typing for more than 1 second
+        // To raise the time between when the user stops typing and the search, edit the following variable:
+        var waitTime = 1;
+    
+        var countDown = waitTime+1;
+        var started = false;
+        
+        function resetTimer(){
+            countDown=waitTime+1;
+            
+            if(started==false){
+                started=true;
+                runCountDown();
+            }
+        }
+        
+        function runCountDown(){
+        
+            countDown--;
+            
+            if(countDown<=0){
+                fetchResults();
+                started=false;
+            }
+            else{
+                window.setTimeout(runCountDown,1000);
+            }
+        }
+        
+        function doIsPrimaryCheckboxChange(cb) {
+            if (cb.checked == true) {
+                $(" input[class=Primary]").not(cb).prop('checked', false);
+            } 
+        }
+    	
+        function solveCachingProb()
+        {
+            serverSave();
+        }
+        
+        function completeSave(){
+            var now = new Date();
+            window.open('/lightning/r/FCM_VisitReport__c/{!masterRecId}/view?ts='+now.getTime(), target="_self");
+        }
+    </script>
+    <apex:form >
+        <apex:actionStatus id="status">
+            <apex:facet name="start">
+                <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; opacity: 0.25; z-index: 1000; background-color: black;">
+                    &nbsp;
+                </div>
+                <div style="position: fixed; left: 0; top: 0; bottom: 0; right: 0; z-index: 1001; margin: 15% 50%">
+                    <div style="display: inline-block; padding: 2px; background-color: #fff; width: 125px;">
+                        <img src="/img/loading.gif" style="float: left; margin: 8px;" />
+                        <span style="display: inline-block; padding: 10px 0px;">Please Wait...</span>
+                    </div>
+                </div>
+            </apex:facet>
+        </apex:actionStatus>
+        <apex:actionFunction name="serverSave" action="{!onSave}" oncomplete="completeSave();" rerender="abc" status="status"/>
+        <apex:outputPanel id="mainBody">
+            <apex:pageBlock title="{!$Label.Selected} {!$ObjectType.Contact.LabelPlural}" id="selected">
+                <apex:pageblockTable value="{!existingContact}" var="s">
+                    <apex:column headerValue="Select">
+                        <apex:inputField value="{!s.FCM_IsToBeDeleted__c}"/>
+                    </apex:column>
+                    
+                    <apex:column headerValue="{!$ObjectType.FCM_VisitReport__c.Label}" value="{!s.FCM_VisitReport__c}" />
+
+                    <apex:column headerValue="{!$ObjectType.Contact.Label}" value="{!s.FCM_Contact__r.Name}"/>
+                    
+                    <apex:column headerValue="{!$ObjectType.Account.Fields.Name.Label}" value="{!s.FCM_Contact__r.Account.Name}"/>   
+                    
+                    <apex:column headerValue="{!$ObjectType.Contact.Fields.Email.Label}" value="{!s.FCM_Contact__r.Email}"/> 
+                   
+                    <apex:column headerValue="{!$ObjectType.FCM_VRAttendee__c.Fields.FCM_IsPrimaryContact__c.Label}" styleClass="Primary">
+                        <apex:inputField styleClass="Primary" value="{!s.FCM_IsPrimaryContact__c}" onchange="doIsPrimaryCheckboxChange(this)"/>
+                    </apex:column>
+                              
+                </apex:pageblockTable>
+                </apex:pageBlock>
+                    <div align="center">
+                    <apex:outputPanel >
+                    <apex:commandButton styleClass="slds-button slds-button_brand" value="Save" onclick="solveCachingProb();return false;"/>
+                    <apex:commandButton styleClass="slds-button slds-button_neutral" action="{!removeFromContactList}" reRender="selected,searchResults" value="Remove" />
+                     <apex:commandButton styleClass="slds-button slds-button_neutral" action="{!onCancel}" value="Cancel" immediate="true"/>
+                </apex:outputPanel>
+            </div>
+            <br/>
+             <apex:pageBlock >
+                <apex:outputPanel styleClass="search">
+                    {!$Label.SearchFor} {!$ObjectType.Contact.LabelPlural}:
+                </apex:outputPanel>
+                <i>
+                        <!-- actionStatus component makes it easy to let the user know when a search is underway -->
+                        <apex:actionStatus id="searchStatus" startText="searching..." stopText=" "/> 
+                    </i>
+                    <br/>
+                 <apex:actionRegion renderRegionOnly="false" immediate="true">
+                
+                    <apex:actionFunction name="fetchResults" action="{!updateAvailableList}" reRender="searchResults" status="searchStatus"/>
+                    <div class="search-text">
+                    <apex:pageBlockSection id="InfoIdo1" columns="2">
+                     <apex:pageBlockSectionItem >
+                                <apex:outputpanel styleclass="firstname">
+                                {!$ObjectType.Contact.Fields.FirstName.Label}&nbsp;&nbsp;
+                         </apex:outputPanel>
+                            <apex:inputText title="{!$ObjectType.Contact.Fields.FirstName.Label}" value="{!cntFirstName}" style="min-width:190px;" onkeydown="if(event.keyCode==13){this.blur();}else{resetTimer();}"/>
+                             </apex:pageBlockSectionItem>   
+                           
+                            
+                            <apex:pageBlockSectionItem >
+                                <apex:outputpanel styleclass="accname">
+                                {!$ObjectType.Account.Fields.Name.Label}&nbsp;&nbsp;
+                                </apex:outputPanel>
+                            <apex:inputText title="{!$ObjectType.Account.Fields.Name.Label}" value="{!accName}" style="min-width:190px;" onkeydown="if(event.keyCode==13){this.blur();}else{resetTimer();}"/>
+                            </apex:pageBlockSectionItem>
+                            
+                             <apex:pageBlockSectionItem >
+                                <apex:outputpanel styleclass="lastname">
+                                {!$ObjectType.Contact.Fields.LastName.Label}&nbsp;&nbsp;
+                                </apex:outputPanel>
+                            <apex:inputText title="{!$ObjectType.Contact.Fields.LastName.Label}" value="{!cntLastName}" style="min-width:190px;" onkeydown="if(event.keyCode==13){this.blur();}else{resetTimer();}"/>
+                            </apex:pageBlockSectionItem>
+                            
+                            <apex:pageBlockSectionItem >
+                                <apex:outputpanel styleclass="contacttype">
+                                {!$ObjectType.FCM_VRAttendee__c.Fields.ContactFilterType_R1__c.Label}&nbsp;&nbsp;
+                                </apex:outputPanel>
+                             <apex:selectList size="1" value="{!ContactTypeFilter}" title="{!$ObjectType.FCM_VRAttendee__c.Fields.ContactFilterType_R1__c.Label}" onchange="resetTimer();" style="min-width:190px;min-height:30px">
+                                 <apex:selectOptions value="{!ContactTypes}" />
+                             </apex:selectList>
+                            </apex:pageBlockSectionItem>                    
+                            </apex:pageBlockSection>
+                            
+                    </div>
+                    <!--<table style="margin-top:15px;margin-bottom:20px;">
+                        
+                        <tr>
+                            <td class="labelCell">{!$ObjectType.Contact.Fields.FirstName.Label} :</td>
+                            <td class="inputCell"><apex:inputText title="{!$ObjectType.Contact.Fields.FirstName.Label}" value="{!cntFirstName}" onkeydown="if(event.keyCode==13){this.blur();}else{resetTimer();}"/></td>
+                            <td class="labelCell">{!$ObjectType.Contact.Fields.LastName.Label} :</td>
+                            <td class="inputCell"><apex:inputText title="{!$ObjectType.Contact.Fields.LastName.Label}" value="{!cntLastName}" onkeydown="if(event.keyCode==13){this.blur();}else{resetTimer();}"/></td>
+                        </tr>
+
+                        <tr>
+                            <td class="labelCell">{!$ObjectType.Account.Fields.Name.Label} :</td>
+                            <td class="inputCell"><apex:inputText title="{!$ObjectType.Account.Fields.Name.Label}" value="{!accName}" onkeydown="if(event.keyCode==13){this.blur();}else{resetTimer();}"/></td>
+                            <td class="labelCell">{!$Label.RelatedToAccount} :</td>
+                            <td class="inputCell"><apex:inputCheckbox title="{!$Label.RelatedToAccount}" value="{!useAccContact}" onchange="resetTimer();" /> </td>
+                        </tr>
+                    <!-- here we invoke the scripting to get out fancy 'no button' search bar to work 
+                    </table> 
+                    -->
+                    
+                </apex:actionRegion>
+                <apex:outputPanel id="searchResults">
+                    <apex:pageBlockTable value="{!allAvailableContact}" var="a">
+                        <apex:column >
+                            <!-- command button in a column... neato -->
+                            <apex:commandButton styleClass="slds-button slds-button_neutral" value="{!$Label.Select}" action="{!addToContactList}" reRender="selected,searchResults" immediate="true">
+                                <!-- again we use apex:param to be able to tell the controller which row we are working with -->
+                                <apex:param value="{!a.Id}" assignTo="{!toSelect}" name="toSelect"/>
+                            </apex:commandButton>
+                        </apex:column>
+                        <apex:column headerValue="{!$ObjectType.Contact.Label} Name" value="{!a.Name}" />                   
+                        <apex:column headerValue="{!$ObjectType.Account.Fields.Name.Label}" value="{!a.Account.Name}"/>                                          
+                        <apex:column headerValue="{!$ObjectType.Contact.Fields.Email.Label}" value="{!a.Email}"/> 
+                    </apex:pageBlockTable>
+                </apex:outputPanel>
+             </apex:pageBlock>
+        </apex:outputPanel>
+    </apex:form>
+    
+    </html>
+</apex:page>

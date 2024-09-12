@@ -1,0 +1,15 @@
+.THIS .topControl .slds-input__icon-group_right {
+    right: 0;
+    top: calc(50% + 9px);
+}
+.THIS .slds-table thead th {
+    font-size: 7.5pt;
+}
+.THIS .slds-table td {
+    max-width: 130px;
+    overflow: hidden;
+    font-size: 8pt;
+}
+.THIS .slds-button_icon-border.slds-is-selected[disabled], .THIS .slds-button_icon-border.slds-is-selected:disabled {
+    background: rgba(27, 82, 151, 1);
+}

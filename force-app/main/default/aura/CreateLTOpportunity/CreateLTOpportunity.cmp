@@ -1,0 +1,189 @@
+<aura:component implements="force:lightningQuickActionWithoutHeader,force:hasRecordId"
+    controller="CreateTechOpportunity">
+    <aura:attribute name="disabled" type="Boolean" default="false" />
+    <aura:attribute name="saved" type="Boolean" default="false" />
+    <aura:attribute name="showSpinner" type="Boolean" default="true" />
+    <aura:attribute name="recordId" type="String" />
+    <aura:attribute name="products" type="List" />
+    <aura:attribute name="recordTypeId" type="String" />
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+
+    <ltng:require styles="{!$Resource.SldsToCreateOpp}" />
+
+    <aura:html tag="style">
+        .slds-p-around–medium {
+        padding: 0rem !important;
+        }
+
+        .cuf-content {
+        padding: 0 0rem !important;
+        }
+    </aura:html>
+    <aura:if isTrue="{!v.showSpinner}">
+        <lightning:spinner alternativeText="Please wait while we are creating a long term opportunity." />
+    </aura:if>
+    <div class="modal-header slds-modal__header slds-size_1-of-1">
+        <h4 class="title slds-text-heading_medium" style="font-size:1.5em;">Long Term Opportunity</h4>
+    </div>
+    <div class="slds-modal__content slds-p-around_x-small slds-size_1-of-1 slds-is-relative"
+        style="height:60vh !important;">
+        <form>
+            <lightning:recordEditForm aura:id="recordEditForm" onload="{!c.handleLoad}" onsubmit="{!c.handleSubmit}"
+                onsuccess="{!c.handleSuccess}" objectApiName="Opportunity" recordTypeId="{!v.recordTypeId}"
+                onerror="{!c.handleError}">
+                <lightning:messages />
+                <h3 class="slds-section-title--divider">Long Term Opportunity Information</h3>
+                <div class="slds-form--stacked slds-p-around_medium slds-m-bottom--x-small">
+                    <div class="slds-grid">
+                        <div class="slds-col slds-size_1-of-2">
+                            <lightning:outputField fieldName="OwnerId" />
+                        </div>
+                        <div class="slds-col slds-size_1-of-2">
+                            <lightning:outputField fieldName="RecordTypeId" />
+                        </div>
+                    </div>
+                    <div class="slds-grid">
+                        <div class="slds-col slds-size_1-of-2">
+                            <lightning:inputField fieldName="Name" />
+                        </div>
+                        <div class="slds-col slds-size_1-of-2">
+                            <lightning:inputField fieldName="CloseDate" />
+                        </div>
+                    </div>
+                    <div class="slds-grid">
+                        <div class="slds-col slds-size_1-of-2">
+                            <lightning:inputField fieldName="AccountId" required="true" value="{!v.recordId}" />
+                        </div>
+                        <div class="slds-col slds-size_1-of-2">
+                            <lightning:inputField fieldName="StageName" />
+                        </div>
+                    </div>
+                    <div class="slds-grid">
+                        <div class="slds-col slds-size_1-of-2">
+                            <lightning:inputField fieldName="End_User__c" />
+                        </div>
+                         <div class="slds-col slds-size_1-of-2">
+                            <lightning:inputField fieldName="NextStep" />
+                        </div>
+                    </div>
+                    <div class="slds-grid">
+                        <div class="slds-col slds-size_1-of-2">
+                            <lightning:inputField fieldName="Sell_Opportunity_Type__c" required="true"/>
+                        </div>
+                       <div class="slds-col slds-size_1-of-2">
+                        </div>
+                    </div>
+                    <div class="slds-grid">
+                        <div class="slds-col slds-size_1-of-2">
+                            <lightning:inputField fieldName="Secondary_Close_Date__c" />
+                        </div>
+                       <div class="slds-col slds-size_1-of-2">
+                        </div>
+                    </div>
+                    <div class="slds-grid">
+                        <div class="slds-col slds-size_1-of-2">
+                            <lightning:inputField fieldName="Expected_Year_Of_Commercialization__c" />
+                        </div>
+                         <div class="slds-col slds-size_1-of-2">
+                           
+                        </div>
+                    </div>
+                    <div class="slds-grid">
+                        <div class="slds-col slds-size_1-of-2">
+                            <lightning:inputField fieldName="BST_Approval__c" required="true" />
+                        </div>
+                       <div class="slds-col slds-size_1-of-2">
+                            
+                        </div>
+                    </div>
+                </div>
+                <h3 class="slds-section-title--divider">Description Information</h3>
+                <div class="slds-form--stacked slds-p-around_medium slds-m-bottom--x-small">
+                    <div class="slds-grid">
+                        <div class="slds-col slds-size_1-of-1">
+                            <lightning:inputField fieldName="Description" required="true"/>
+                        </div>
+                    </div>
+                </div>
+
+                <h3 class="slds-section-title--divider">Value Proposition</h3>
+                <div class="slds-form--stacked slds-p-around--medium slds-m-bottom--x-small">
+                    <div class="slds-grid">
+                        <div class="slds-col slds-size_1-of-1">
+                            <lightning:inputField fieldName="Value_Proposition__c" />
+                        </div>
+                    </div>
+                </div>
+                <h3 class="slds-section-title--divider">Project Team</h3>
+                <div class="slds-form--stacked slds-p-around--medium slds-m-bottom--x-small">
+                    <div class="slds-grid">
+                        <div class="slds-col slds-size_1-of-2">
+                            <lightning:inputField fieldName="Olin_Marketing_PRP__c" />
+                        </div>
+                        <div class="slds-col slds-size_1-of-2">
+                            <lightning:inputField fieldName="Customer_Marketing__c" />
+                        </div>
+                    </div>
+                    <div class="slds-grid">
+                        <div class="slds-col slds-size_1-of-2">
+                            <lightning:inputField fieldName="Olin_Sales_PRP__c" required="true" />
+                        </div>
+                        <div class="slds-col slds-size_1-of-2">
+                            <lightning:inputField fieldName="Customer_Sales__c" />
+                        </div>
+                    </div>
+                    <div class="slds-grid">
+                        <div class="slds-col slds-size_1-of-2">
+                            <lightning:inputField fieldName="Olin_Technical_PRP__c" />
+                        </div>
+                        <div class="slds-col slds-size_1-of-2">
+                            <lightning:inputField fieldName="Customer_Technical__c" />
+                        </div>
+                    </div>
+                </div>
+                <h3 class="slds-section-title--divider">Olin Internal Alignment</h3>
+                <div class="slds-form--stacked slds-p-around--medium slds-m-bottom--x-small">
+                    <div class="slds-grid">
+                        <div class="slds-col slds-size_1-of-2">
+                            <lightning:inputField fieldName="MMT__c" required="true"/>
+                        </div>
+                        <div class="slds-col slds-size_1-of-2">
+                            <lightning:inputField fieldName="Technical_Opp_Business_Line__c" required="true" />
+                        </div>
+                    </div>
+                    <div class="slds-grid">
+                        <div class="slds-col slds-size_1-of-2">
+                            <lightning:inputField fieldName="Global_Area__c" required="true"/>
+                        </div>
+                        <div class="slds-col slds-size_1-of-2">
+                            <lightning:inputField fieldName="Market_Segment_Parent__c" />
+                        </div>
+                    </div>
+                    <div class="slds-grid">
+                        <div class="slds-col slds-size_1-of-2">
+                        </div>
+                        <div class="slds-col slds-size_1-of-2">
+                            <lightning:inputField fieldName="Other_Application__c" />
+                        </div>
+                    </div>
+                </div>
+
+                
+
+                <h3 class="slds-section-title--divider">Other Information</h3>
+                <div class="slds-form--stacked slds-p-around--medium slds-m-bottom--x-small">
+                    <div class="slds-grid">
+                        <div class="slds-col slds-size_2-of-2">
+                            <lightning:inputField fieldName="Key_Subjects__c" />
+                        </div>
+                    </div>
+                </div>
+                <div class="slds-m-top_medium slds-align_absolute-center">
+                    <lightning:button disabled="{!v.disabled}" variant="brand" type="submit" name="save" label="Save" />
+                    <lightning:button type="cancel" name="cancel" label="Cancel" onclick="{!c.cancel}" />
+                </div>
+
+            </lightning:recordEditForm>
+        </form>
+    </div>
+</aura:component>

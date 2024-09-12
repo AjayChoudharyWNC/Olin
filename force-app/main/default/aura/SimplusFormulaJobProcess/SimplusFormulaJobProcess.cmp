@@ -1,0 +1,16 @@
+<aura:component controller="SimplusFormulaJobHelper" implements="flexipage:availableForRecordHome,force:hasRecordId,force:lightningQuickActionWithoutHeader" access="global" >
+    <aura:attribute name="recordId" 	 type="String" />
+    <aura:attribute name="isLoadingList" type="Boolean" default="false"/>
+    <aura:handler name="init" 	value="{!this}" action="{!c.doInit}"/>
+    <aura:if isTrue="{!v.isLoadingList}">
+        <div class="loaderBackdrop">
+            <div class="demo-only" style="height: 6rem;">
+                <div role="status" class="slds-spinner slds-spinner_medium slds-spinner_brand">
+                    <span class="slds-assistive-text">Loading</span>
+                    <div class="slds-spinner__dot-a"></div>
+                    <div class="slds-spinner__dot-b"></div>
+                </div>
+            </div>
+        </div>
+    </aura:if>
+</aura:component>

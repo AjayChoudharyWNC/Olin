@@ -1,0 +1,3 @@
+<design:component>
+	<design:attribute name="ProductApiName" label="Product Api Name" description="Provide the product api name to pre populate the product lookup in superfund calculator" />
+</design:component>

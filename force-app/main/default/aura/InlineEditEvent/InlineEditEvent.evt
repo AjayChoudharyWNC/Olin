@@ -1,0 +1,6 @@
+<aura:event type="APPLICATION" description="Event template">
+    <aura:attribute name="recordId" type="Id" />
+    <aura:attribute name="field" type="String" />
+    <aura:attribute name="value" type="Object" />
+    <aura:attribute name="hasWarnings" type="Boolean" default="false"/>
+</aura:event>

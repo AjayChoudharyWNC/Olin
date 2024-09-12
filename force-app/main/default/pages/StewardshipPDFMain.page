@@ -1,0 +1,81 @@
+<apex:page standardController="SAP_Onboarding__c" showHeader="false" extensions="StewardshipPDFMain">
+    
+    <script>
+    function handleQuestionnaire(shipMode, recordType, quesId){
+        var status = "{!SAP_Onboarding__c.Product_Stewardship_Status__c}";
+        if(status == 'Customer Submitted' || status == 'Completed'){
+            if(recordType == 'Epoxy High-Medium Hazard - Truck'){
+                window.open('/apex/StandardTruckPDF?id='+quesId);
+            }
+            else if(recordType == 'Epoxy High-Medium Hazard'){
+                window.open('/apex/StandardTruckPDF?id='+quesId);
+            }
+            else if(recordType == 'Hydrochloric Acid - Rail'){
+                window.open('/apex/HydrochloricAcidRailCarPDF?id='+quesId);
+            }
+                else if(recordType == 'Hydrochloric Acid - Truck'){
+                    window.open('/apex/HydrochloricAcidTankTruckPDF?id='+quesId);
+                }
+                    else if(recordType == 'Potassium Hydroxide - Barge'){
+                        window.open('/apex/PotassiumHydroxideBargePDF?id='+quesId);
+                    }
+                        else if(recordType == 'Potassium Hydroxide - Rail'){
+                            window.open('/apex/PotassiumHydroxideRailCarPDF?id='+quesId);
+                        }
+                            else if(recordType == 'Potassium Hydroxide - Truck'){
+                                window.open('/apex/PotassiumHydroxideTankTruckPDF?id='+quesId);
+                            }
+                                else if(recordType == 'Sodium Hydroxide - Barge'){
+                                    window.open('/apex/SodiumHydroxideBargePDF?id='+quesId);
+                                }
+                                    else if(recordType == 'Sodium Hydroxide - Rail'){
+                                        window.open('/apex/SodiumHydroxideRailCarPDF?id='+quesId);
+                                    }
+                                        else if(recordType == 'Sodium Hydroxide - Truck'){
+                                            window.open('/apex/SodiumHydroxideTankTruckPDF?id='+quesId);
+                                        }
+                                            else if(recordType == 'Sodium Hypochlorite - Rail'){
+                                                window.open('/apex/SodiumHypochloriteRailCarPDF?id='+quesId);
+                                            }
+                                                else if(recordType == 'Sodium Hypochlorite - Truck'){
+                                                    window.open('/apex/SodiumHypochloriteTankTruckPDF?id='+quesId);
+                                                }
+                                                    else if(recordType == 'Standard Truck'){
+                                                        window.open('/apex/StandardTruckPDF?id='+quesId);
+                                                    }
+                                                        else if(recordType == 'Sulfuric Acid - Rail'){
+                                                            window.open('/apex/SulfuricAcidRailCarPDF?id='+quesId);
+                                                        }
+                                                            else if(recordType == 'Sulfuric Acid - Truck'){
+                                                                window.open('/apex/SulfuricAcidTankTruckPDF?id='+quesId);
+                                                            }
+            
+        }
+        
+        
+    }
+    
+    </script>
+    
+    
+    <div style="display:{!if(SAP_Onboarding__c.Product_Stewardship_Status__c != 'Customer Submitted' || SAP_Onboarding__c.Product_Stewardship_Status__c == 'Complete' || quesList.size == 0, 'block', 'none')};padding:10px;">
+        <span style="font-size:15px;font-weight:bold;">Product Stewardship information is not yet available, Please check back once the customer has submitted the form.</span>
+    </div>
+    <div style="padding:10px;display:{!if(SAP_Onboarding__c.Product_Stewardship_Status__c != 'Customer Submitted' || SAP_Onboarding__c.Product_Stewardship_Status__c == 'Complete' || quesList.size == 0, 'none', 'block')}">
+        <apex:repeat value="{!quesList}" var="ques">
+            <div style="text-align:center;font-size:1rem;font-weight:bold;margin:10px;">
+                <a href="" onclick="handleQuestionnaire('{!ques.Primary_Ship_Mode__c}', '{!ques.RecordType.Name}', '{!ques.Id}'); return false;" style="color:blue;cursor:pointer;display:{!if(ques.Questionnaire_Setup_Type__c == 'Online', 'block', 'none')};">{!ques.Name} | {!ques.Onboarding_Ship_To__r.Ship_To_City__c} {!ques.Onboarding_Ship_To__r.Ship_To_State_Province__c} {!ques.Onboarding_Ship_To__r.Ship_To_Country__c} | {!ques.Onboarding_Product_Name__c} | {!ques.Questionnaire_Setup_Type__c}</a>
+                <!--a href="{!'/apex/ProductQualityRegulatoryPDF?id='+ques.Id}" target="_blank" onclick="" style="color:blue;cursor:pointer;display:{!if(ques.Questionnaire_Setup_Type__c == 'Online', 'block', 'none')};">{!ques.Name} | {!ques.Account_Name__r.BillingCity} {!ques.Account_Name__r.BillingCountry} | {!ques.Onboarding_Product_Name__c} | Product Regulatory/Quality</a-->
+                <span style="display:{!if(ques.Questionnaire_Setup_Type__c == 'Offline', 'block', 'none')}" title="Please review the Assessment Documents section in the Customer Attachments area at the bottom of the customer setup form to see if there are offline forms.">{!ques.Name} | {!ques.Onboarding_Ship_To__r.Ship_To_City__c} {!ques.Onboarding_Ship_To__r.Ship_To_State_Province__c} {!ques.Onboarding_Ship_To__r.Ship_To_Country__c} | {!ques.Onboarding_Product_Name__c} | {!ques.Questionnaire_Setup_Type__c}</span>
+            </div>
+        </apex:repeat>
+        <div style="display:{!if(hasChlorine == true, 'block', 'none')};padding-top:10px;text-align:center;padding-top:20px;font-size:1rem;">
+            <b>Chlorine product is present - Will require On-Site Visit &amp; Regulatory Check.</b>
+        </div>
+    </div>
+    
+    
+    
+    
+    
+</apex:page>

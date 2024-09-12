@@ -1,0 +1,231 @@
+<!--
+Property of Olin. Do not distribute without permission.
+Copyright (c) [2017] Olin, its affiliates and their licensors.
+@author Rajendran, Devanand
+@date   02/01/2018
+@description     : Contain the functions to create a report and show to the user in PDF
+Modification Log:
+--------------------------------------------------------------------------------------------
+Developer       Mod Number  Date    Description
+--------------------------------------------------------------------------------------------
+Alan Flores     M-001   02/07/2018  Add this tag and comments
+Alan Flores     M-002   02/15/2018  Added custom labels to header, footer and table headers
+Alan Flores     M-003   03/01/2018  Fixed issues with labels "Account Name", "Confidentiality Agreement Number", "Due Date", "Assigned To" & "Comments"
+-->
+
+<apex:page standardController="FCM_VisitReport__c" extensions="FCM_getAttendeesFromCallReport" showHeader="false" sidebar="false" standardStylesheets="false" renderAs="pdf" applyBodyTag="false" applyHtmlTag="false" >
+    <apex:stylesheet value="{!URLFOR($Resource.IncreasePopUpWidth)}"/>
+    <html>
+        <head>
+            <style type="text/css" media="print">
+                
+                <!--Some data is brough into report in hyperlink form. This CSS remove from them all hyperlink style-->
+                a:link {
+                text-decoration: none;
+                COLOR: Black;
+                }
+                a:visited {
+                COLOR: Black;
+                }
+                a:hover {
+                COLOR: Black;
+                }
+                a:active {
+                COLOR: Black;
+                }
+                
+                body {
+                color: black;          
+                }
+                <!-- This CSS controls the place where the footer appear in the document-->
+                @page {
+                    size: 12in 14in;
+                    margin-bottom: 2cm;
+                    margin-top: 2cm;
+                    @top-center{content: element(header);}
+                    @bottom-center {
+                        content: element(footer);
+                    }
+                }
+                div.footer {
+                    display: block;
+                    padding: 10px;
+                    position: running(footer);
+                }
+                div.header{display: block;padding:10px;position: running(header);}                
+                <!-- Some table headers don't appear in bold font, this CSS turn all headers into bold style-->
+                .headerRow .TableTitle {
+                font-weight: bold;     
+                }
+                html *
+                {
+                font-size: 1em !important;
+                color: #000 !important;
+                font-family: Verdana, Arial, sans-serif !important;
+                }
+                th{font-weight:bold;background-color:#d8d8d8;}
+            </style>
+        </head>
+        <body>
+            <input name="currentvfpage" value="{!$CurrentPage.Name}"/>
+            
+            <!-- This section creates the header with the call report code and olin logo-->
+            <div class="header">
+                <table style="table-layout: fixed;" width="100%">
+                    <tr>
+                        <td><p style="font-size:24px;font-weight:bold;"><b>
+                            <apex:outputText value="{!$Label.PDF_excallreportheader_R1}" />&nbsp;<apex:outputField value="{!FCM_VisitReport__c.Name}"/></b></p>
+                        </td>
+                        <td align = "right"><p style=""><img  src="{!$Resource.OlinLogo}" width="80px;"/></p></td>
+                    </tr>
+                </table>
+            </div>
+            <!-- In this section is set what the footer is going to say-->
+            <div class="footer" align="center">
+                {!IF((FCM_VisitReport__c.ConfidentialityAgreement_R1__c == NULL), ''+($Label.ExternalPDF_VF_footterpt1_R1)+''+(FCM_VisitReport__c.FCM_Account__r.Name)+' Confidential', 
+                IF((FCM_VisitReport__c.ConfidentialityAgreement_R1__r.CDANumber_R1__c == NULL), ''+($Label.ExternalPDF_VF_footterpt2_R1)+' '+(FCM_VisitReport__c.FCM_Account__r.Name)+''+($Label.ExternalPDF_VF_footerpt3_R1)+''+ TEXT(FCM_VisitReport__c.ConfidentialityAgreement_R1__r.ValidFrom_R1__c)+'.', ''+($Label.ExternalPDF_VF_footerpt4_R1)+' '+(FCM_VisitReport__c.FCM_Account__r.Name)+''+($Label.ExternalPDF_VF_footerpt5_R1)+''+ (FCM_VisitReport__c.ConfidentialityAgreement_R1__r.CDANumber_R1__c)+'.') 
+                )} 
+            </div>
+            
+            <table border="1px solid black" style="border-collapse:collapse;margin-top:20px;" cellpadding="4" cellspacing="4" width="100%">
+                <tr>
+                    <th width="300px">{!$Label.ExternalPDF_VF_accountname_R1}</th>
+                    <th width= "300px"><b><apex:outputText value="Call Report Owner" /></b></th>
+                </tr>
+                <tr>
+                    <td width="300px">{!FCM_VisitReport__c.FCM_Account__r.Name}</td>
+                    <td width= "300px"><apex:outputField title="Account Name :" value="{!FCM_VisitReport__c.Owner.Name}"/></td>
+                </tr>
+                <tr>
+                    <th width="300px">{!$ObjectType.FCM_VisitReport__c.Fields.Call_Type__c.Label}</th>
+                    <th width="300px">{!$ObjectType.FCM_VisitReport__c.Fields.FCM_VisitDate__c.Label}</th>
+                </tr>
+                <tr>
+                    <td width="300px">{!FCM_VisitReport__c.Call_Type__c}</td>
+                    <td width="300px">
+                        <apex:outputText value="{0,date,dd/MM/yyyy}">
+                            <apex:param value="{!FCM_VisitReport__c.FCM_VisitDate__c}"/>
+                        </apex:outputText>
+                    </td>
+                </tr>
+                <!-- This section creates the Attendees list inside one of the cells of the table.-->
+                <tr>
+                    <th width= "600px" colspan="2">{!$Label.ExternalPDF_VF_attendees_R1}</th>
+                </tr>
+                <tr>
+                	<td width= "600px" colspan="2">
+                        <table width="100%" cellpadding="2" cellspacing="2" style="display:{!IF(Attendees.size > 0, 'block', 'none')}">
+                            <tr style="font-weight:bold;">
+                                <td>{!$Label.ExternalPDF_VF_name_R1}</td>
+                                <td>Title</td>
+                                <td>{!$Label.ExternalPDF_VF_company_R1}</td>
+                            </tr>
+                            <apex:repeat value="{!Attendees}" var="d">
+                                <tr>
+                                    <td>{!d.FCM_Contact__r.name}</td>
+                                    <td>{!d.FCM_Contact__r.Title}</td>
+                                    <td>{!d.FCM_Contact__r.Account.Name}</td>
+                                </tr>
+                            </apex:repeat>
+                        </table>
+                    </td>
+                </tr>
+                <tr>
+                    <th width= "600px" colspan="2">{!$ObjectType.FCM_VisitReport__c.Fields.FCM_Objectives__c.Label}</th>
+                </tr>
+                <tr>
+                    <td width= "600px" colspan="2"><apex:outputText value="{!FCM_VisitReport__c.FCM_Objectives__c}" escape="false"/></td>
+                </tr>
+                <tr>
+                    <th width= "600px" colspan="2">{!$ObjectType.FCM_VisitReport__c.Fields.FCM_Summary__c.Label}</th>
+                </tr>
+                <tr>
+                    <td width= "600px" colspan="2"><apex:outputText value="{!FCM_VisitReport__c.FCM_Summary__c}" escape="false"/></td>
+                </tr>
+            </table>
+            <br/>
+            <!-- This section creates a table showing all the discussed products related to this Call Report-->
+            
+            <table border="1px solid black" style="border-collapse:collapse;" width="100%" cellpadding="4" cellspacing="4">
+                <tr>
+                    <th width= "600px" colspan="2"><b><apex:outputText value="{!$Label.ExternalPDF_VF_discussedproducts_R1}" /></b></th>
+                </tr>
+                <tr><th>{!$ObjectType.Product2.Fields.Name.Label}</th><th>{!$ObjectType.Product2.Fields.ProductCode.Label}</th></tr>
+                <apex:repeat value="{!Products}" var="c">
+                    <tr>
+                        <td>{!c.Name}</td>
+                        <td><apex:outputText value="{!c.FCM_Product__r.ProductCode}"></apex:outputText></td>
+                    </tr>
+                </apex:repeat>
+            </table>
+            <br/>
+            <table border="1px solid black" style="border-collapse:collapse;" width="100%" cellpadding="4" cellspacing="4">
+                <tr>
+                    <th width= "600px">{!$ObjectType.FCM_VisitReport__c.Fields.Call_Details__c.Label}</th>
+                </tr>
+                <tr>
+                    <td width= "600px"><apex:outputText value="{!FCM_VisitReport__c.Call_Details__c}" escape="false"/></td>
+                </tr>
+                <tr style="display: {!IF(ISBLANK(FCM_VisitReport__c.ConfidentialityAgreement_R1__c),'None', 'table-row')};" >
+                    <th width= "600px">{!$Label.ExternalPDF_VF_confidentialagreementnumber_R1}</th>
+                </tr>
+                <tr style="display: {!IF(ISBLANK(FCM_VisitReport__c.ConfidentialityAgreement_R1__c),'None', 'table-row')};" >
+                    <td width= "600px"><apex:outputField style="text-align:right;font-size:400px;" value="{!FCM_VisitReport__c.ConfidentialityAgreement_R1__c}"/></td>
+                </tr>
+            </table>
+            <br/>
+            <!-- This section create a table showing the data from the Task related to this Call Report. One table for each task related-->
+            <p style="font-size:18px;background-color:#d8d8d8;padding:5px;margin-top:20px;display:{!IF(ExternalTask.size > 0, 'block', 'none')}"><b>{!$Label.ExternalPDF_VF_tasks_R1}</b></p>
+            <apex:repeat value="{!ExternalTask}" var="t">
+                <table border="1px solid black" style="border-collapse:collapse;" width="100%" cellpadding="4" cellspacing="4">
+                    <tr>
+                        <th width= "600px">{!$ObjectType.Task.Fields.Subject.Label}</th>
+                    </tr> 
+                    <tr>
+                        <td width= "600px">{!t.Subject}</td>
+                    </tr>
+                    <tr>
+                        <th width= "600px">{!$ObjectType.Task.Fields.Type.Label}</th>
+                    </tr> 
+                    <tr>
+                        <td width= "600px">{!t.Type}</td>
+                    </tr>
+                    <tr>
+                        <th width= "600px">{!$Label.ExternalPDF_VF_duedate_R1}</th>
+                    </tr> 
+                    <tr>
+                        <td width= "600px">
+                            <apex:outputText value="{0,date,dd/MM/yyyy}">
+                                <apex:param value="{!t.ActivityDate}"/>
+                            </apex:outputText>
+                        </td> 
+                    </tr>
+                    <tr>
+                        <th width= "600px">{!$Label.ExternalPDF_VF_assignedto_R1}</th>
+                    </tr> 
+                    <tr>
+                        <td width= "600px">{!IF(t.type == 'Customer Action Item',t.Who.Name,t.Owner.Name)}</td>
+                    </tr>
+                    <tr>
+                        <th width= "600px">{!$ObjectType.Task.Fields.Priority.Label}</th>
+                    </tr> 
+                    <tr>
+                        <td width= "600px">{!t.Priority}</td>
+                    </tr> 
+                    <tr>
+                        <th width= "600px">{!$ObjectType.Task.Fields.Status.Label}</th>
+                    </tr> 
+                    <tr>
+                        <td width= "600px">{!t.Status}</td>
+                    </tr> 
+                    <tr>
+                        <th width= "600px">{!$Label.ExternalPDF_VF_comments_R1}</th>
+                    </tr> 
+                    <tr>
+                        <td width= "600px">{!t.Description}</td>
+                    </tr> 
+                </table>
+            </apex:repeat>
+        </body>
+    </html>
+</apex:page>

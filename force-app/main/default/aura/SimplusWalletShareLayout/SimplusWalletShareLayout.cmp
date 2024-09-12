@@ -1,0 +1,186 @@
+<aura:component controller="SimplusWalletShareController" implements="force:hasRecordId,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:appHostable,force:lightningQuickActionWithoutHeader">
+    <aura:attribute name="recordId" 			type="String"/>
+    <aura:attribute name="record" 			    type="Object"/>
+    <aura:attribute name="sObjectName" 		    type="String"       default="Consumption_Share__c"/>
+    <aura:attribute name="fieldSets" 		    type="String"       default="[{'name': 'SimplusWalletShare'}]"/>
+    <aura:attribute name="totalConsumption"     type="Object" />
+    <aura:attribute name="consumptionShares"    type="Object[]" />
+    <aura:attribute name="originalYear"         type="String" />
+    <aura:attribute name="currentYear"          type="String" />
+    <aura:attribute name="years"                type="List" />
+    <aura:attribute name="firstYear"            type="String" />
+    <aura:attribute name="lastYear"             type="String" />
+    <aura:attribute name="selectAll"            type="Boolean" />
+    <aura:attribute name="amount"               type="Integer" />
+    <aura:attribute name="percent"              type="Integer" />
+    <aura:attribute name="maptotal"                type="Object" />
+    <aura:attribute name="totalConsumptionList" type="List" />
+    <aura:attribute name="entityStageId"     type="String" />
+    <aura:attribute name="entityStageName"     type="String" />
+    <aura:attribute name="addToggle"            type="Boolean"      default="false"/>  
+    <aura:attribute name="cancelConfirm"            type="Boolean"      default="false"/> 
+    <aura:attribute name="hasNoConsumption"     type="Boolean"      default="false"/>  
+    <aura:attribute name="fieldSetValues" 		type="List"/>
+    <aura:attribute name="fieldSetName" 		type="String"       default="SimplusWalletShare"/>
+    
+    <aura:attribute name="allowEdit" 			type="Boolean"      default="true"/>
+    <aura:attribute name="nextYear"             type="String" />
+    
+    <aura:handler   name="init" 	value="{!this}" action="{!c.doInit}"/>
+    
+    <aura:attribute name="isLoading" type="Boolean"/><!-- SPINNER ADDED BY GAURISH on 8th Nov 2019 -->
+    <div class="exampleHolder">
+        <aura:if isTrue="{!v.isLoading}">
+            <lightning:spinner size="medium"/>
+        </aura:if>
+    </div>
+    
+    <div>
+        <aura:if isTrue="{!v.cancelConfirm}">
+            <div class="backdrop">
+                <div class="cancelConfirm" style="text-align: center;">
+                    All unsaved changes will be lost. Continue?
+                    <br />
+                    <lightning:button variant="brand" label="Confirm" title="Save" onclick="{!c.confirmCancel}"/>
+                    <lightning:button variant="brand" label="Cancel" title="Cancel" onclick="{!c.cancelRefresh}" />
+                </div>
+            </div>
+        </aura:if>
+        <div class="test-id__section slds-section  full forcePageBlockSection forcePageBlockSectionView" data-aura-rendered-by="561:537;a" data-aura-class="forcePageBlockSection forcePageBlockSectionView">
+            <h3 class="slds-section__title  test-id__section-header-container" data-aura-rendered-by="563:537;a">
+                <button class="slds-button test-id__section-header-button slds-section__title-action" type="button" data-aura-rendered-by="572:537;a" aria-controls="378:537;a" aria-expanded="false"><!--render facet: 573:537;a-->
+                    <span class="test-id__section-header-title slds-truncate" data-aura-rendered-by="569:537;a">Share of Wallet</span>
+                </button>
+            </h3>
+            <div class="test-id__section-content slds-section__content section__content invisibleEl" data-aura-rendered-by="577:537;a" id="378:537;a" aria-hidden="true" style="transition: none 0s ease 0s;">
+                <div class="slds-form form-horizontal " role="list" data-aura-rendered-by="578:537;a"></div>
+            </div>
+        </div>
+        <aura:if isTrue="{! !v.hasNoConsumption}">
+            <div class="slds-grid slds-gutters ">
+                <div class="slds-col slds-size_2-of-4">
+                    <lightning:input name="productName" label="Product" disabled="true" value="{!v.totalConsumption.Purchased_Product__r.Product_R1__r.Name}" class="productData"/>
+                </div>
+                <div class="slds-col slds-size_2-of-4">
+                    <lightning:input name="uom" label="UOM" disabled="true" value="{!v.totalConsumption.Purchased_Product__r.UOM__c}" class="productData"/>
+                </div>
+          <!--      <div class="slds-col slds-size_1-of-4">
+                    <lightning:input name="guom" label="Global UOM" disabled="true" value="{!v.totalConsumption.Purchased_Product__r.Global_UOM__c}" class="productData"/>
+                </div> -->
+            </div>
+            
+            
+            <div class="slds-grid slds-gutters">
+                <div class="slds-col" />
+            </div>
+            
+            <br /> 
+            
+            <!-- div class="slds-grid slds-gutters ">
+                <div class="slds-col" />
+                <div class="slds-col" />       
+                <div class="slds-col">
+                    <div style="width: 145px;">
+                        <lightning:input type="number" name="consumptionField" aura:id="consumptionField" label="Consumption" value="{!v.totalConsumption.Consumption__c}" onblur="{!c.onChange}"/> 
+                    </div>
+                </div>
+            </div -->
+            
+            <br/>
+            
+            <div>
+                <table class="slds-table slds-table_bordered slds-no-row-hover" style="border-top: 0px;">
+                    <tbody>
+                        <tr>
+                            <td colspan="1" style="border-top: 0;">
+                                <div class="slds-col" style="display: flex;width: 0%;">
+                                    <div class="slds-col yearControlButton" style="width: 50px; flex-grow: 0;">
+                                        <br/><lightning:buttonIcon  iconName="utility:chevronleft" size="large" variant="bare" onclick="{! c.previous }" alternativeText="Previous" disabled="{!or(!v.firstYear, v.currentYear == v.firstYear)}"/>
+                                    </div>
+                                    <div class="slds-col" style="padding:0px; width: 100px; flex-grow: 0;">
+                                        <lightning:input name="yearField" label="Year" disabled="true" value="{!v.currentYear}" class="noBorderInput"/>
+                                    </div>
+                                    <div class="slds-col yearControlButton" style="width: 50px; flex-grow: 0;">
+                                        <br/><lightning:buttonIcon iconName="utility:chevronright" size="large" variant="bare" onclick="{! c.next }" alternativeText="Next"  disabled="{!or(!v.lastYear, v.currentYear >= v.lastYear)}"/>
+                                    </div>  
+                                </div>
+                            </td>
+                            <td colspan="4" style="border-top: 0;">
+                                
+                                <div class="slds-col" style="display:flex; flex-grow: 0;">
+                                    <aura:if isTrue="{!and(v.addToggle,or(v.originalYear eq v.currentYear, and(v.originalYear eq v.nextYear, v.allowEdit)))}">
+                                        <div style="flex:1;">
+                                            <c:UI_CustomLookup fieldLabel="Add Competitor" srcObject="Account" searchFrom="['Name']" filter="(Recordtype.DeveloperName = 'Competitor' OR Recordtype.DeveloperName = 'Competitor_Location') AND Name != 'UNKNOWN'" pushNewVal="{!c.updateStage}" />
+                                        </div>
+                                        <div style="padding-top: 24px; margin-left: 2px;">
+                                            <lightning:button label="Add" name="AddButton" iconName="utility:check" onclick="{!c.addStage}" />
+                                            <lightning:button label="Cancel" name="CancelButton" iconName="utility:close" onclick="{!c.cancelStaging}" />
+                                        </div>
+                                    </aura:if>
+                                    <aura:if isTrue="{! !v.hasNoConsumption &amp;&amp; (v.originalYear eq v.currentYear || (v.originalYear eq v.nextYear &amp;&amp; v.allowEdit)) &amp;&amp; !v.addToggle }">
+                                        <div style="padding-top: 24px;">
+                                            <lightning:button name="AddButton" label="Add Competitor" iconName="utility:add" onclick="{!c.toggleAddMode}" />
+                                        </div>
+                                    </aura:if>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="border-top: 0;" />
+                            <td style="border-top: 0;" />
+                            <td style="border-top: 0;" >
+                                <lightning:input type="number" name="consumptionField" aura:id="consumptionField" label="Consumption" value="{!v.totalConsumption.Consumption__c}" onblur="{!c.onChange}" disabled="{!!or(v.originalYear eq v.currentYear, and(v.originalYear eq v.nextYear, v.allowEdit))}"/> 
+                            </td>
+                            <td style="border-top: 0;" />
+                        </tr>
+                        <tr style="border-top: 1px;">
+                            <td class="slds-text-title_caps" style="width: 55%;">Entity</td>
+                            <aura:iteration items="{!v.fieldSetValues}" var="field" indexVar="idx">
+                                <aura:if isTrue="{!field.label == 'Contract Expiration Date'}" >
+                                    <td class="slds-text-title_caps width20" style="white-space:nowrap;"> CONTRACT EXPIRATION DATE</td>
+                                    <aura:set attribute="else">
+                                        <td class="slds-text-title_caps width20" style="white-space:nowrap;"> {!field.label}</td>
+                                    </aura:set>
+                                </aura:if>
+                            </aura:iteration>
+                            <td class="slds-text-title_caps width5" >Delete</td>
+                        </tr>
+                        <c:SimplusWalletShare fieldSetValues="{!v.fieldSetValues}" aura:id="childComp" totalConsumptionList="{!v.totalConsumptionList}" originalYear="{!v.originalYear}" currentYear="{!v.currentYear}" consumptionValue="{!v.totalConsumption.Consumption__c}" pushUpdate="{!c.pushEvent}" pushTotalPercent="{!c.catchTotalPercent}" pushTotalAmount="{!c.catchTotalAmount}" allowEdit="{!v.allowEdit}" nextYear="{!v.nextYear}" /><!--pushTotalAmount="{!c.catchTotalAmount}"-->
+                        <tr>
+                            <td colspan="2" style="font-weight: bold;">TOTAL KNOWN</td>
+                            <td>
+                                <lightning:input class="{!'uneditableField ' + (v.amount gt v.totalConsumption.Consumption__c ? ' hasError' : '') + (v.amount eq v.totalConsumption.Consumption__c ? ' final' : '')}" type="number" name="totalAmount" aura:id="totalAmount" value="{!v.amount}" disabled="true" /> 
+                            </td>
+                            <td>
+                                <div class="slds-col" style="display:flex; flex-grow: 0;">
+                                    <lightning:input class="{!'uneditableField ' + (v.percent gt 100 ? ' hasError' : '') + (v.percent eq 100 ? ' final' : '')}" type="string" name="totalPercent" aura:id="totalPercent" value="{!v.percent+'%'}" disabled="true" />
+                                    <div class="slds-p-around_medium lgc-bg">
+                                        <lightning:helptext content="Percentages are rounded down so they do not exceed 100%.  These are ballpark percentages due to being whole numbers."></lightning:helptext>
+                                    </div>
+                                </div>
+                            </td>
+                            <td />
+                        </tr>
+                        <tr>
+                            <td colspan="2" style="font-weight: bold;">Last Modified By / Date:</td>
+                            <td colspan="2">{!v.totalConsumption.LastModifiedBy.Name} / <ui:outputDate value="{!v.totalConsumption.LastModifiedDate}"/></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div align="center" style="text-align: center;margin-top: 20px;">
+                <lightning:button variant="brand" label="Save" title="Save" onclick="{!c.triggerSave}" disabled="{!!or(v.originalYear eq v.currentYear, and(v.originalYear eq v.nextYear, v.allowEdit))}"/>
+                <lightning:button variant="brand" label="Cancel" title="Cancel" onclick="{!c.toggleCancel}" disabled="{!!or(v.originalYear eq v.currentYear, and(v.originalYear eq v.nextYear, v.allowEdit))}"/>
+            </div>
+            
+            <aura:set attribute="else">
+                <div style="text-align: center;">
+                    No Total consumption records for this Product <br /><br />
+                    <div style="width:500px;display: inline-block;">
+                        <lightning:button name="CreateTotal" label="Create Record" iconName="utility:add" onclick="{!c.createTotalConsumption}" />
+                    </div>
+                </div>
+            </aura:set>
+        </aura:if>
+    </div>
+</aura:component>

@@ -1,0 +1,163 @@
+<template>
+	<template if:true={isLoading}>
+		<div class="slds-align--absolute-center">
+			<lightning-spinner variant="brand" size="large"></lightning-spinner>
+		</div>
+	</template>
+	<div class="slds-grid slds-wrap">
+		<div class="slds-size_3-of-12">
+			<div style="font-size:1rem;" class="slds-p-around_small"><b>Account Hierarchy</b></div>
+		</div>
+		<div class="slds-size_9-of-12 slds-text-align_right">
+			<lightning-button variant="brand" label="Expand All" title="Expand All" class="slds-m-right_small" onclick={handleExpandAll}>
+			</lightning-button>
+			<lightning-button variant="brand" label="Collapse All" title="Collapse All" onclick={handleCollapseAll}>
+			</lightning-button>
+		</div>
+	</div>
+	<div class="slds-box slds-theme_default">
+		<table class="slds-table slds-table_cell-buffer slds-table_bordered slds-table_col-bordered">
+			<thead class="slds-line-height_reset">
+				<tr>
+					<th scope="col">
+						<div class="slds-truncate" title="Account Name">Account Name</div>
+					</th>
+					<th scope="col">
+						<div class="slds-truncate" title="Account Type">Account Type</div>
+					</th>
+					<th scope="col">
+						<div class="slds-truncate" title="Account Number">Account Number</div>
+					</th>
+					<th scope="col">
+						<div class="slds-truncate" title="Owner Name">Owner Name</div>
+					</th>
+					<th scope="col">
+						<div class="slds-truncate" title="Line Of Business">Line Of Business</div>
+					</th>
+					<th scope="col">
+						<div class="slds-truncate" title="Billing Address">Billing Address</div>
+					</th>
+				</tr>
+			</thead>
+			<tbody>
+				<template if:true={gridData}>
+					<template for:each={gridData} for:item="acc">
+						<tr key={acc.Id} class="slds-hint-parent">
+							<td>
+								<div class="slds-truncate"><template if:true={acc.parenHasChildren}>
+										<span onclick={openChild} data-id={acc.Id}  style="display:inline-block;cursor:pointer;" class={chevronRightClass}>
+                        <lightning-icon icon-name="utility:chevronright" size="x-small" data-id={acc.id} ></lightning-icon> 
+                        </span>
+										<span  onclick={closeChild} data-id={acc.Id}  style="display:inline-block;cursor:pointer;" class={chevronDownClass}>
+                        <lightning-icon icon-name="utility:chevrondown" size="x-small" data-id={acc.id} ></lightning-icon> 
+                        </span>
+									</template>
+									<span>&nbsp;&nbsp;<a href={acc.AccountURL}>{acc.accountName}</a>
+                          <template if:true={acc.currentAccount}>
+                               &nbsp;&nbsp;<lightning-badge label="current" class="slds-badge_inverse"></lightning-badge>
+                          </template>
+                        </span>
+								</div>
+							</td>
+							<td>
+								<div class="slds-truncate">
+									<lightning-formatted-rich-text value={acc.Account_Type_Text_Only__c}>
+									</lightning-formatted-rich-text>
+								</div>
+							</td>
+							<td>
+								<div class="slds-truncate">{acc.AccountNumber}</div>
+							</td>
+							<td>
+								<div class="slds-truncate">{acc.OwnerName_R1__c}</div>
+							</td>
+							<td>
+								<div class="slds-truncate">{acc.LineOfBusiness_R1__c}</div>
+							</td>
+							<td>
+								<div class="slds-truncate">{acc.Address}</div>
+							</td>
+						</tr>
+						<template if:true={acc.hasChildren} id="">
+							<template for:each={acc._children} for:item="child">
+								<tr key={child.Id} class="slds-hint-parent">
+									<td>
+										<div class="slds-truncate slds-p-left_medium"><template
+												if:true={child.hasChildChildren}>
+												<span onclick={openSecondChild} data-id={child.Id} data-name={child.duplicateShipTo} style="display:inline-block;cursor:pointer;" class={chevronRightClass}>
+                        <lightning-icon icon-name="utility:chevronright" size="x-small" data-id={child.id} ></lightning-icon> 
+                        </span>
+												<span  onclick={closeSecondChild} data-id={child.Id} data-name={child.duplicateShipTo}  style="display:inline-block;cursor:pointer;" class={chevronDownClass}>
+                        <lightning-icon icon-name="utility:chevrondown" size="x-small" data-id={child.id} ></lightning-icon> 
+                        </span>
+												<span><a style="padding-left:5px;" href={child.AccountURL}>{child.accountName}</a></span>
+											</template>
+											<template if:false={child.hasChildChildren}>
+												<span style="padding-left:21px;"><a href={child.AccountURL}>{child.accountName}</a>
+                            </span>
+											</template>
+											<template if:true={child.currentAccount}>
+												&nbsp;&nbsp;<lightning-badge label="current" class="slds-badge_inverse">
+												</lightning-badge>
+											</template>
+										</div>
+									</td>
+									<td>
+										<div class="slds-truncate">
+											<lightning-formatted-rich-text value={child.Account_Type_Text_Only__c}>
+											</lightning-formatted-rich-text>
+										</div>
+									</td>
+									<td>
+										<div class="slds-truncate">{child.AccountNumber}</div>
+									</td>
+									<td>
+										<div class="slds-truncate">{child.OwnerName_R1__c}</div>
+									</td>
+									<td>
+										<div class="slds-truncate">{child.LineOfBusiness_R1__c}</div>
+									</td>
+									<td>
+										<div class="slds-truncate">{child.Address}</div>
+									</td>
+								</tr>
+								<template if:true={child.hasChildren} id="">
+									<template for:each={child._children} for:item="shipTo">
+										<tr key={shipTo.Id} class="slds-hint-parent">
+											<td>
+												<div class="slds-truncate">
+													<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href={shipTo.AccountURL}>{shipTo.accountName}</a></span>
+												</div>
+											</td>
+											<td>
+												<div class="slds-truncate">
+													<lightning-formatted-rich-text
+														value={shipTo.Account_Type_Text_Only__c}>
+													</lightning-formatted-rich-text>
+												</div>
+											</td>
+											<td>
+												<div class="slds-truncate">{shipTo.AccountNumber}</div>
+											</td>
+											<td>
+												<div class="slds-truncate">{shipTo.OwnerName_R1__c}</div>
+											</td>
+											<td>
+												<div class="slds-truncate">{shipTo.LineOfBusiness_R1__c}</div>
+											</td>
+											<td>
+												<div class="slds-truncate">{shipTo.Address}</div>
+											</td>
+										</tr>
+									</template>
+								</template>
+							</template>
+						</template>
+					</template>
+				</template>
+			</tbody>
+		</table>
+
+	</div>
+</template>
+</template>

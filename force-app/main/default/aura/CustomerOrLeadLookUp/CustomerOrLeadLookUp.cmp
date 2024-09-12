@@ -1,0 +1,670 @@
+<aura:component implements="force:appHostable" controller="CustomerOrLeadLookupController">			
+			
+    <aura:attribute name="searchKeyword" type="String" description="used to store user search input"/>			
+    <aura:attribute name="errorMessage" type="String" default="" />			
+    <aura:attribute name="isValidationError" type="boolean" default="false" />			
+    <aura:attribute name="isRecordsPresent" type="boolean" default="false" />			
+    <aura:attribute name="isCallingServer" type="boolean" default="false" />			
+    <aura:attribute name="isRecordsSearched" type="boolean" default="false" />			
+    <aura:attribute name="lstLeads" type="List" />			
+    <aura:attribute name="lstAccounts" type="List" />			
+    <aura:attribute name="lstLocations" type="List" />			
+    <aura:attribute name="lstContacts" type="List" />			
+    			
+    <!-- Attribute declaration for sorting -->
+    <aura:attribute name="sortDirectionLead" type="String" />
+    <aura:attribute name="sortDirectionAcc" type="String" />
+    <aura:attribute name="sortDirectionOpp" type="String" />
+    <aura:attribute name="sortDirectionCon" type="String" />
+    <aura:attribute name="sortByLead" type="String" />
+    <aura:attribute name="sortByAcc" type="String" />
+    <aura:attribute name="sortByOpp" type="String" />
+    <aura:attribute name="sortByCon" type="String" />
+    			
+    <!-- Attribute declaration for pagination -->			
+    <aura:attribute name="lstCurrentPageLeads" type="List" />			
+    <aura:attribute name="lstCurrentPageAccs" type="List" />			
+    <aura:attribute name="lstCurrentPageOpps" type="List" />			
+    <aura:attribute name="lstCurrentPageCons" type="List" />    			
+    <aura:attribute name="startPageLead" type="Integer" default="0"/>			
+    <aura:attribute name="startPageAcc" type="Integer" default="0"/>			
+    <aura:attribute name="startPageOpp" type="Integer" default="0"/>			
+    <aura:attribute name="startPageCon" type="Integer" default="0"/>			
+    <aura:attribute name="endPageLead" type="Integer"/>			
+    <aura:attribute name="endPageAcc" type="Integer"/>			
+    <aura:attribute name="endPageOpp" type="Integer"/>			
+    <aura:attribute name="endPageCon" type="Integer"/>			
+    <aura:attribute name="totalRecordsLead" type="Integer"/>			
+    <aura:attribute name="totalRecordsAcc" type="Integer"/>			
+    <aura:attribute name="totalRecordsOpp" type="Integer"/>			
+    <aura:attribute name="totalRecordsCon" type="Integer"/>			
+    <aura:attribute name="pageSizeLead" type="Integer" default="20"/>			
+    <aura:attribute name="pageSizeAcc" type="Integer" default="20"/>			
+    <aura:attribute name="pageSizeOpp" type="Integer" default="20"/>			
+    <aura:attribute name="pageSizeCon" type="Integer" default="20"/>			
+    			
+    <aura:if isTrue="{!v.isCallingServer}">			
+    	<lightning:spinner alternativeText="loading"/>		
+    </aura:if>			
+    			
+    <lightning:card class="card" title="Global Record Lookup" >			
+        			
+        <div class="slds-m-around--large">			
+            			
+            <h2>			
+                <span class="slds-text-heading--small heading">Find all records in Salesforce.com.</span>			
+            </h2>			
+            			
+            <div class="slds-p-top_small"></div>			
+            			
+            <div class="slds-form--inline">			
+                <aura:if isTrue="{!v.isValidationError}">			
+                    <ui:message title="Error" severity="error" >			
+                        {!v.errorMessage}			
+                    </ui:message>			
+                </aura:if>			
+                			
+                <div class="slds-form-element">			
+                    <label class="slds-form-element__label" for="search">Find:</label>			
+                    <div class="slds-form-element__control">			
+                        <ui:inputText aura:id="searchId" class="slds-input" value="{!v.searchKeyword}" required="true" keyup="{!c.checkForEnterKey}"/>			
+                    </div>			
+                </div>			
+                			
+                <div class="slds-form-element">			
+                    <lightning:button aura:id="searchButton" variant="brand" label="Go!" onclick="{!c.search}" />			
+                </div>			
+                			
+                <div class="slds-p-top_small"></div>			
+                			
+                <div>			
+                	<p>Use the Search Box Above to find current accounts (including Prospects, Sold-To's, Ship-To's, etc) and contacts that are in Salesforce.com.</p>		
+                    <div class="slds-p-top_small"></div>			
+                    <p>If you find a record and want to be on the Account Team, click on the Account Owner and send them a Chatter message.</p>			
+                </div> 			
+                			
+			</div>  
+            			
+            <div class="slds-p-top_medium"></div>			
+            			
+            <h3 class="slds-section__title">			
+                <button class="slds-button slds-section__title-action slds-float--left" onclick="{!c.hideOrDisplaySection}" data-section="ResultsSecn" >			
+                    <lightning:icon class="slds-show" aura:id="ResultsSecn" iconName="utility:chevrondown" size="x-small" alternativeText="Show"/>			
+                    <lightning:icon class="slds-hide" aura:id="ResultsSecn" iconName="utility:chevronright" size="x-small" alternativeText="Hide"/>			
+                    <div class="slds-m-left--large">Results</div>			
+                </button>			
+            </h3>			
+                    			
+            <div class="slds-p-top_small"></div>			
+                        			
+            <div class="slds-show slds-m-around--x-small" aura:id="ResultsSecn">			
+                        			
+                <aura:if isTrue="{!v.isRecordsSearched}">			
+                    <aura:if isTrue="{!v.isRecordsPresent}">			
+                        <aura:if isTrue="{!v.lstLeads.length > 0}">			
+                            			
+                            <h3 class="slds-section__title">			
+                                <button class="slds-button slds-section__title-action slds-float--left" onclick="{!c.hideOrDisplaySection}" data-section="LeadsSecn" >			
+                                    <lightning:icon class="slds-show" aura:id="LeadsSecn" iconName="utility:chevrondown" size="x-small" alternativeText="Show"/>			
+                                    <lightning:icon class="slds-hide" aura:id="LeadsSecn" iconName="utility:chevronright" size="x-small" alternativeText="Hide"/>			
+                                    <div class="slds-m-left--large">Leads</div>			
+                                </button>			
+                            </h3>			
+                            			
+                            <div class="slds-p-top_x-small"></div>			
+                            			
+                            <div class="slds-show slds-m-around--x-small" aura:id="LeadsSecn">			
+                                			
+                                <div class="slds-text-align_center"> 			
+                                    <lightning:button label="Previous" onclick="{!c.previous}" class="Lead" name="Back" variant="brand" disabled="{!v.startPageLead == 0}"/>            			
+                					<lightning:button label="Next" onclick="{!c.next}" class="Lead" name="Foreward" variant="brand" disabled="{!v.endPageLead+1 >= v.totalRecordsLead}"/>
+                                </div>			
+                                			
+                                <div class="slds-p-top_x-small"></div>			
+                                			
+                                <div class="slds-scrollable_x">			
+                                    <table class="slds-table slds-table--bordered slds-table--cell-buffer">			
+                                        <thead>			
+                                            <tr class="slds-text-title--caps">			
+                                                <th class="slds-is-sortable slds-text-title--caps tableHeader" scope="col" onclick="{!c.sortLeads}" data-column="Name">			
+                                                    <span class="slds-assistive-text">Sort</span>			
+                                                    <span class="slds-truncate" style="cursor: pointer;" title="Name">Name  			
+                                                        <aura:if isTrue="{! and(v.sortDirectionLead == 'ASC', v.sortByLead == 'Name') }">&nbsp;  &#9660;</aura:if>			
+                                                        <aura:if isTrue="{! and(v.sortDirectionLead != 'ASC', v.sortByLead == 'Name') }">&nbsp;  &#9650;</aura:if>			
+                                                    </span>			
+                                                </th>			
+                                                <th class="slds-is-sortable slds-text-title--caps tableHeader" scope="col" onclick="{!c.sortLeads}" data-column="Company">			
+                                                    <span class="slds-assistive-text">Sort</span>			
+                                                    <span class="slds-truncate" style="cursor: pointer;" title="Company">Company			
+                                                        <aura:if isTrue="{! and(v.sortDirectionLead == 'ASC', v.sortByLead == 'Company') }">&nbsp;  &#9660;</aura:if>			
+                                                        <aura:if isTrue="{! and(v.sortDirectionLead != 'ASC', v.sortByLead == 'Company') }">&nbsp;  &#9650;</aura:if>			
+                                                    </span>			
+                                                </th>			
+                                                <th class="slds-is-sortable slds-text-title--caps tableHeader" scope="col" onclick="{!c.sortLeads}" data-column="State">			
+                                                    <span class="slds-assistive-text">Sort</span>			
+                                                    <span class="slds-truncate" style="cursor: pointer;" title="State">State			
+                                                        <aura:if isTrue="{! and(v.sortDirectionLead == 'ASC', v.sortByLead == 'State') }">&nbsp;  &#9660;</aura:if>			
+                                                        <aura:if isTrue="{! and(v.sortDirectionLead != 'ASC', v.sortByLead == 'State') }">&nbsp;  &#9650;</aura:if>			
+                                                    </span>			
+                                                </th>			
+                                                <th class="slds-is-sortable slds-text-title--caps tableHeader" scope="col" onclick="{!c.sortLeads}" data-column="Country">			
+                                                    <span class="slds-assistive-text">Sort</span>			
+                                                    <span class="slds-truncate" style="cursor: pointer;" title="Country">Country			
+                                                        <aura:if isTrue="{! and(v.sortDirectionLead == 'ASC', v.sortByLead == 'Country') }">&nbsp;  &#9660;</aura:if>			
+                                                        <aura:if isTrue="{! and(v.sortDirectionLead != 'ASC', v.sortByLead == 'Country') }">&nbsp;  &#9650;</aura:if>			
+                                                    </span>			
+                                                </th>			
+                                                <th class="slds-is-sortable slds-text-title--caps tableHeader" scope="col" onclick="{!c.sortLeads}" data-column="Owner.Name">			
+                                                    <span class="slds-assistive-text">Sort</span>			
+                                                    <span class="slds-truncate" style="cursor: pointer;" title="Owner">Owner			
+                                                        <aura:if isTrue="{! and(v.sortDirectionLead == 'ASC', v.sortByLead == 'Owner.Name') }">&nbsp;  &#9660;</aura:if>			
+                                                        <aura:if isTrue="{! and(v.sortDirectionLead != 'ASC', v.sortByLead == 'Owner.Name') }">&nbsp;  &#9650;</aura:if>			
+                                                    </span>			
+                                                </th>			
+                                                <th class="slds-is-sortable slds-text-title--caps tableHeader" scope="col" onclick="{!c.sortLeads}" data-column="Status">			
+                                                    <span class="slds-assistive-text">Sort</span>			
+                                                    <span class="slds-truncate" style="cursor: pointer;" title="Lead Status">Lead Status			
+                                                        <aura:if isTrue="{! and(v.sortDirectionLead == 'ASC', v.sortByLead == 'Status') }">&nbsp;  &#9660;</aura:if>			
+                                                        <aura:if isTrue="{! and(v.sortDirectionLead != 'ASC', v.sortByLead == 'Status') }">&nbsp;  &#9650;</aura:if>			
+                                                    </span>			
+                                                </th>		
+                                            </tr>			
+                                        </thead>			
+                                        			
+                                        <tbody>			
+                                            <aura:iteration items="{!v.lstCurrentPageLeads}" var="objLead">  			
+                                                <tr>			
+                                                    <th scope="row">			
+                                                        <div class="slds-truncate" title="{!objLead.l.Name}">
+                                                            <a href="{!'/'+objLead.Id}" target="_blank">{!objLead.Name}</a>
+                                                        </div>			
+                                                    </th>
+                                                    <th scope="row">			
+                                                        <div class="slds-truncate" title="{!objLead.Company}">{!objLead.Company}</div>			
+                                                    </th>			
+                                                    <th scope="row">			
+                                                        <div class="slds-truncate" title="{!objLead.State}">{!objLead.State}</div>			
+                                                    </th>			
+                                                    <th scope="row">			
+                                                        <div class="slds-truncate" title="{!objLead.Country}">{!objLead.Country}</div>			
+                                                    </th> 			
+                                                    <th scope="row">			
+                                                        <div class="slds-truncate" title="{!objLead.Owner.Name}">			
+                                                            <a class="anchor" data-recId="{!objLead.OwnerId}" target="_top" href="{!'/lightning/r/sObject/'+ objLead.OwnerId +'/view'}" onclick="{!c.navigateToRecord}">{!objLead.Owner.Name}</a>			
+                                                        </div>			
+                                                    </th>			
+                                                    <th scope="row">			
+                                                        <div class="slds-truncate" title="{!objLead.Status}">{!objLead.Status}</div>			
+                                                    </th>			
+                                                    <th scope="row">
+                                                        <div class="slds-truncate" title="{!objLead.Reason_for_disqualified_status__c}">{!objLead.Reason_for_disqualified_status__c}</div>			
+                                                    </th>			
+                                                </tr>
+                                            </aura:iteration>			
+                                        </tbody>			
+                                    </table>			
+                                </div>			
+                            </div>			
+                            <div class="slds-p-top_medium"></div>			
+                            			
+                        </aura:if>			
+                        			
+                        <aura:if isTrue="{!v.lstAccounts.length > 0}">			
+                            			
+                            <h3 class="slds-section__title">			
+                                <button class="slds-button slds-section__title-action slds-float--left" onclick="{!c.hideOrDisplaySection}" data-section="CompaniesSecn" >			
+                                    <lightning:icon class="slds-show" aura:id="CompaniesSecn" iconName="utility:chevrondown" size="x-small" alternativeText="Show"/>			
+                                    <lightning:icon class="slds-hide" aura:id="CompaniesSecn" iconName="utility:chevronright" size="x-small" alternativeText="Hide"/>			
+                                    <div class="slds-m-left--large">Sold To Accounts</div>			
+                                </button>			
+                            </h3>			
+                            			
+                            <div class="slds-p-top_x-small"></div>			
+                            			
+                            <div class="slds-show slds-m-around--x-small" aura:id="CompaniesSecn">			
+                                <div class="slds-text-align_center">			
+                                    <lightning:button label="Previous" onclick="{!c.previous}" class="Account" name="Back" variant="brand" disabled="{!v.startPageAcc == 0}"/>            			
+                					<lightning:button label="Next" onclick="{!c.next}" class="Account" name="Foreward" variant="brand" disabled="{!v.endPageAcc+1 >= v.totalRecordsAcc}"/>
+                                </div>			
+                                			
+                                <div class="slds-p-top_x-small"></div>			
+                                			
+                                <div class="slds-scrollable_x">			
+                                    <table class="slds-table slds-table--bordered slds-table--cell-buffer">			
+                                        <thead>			
+                                            <tr class="slds-text-title--caps">
+                                                <th class="slds-is-sortable slds-text-title--caps tableHeader" scope="col" onclick="{!c.sortCompanies}" data-column="acc.Name">			
+                                                    <span class="slds-assistive-text">Sort</span>			
+                                                    <span class="slds-truncate" style="cursor: pointer;" title="Account Name">Account Name  			
+                                                        <aura:if isTrue="{! and(v.sortDirectionAcc == 'ASC', v.sortByAcc == 'acc.Name') }">&nbsp;  &#9660;</aura:if>			
+                                                        <aura:if isTrue="{! and(v.sortDirectionAcc != 'ASC', v.sortByAcc == 'acc.Name') }">&nbsp;  &#9650;</aura:if>			
+                                                    </span>			
+                                                </th>
+                                                <th class="slds-is-sortable slds-text-title--caps tableHeader" scope="col" onclick="{!c.sortCompanies}" data-column="acc.Type">			
+                                                    <span class="slds-assistive-text">Sort</span>			
+                                                    <span class="slds-truncate" style="cursor: pointer;" title="Type">Type			
+                                                        <aura:if isTrue="{! and(v.sortDirectionAcc == 'ASC', v.sortByAcc == 'acc.Type') }">&nbsp;  &#9660;</aura:if>			
+                                                        <aura:if isTrue="{! and(v.sortDirectionAcc != 'ASC', v.sortByAcc == 'acc.Type') }">&nbsp;  &#9650;</aura:if>			
+                                                    </span>			
+                                                </th>			
+                                                <th class="slds-is-sortable slds-text-title--caps tableHeader" scope="col" onclick="{!c.sortCompanies}" data-column="acc.Owner.Name">			
+                                                    <span class="slds-assistive-text">Sort</span>			
+                                                    <span class="slds-truncate" style="cursor: pointer;" title="Owner">Owner			
+                                                        <aura:if isTrue="{! and(v.sortDirectionAcc == 'ASC', v.sortByAcc == 'acc.Owner.Name') }">&nbsp;  &#9660;</aura:if>			
+                                                        <aura:if isTrue="{! and(v.sortDirectionAcc != 'ASC', v.sortByAcc == 'acc.Owner.Name') }">&nbsp;  &#9650;</aura:if>			
+                                                    </span>			
+                                                </th>	
+                                                <th class="slds-is-sortable slds-text-title--caps tableHeader" scope="col" onclick="{!c.sortCompanies}" data-column="acc.AccountNumber_R1__c">			
+                                                    <span class="slds-assistive-text">Sort</span>			
+                                                    <span class="slds-truncate" style="cursor: pointer;" title="Account Number">Account Number			
+                                                        <aura:if isTrue="{! and(v.sortDirectionAcc == 'ASC', v.sortByAcc == 'acc.AccountNumber_R1__c') }">&nbsp;  &#9660;</aura:if>			
+                                                        <aura:if isTrue="{! and(v.sortDirectionAcc != 'ASC', v.sortByAcc == 'acc.AccountNumber_R1__c') }">&nbsp;  &#9650;</aura:if>			
+                                                    </span>			
+                                                </th>
+                                                <th class="slds-is-sortable slds-text-title--caps tableHeader" scope="col" onclick="{!c.sortCompanies}" data-column="acc.LineOfBusiness_R1__c">			
+                                                    <span class="slds-assistive-text">Sort</span>			
+                                                    <span class="slds-truncate" style="cursor: pointer;" title="Line Of Business">Line Of Business			
+                                                        <aura:if isTrue="{! and(v.sortDirectionAcc == 'ASC', v.sortByAcc == 'acc.LineOfBusiness_R1__c') }">&nbsp;  &#9660;</aura:if>			
+                                                        <aura:if isTrue="{! and(v.sortDirectionAcc != 'ASC', v.sortByAcc == 'acc.LineOfBusiness_R1__c') }">&nbsp;  &#9650;</aura:if>			
+                                                    </span>			
+                                                </th>			
+                                                <th class="slds-is-sortable slds-text-title--caps tableHeader" scope="col" onclick="{!c.sortCompanies}" data-column="acc.Area_R1__c">			
+                                                    <span class="slds-assistive-text">Sort</span>			
+                                                    <span class="slds-truncate" style="cursor: pointer;" title="Area">Address			
+                                                        <aura:if isTrue="{! and(v.sortDirectionAcc == 'ASC', v.sortByAcc == 'acc.Area_R1__c') }">&nbsp;  &#9660;</aura:if>			
+                                                        <aura:if isTrue="{! and(v.sortDirectionAcc != 'ASC', v.sortByAcc == 'acc.Area_R1__c') }">&nbsp;  &#9650;</aura:if>			
+                                                    </span>			
+                                                </th>			
+                                            </tr>			
+                                        </thead>			
+                                        			
+                                        <tbody>			
+                                            <aura:iteration items="{!v.lstCurrentPageAccs}" var="objAccount">  			
+                                                <tr>
+                                                    <th scope="row">			
+                                                        <div class="slds-truncate" title="{!objAccount.acc.Name}">
+                                                            <a href="{!'/'+objAccount.acc.Id}" target="_blank">{!objAccount.acc.Name}</a>
+                                                        </div>			
+                                                    </th>
+                                                    <th scope="row">			
+                                                        <div class="slds-truncate" title="{!objAccount.acc.Type}">
+                                                            <aura:unescapedHtml value="{!objAccount.acc.Type_Icon__c}"/>
+                                                        </div>
+                                                    </th>
+                                                    <th scope="row">
+                                                        <div class="slds-truncate" title="{!objAccount.acc.Owner.Name}">			
+                                                            <a target="_blank" href="{!'/'+ objAccount.acc.OwnerId}">{!objAccount.acc.Owner.Name}</a>			
+                                                        </div>
+                                                    </th>
+                                                    <th scope="row">
+                                                        <div class="slds-truncate" title="{!objAccount.acc.AccountNumber_R1__c}">{!objAccount.acc.AccountNumber_R1__c}</div>			
+                                                    </th>	
+                                                    <th scope="row">			
+                                                        <div class="slds-truncate" title="{!objAccount.acc.LineOfBusiness_R1__c}">{!objAccount.acc.LineOfBusiness_R1__c}</div>			
+                                                    </th>			
+                                                    <th scope="row">			
+                                                        <div class="slds-truncate" title="{!objAccount.acc.Area_R1__c}">
+                                                            <aura:if isTrue="{!and(objAccount.acc.BillingCity != null,objAccount.acc.BillingStateCode != null,objAccount.acc.BillingCountryCode != null)}">
+                                                                {!objAccount.acc.BillingCity+' / '+objAccount.acc.BillingStateCode+' / '+objAccount.acc.BillingCountryCode}
+                                                                <aura:Set attribute="else">
+                                                                    <aura:if isTrue="{!and(objAccount.acc.BillingCity == null,objAccount.acc.BillingStateCode != null,objAccount.acc.BillingCountryCode != null)}">
+                                                                        {!objAccount.acc.BillingStateCode+' / '+objAccount.acc.BillingCountryCode}
+                                                                        <aura:Set attribute="else">
+                                                                            <aura:if isTrue="{!and(objAccount.acc.BillingCity != null,objAccount.acc.BillingStateCode == null,objAccount.acc.BillingCountryCode != null)}">
+                                                                                {!objAccount.acc.BillingCity+' / '+objAccount.acc.BillingCountryCode}
+                                                                                <aura:Set attribute="else">
+                                                                                    <aura:if isTrue="{!and(objAccount.acc.BillingCity != null,objAccount.acc.BillingStateCode != null,objAccount.acc.BillingCountryCode == null)}">
+                                                                                        {!objAccount.acc.BillingCity+' / '+objAccount.acc.BillingStateCode}
+                                                                                        <aura:Set attribute="else">
+                                                                                            <aura:if isTrue="{!and(objAccount.acc.BillingCity != null,objAccount.acc.BillingStateCode == null,objAccount.acc.BillingCountryCode == null)}">
+                                                                                                {!objAccount.acc.BillingCity}
+                                                                                                <aura:Set attribute="else">
+                                                                                                    <aura:if isTrue="{!and(objAccount.acc.BillingCity == null,objAccount.acc.BillingStateCode != null,objAccount.acc.BillingCountryCode == null)}">
+                                                                                                        {!objAccount.acc.BillingStateCode}
+                                                                                                        <aura:Set attribute="else">
+                                                                                                            <aura:if isTrue="{!and(objAccount.acc.BillingCity == null,objAccount.acc.BillingStateCode == null,objAccount.acc.BillingCountryCode != null)}">
+                                                                                                                {!objAccount.acc.BillingCountryCode}
+                                                                                                            </aura:if>
+                                                                                                        </aura:Set>
+                                                                                                    </aura:if>
+                                                                                                </aura:Set>
+                                                                                            </aura:if>
+                                                                                        </aura:Set>
+                                                                                    </aura:if>
+                                                                                </aura:Set>
+                                                                            </aura:if>
+                                                                        </aura:Set>
+                                                                    </aura:if>
+                                                                </aura:Set>
+                                                            </aura:if>
+                                                        </div>			
+                                                    </th>			
+                                                </tr>			
+                                            </aura:iteration>			
+                                        </tbody>			
+                                    </table>    			
+                                </div>			
+                            </div>			
+                            <div class="slds-p-top_medium"></div>			
+                        </aura:if>			
+                        
+                         <aura:if isTrue="{!v.lstLocations.length > 0}">			
+                            			
+                            <h3 class="slds-section__title">			
+                                <button class="slds-button slds-section__title-action slds-float--left" onclick="{!c.hideOrDisplaySection}" data-section="OpportunitiesSecn" >			
+                                    <lightning:icon class="slds-show" aura:id="OpportunitiesSecn" iconName="utility:chevrondown" size="x-small" alternativeText="Show"/>			
+                                    <lightning:icon class="slds-hide" aura:id="OpportunitiesSecn" iconName="utility:chevronright" size="x-small" alternativeText="Hide"/>			
+                                    <div class="slds-m-left--large">Ship To Accounts</div>			
+                                </button>			
+                            </h3>			
+                            			
+                            <div class="slds-p-top_x-small"></div>			
+                            			
+                            <div class="slds-show slds-m-around--x-small" aura:id="OpportunitiesSecn">			
+                                			
+                                <div class="slds-text-align_center">			
+                                	<lightning:button label="Previous" onclick="{!c.previous}" class="Loc" name="Back" variant="brand" disabled="{!v.startPageOpp == 0}"/>		
+                                	<lightning:button label="Next" onclick="{!c.next}" class="Loc" name="Foreward" variant="brand" disabled="{!v.endPageOpp+1 >= v.totalRecordsOpp}"/>
+                                </div>			
+                                			
+                                <div class="slds-p-top_x-small"></div>			
+                                			
+                                <div class="slds-scrollable_x">			
+                                    <table class="slds-table slds-table--bordered slds-table--cell-buffer">			
+                                        <thead>			
+                                            <tr class="slds-text-title--caps">
+                                                <th class="slds-is-sortable slds-text-title--caps tableHeader" scope="col" onclick="{!c.sortLocations}" data-column="loc.Name">			
+                                                    <span class="slds-assistive-text">Sort</span>			
+                                                    <span class="slds-truncate" style="cursor: pointer;" title="Account Name">Account Name  			
+                                                        <aura:if isTrue="{! and(v.sortDirectionOpp == 'ASC', v.sortByOpp == 'loc.Name') }">&nbsp;  &#9660;</aura:if>			
+                                                        <aura:if isTrue="{! and(v.sortDirectionOpp != 'ASC', v.sortByOpp == 'loc.Name') }">&nbsp;  &#9650;</aura:if>			
+                                                    </span>			
+                                                </th>
+                                                <th class="slds-is-sortable slds-text-title--caps tableHeader" scope="col" onclick="{!c.sortLocations}" data-column="loc.Type">			
+                                                    <span class="slds-assistive-text">Sort</span>			
+                                                    <span class="slds-truncate" style="cursor: pointer;" title="Type">Type			
+                                                        <aura:if isTrue="{! and(v.sortDirectionOpp == 'ASC', v.sortByOpp == 'loc.Type') }">&nbsp;  &#9660;</aura:if>			
+                                                        <aura:if isTrue="{! and(v.sortDirectionOpp != 'ASC', v.sortByOpp == 'loc.Type') }">&nbsp;  &#9650;</aura:if>			
+                                                    </span>			
+                                                </th>			
+                                                <th class="slds-is-sortable slds-text-title--caps tableHeader" scope="col" onclick="{!c.sortLocations}" data-column="loc.Owner.Name">			
+                                                    <span class="slds-assistive-text">Sort</span>			
+                                                    <span class="slds-truncate" style="cursor: pointer;" title="Owner">Owner			
+                                                        <aura:if isTrue="{! and(v.sortDirectionOpp == 'ASC', v.sortByOpp == 'loc.Owner.Name') }">&nbsp;  &#9660;</aura:if>			
+                                                        <aura:if isTrue="{! and(v.sortDirectionOpp != 'ASC', v.sortByOpp == 'loc.Owner.Name') }">&nbsp;  &#9650;</aura:if>			
+                                                    </span>			
+                                                </th>	
+                                                <th class="slds-is-sortable slds-text-title--caps tableHeader" scope="col" onclick="{!c.sortLocations}" data-column="loc.AccountNumber_R1__c">			
+                                                    <span class="slds-assistive-text">Sort</span>			
+                                                    <span class="slds-truncate" style="cursor: pointer;" title="Account Number">Account Number			
+                                                        <aura:if isTrue="{! and(v.sortDirectionOpp == 'ASC', v.sortByOpp == 'loc.AccountNumber_R1__c') }">&nbsp;  &#9660;</aura:if>			
+                                                        <aura:if isTrue="{! and(v.sortDirectionOpp != 'ASC', v.sortByOpp == 'loc.AccountNumber_R1__c') }">&nbsp;  &#9650;</aura:if>			
+                                                    </span>			
+                                                </th>
+                                                <th class="slds-is-sortable slds-text-title--caps tableHeader" scope="col" onclick="{!c.sortLocations}" data-column="loc.LineOfBusiness_R1__c">			
+                                                    <span class="slds-assistive-text">Sort</span>			
+                                                    <span class="slds-truncate" style="cursor: pointer;" title="Line Of Business">Line Of Business			
+                                                        <aura:if isTrue="{! and(v.sortDirectionOpp == 'ASC', v.sortByOpp == 'loc.LineOfBusiness_R1__c') }">&nbsp;  &#9660;</aura:if>			
+                                                        <aura:if isTrue="{! and(v.sortDirectionOpp != 'ASC', v.sortByOpp == 'loc.LineOfBusiness_R1__c') }">&nbsp;  &#9650;</aura:if>			
+                                                    </span>			
+                                                </th>			
+                                                <th class="slds-is-sortable slds-text-title--caps tableHeader" scope="col" onclick="{!c.sortLocations}" data-column="loc.Area_R1__c">			
+                                                    <span class="slds-assistive-text">Sort</span>			
+                                                    <span class="slds-truncate" style="cursor: pointer;" title="Area">Address			
+                                                        <aura:if isTrue="{! and(v.sortDirectionOpp == 'ASC', v.sortByOpp == 'loc.Area_R1__c') }">&nbsp;  &#9660;</aura:if>			
+                                                        <aura:if isTrue="{! and(v.sortDirectionOpp != 'ASC', v.sortByOpp == 'loc.Area_R1__c') }">&nbsp;  &#9650;</aura:if>			
+                                                    </span>			
+                                                </th>			
+                                            </tr>			
+                                        </thead>			
+                                        			
+                                        <tbody>			
+                                            <aura:iteration items="{!v.lstCurrentPageOpps}" var="objAccount">  			
+                                                <tr>
+                                                    <th scope="row">			
+                                                        <div class="slds-truncate" title="{!objAccount.loc.Name}">
+                                                            <a href="{!'/'+objAccount.loc.Id}" target="_blank">{!objAccount.loc.Name}</a>
+                                                        </div>			
+                                                    </th>
+                                                    <th scope="row">			
+                                                        <div class="slds-truncate" title="{!objAccount.loc.Type}">
+                                                            <aura:unescapedHtml value="{!objAccount.loc.Type_Icon__c}"/>
+                                                        </div>
+                                                    </th>
+                                                    <th scope="row">
+                                                        <div class="slds-truncate" title="{!objAccount.loc.Owner.Name}">			
+                                                            <a target="_blank" href="{!'/'+ objAccount.loc.OwnerId}">{!objAccount.loc.Owner.Name}</a>			
+                                                        </div>
+                                                    </th>
+                                                    <th scope="row">
+                                                        <div class="slds-truncate" title="{!objAccount.loc.AccountNumber_R1__c}">{!objAccount.loc.AccountNumber_R1__c}</div>			
+                                                    </th>	
+                                                    <th scope="row">			
+                                                        <div class="slds-truncate" title="{!objAccount.loc.LineOfBusiness_R1__c}">{!objAccount.loc.LineOfBusiness_R1__c}</div>			
+                                                    </th>			
+                                                    <th scope="row">			
+                                                        <div class="slds-truncate" title="{!objAccount.loc.Area_R1__c}">
+                                                            <aura:if isTrue="{!and(objAccount.loc.BillingCity != null,objAccount.loc.BillingStateCode != null,objAccount.loc.BillingCountryCode != null)}">
+                                                                {!objAccount.loc.BillingCity+' / '+objAccount.loc.BillingStateCode+' / '+objAccount.loc.BillingCountryCode}
+                                                                <aura:Set attribute="else">
+                                                                    <aura:if isTrue="{!and(objAccount.loc.BillingCity == null,objAccount.loc.BillingStateCode != null,objAccount.loc.BillingCountryCode != null)}">
+                                                                        {!objAccount.loc.BillingStateCode+' / '+objAccount.loc.BillingCountryCode}
+                                                                        <aura:Set attribute="else">
+                                                                            <aura:if isTrue="{!and(objAccount.loc.BillingCity != null,objAccount.loc.BillingStateCode == null,objAccount.loc.BillingCountryCode != null)}">
+                                                                                {!objAccount.loc.BillingCity+' / '+objAccount.loc.BillingCountryCode}
+                                                                                <aura:Set attribute="else">
+                                                                                    <aura:if isTrue="{!and(objAccount.loc.BillingCity != null,objAccount.loc.BillingStateCode != null,objAccount.loc.BillingCountryCode == null)}">
+                                                                                        {!objAccount.loc.BillingCity+' / '+objAccount.loc.BillingStateCode}
+                                                                                        <aura:Set attribute="else">
+                                                                                            <aura:if isTrue="{!and(objAccount.loc.BillingCity != null,objAccount.loc.BillingStateCode == null,objAccount.loc.BillingCountryCode == null)}">
+                                                                                                {!objAccount.loc.BillingCity}
+                                                                                                <aura:Set attribute="else">
+                                                                                                    <aura:if isTrue="{!and(objAccount.loc.BillingCity == null,objAccount.loc.BillingStateCode != null,objAccount.loc.BillingCountryCode == null)}">
+                                                                                                        {!objAccount.loc.BillingStateCode}
+                                                                                                        <aura:Set attribute="else">
+                                                                                                            <aura:if isTrue="{!and(objAccount.loc.BillingCity == null,objAccount.loc.BillingStateCode == null,objAccount.loc.BillingCountryCode != null)}">
+                                                                                                                {!objAccount.loc.BillingCountryCode}
+                                                                                                            </aura:if>
+                                                                                                        </aura:Set>
+                                                                                                    </aura:if>
+                                                                                                </aura:Set>
+                                                                                            </aura:if>
+                                                                                        </aura:Set>
+                                                                                    </aura:if>
+                                                                                </aura:Set>
+                                                                            </aura:if>
+                                                                        </aura:Set>
+                                                                    </aura:if>
+                                                                </aura:Set>
+                                                            </aura:if>
+                                                        </div>			
+                                                    </th>			
+                                                </tr>			
+                                            </aura:iteration>			
+                                        </tbody>			
+                                    </table>    			
+                                </div>			
+                            </div>			
+                            <div class="slds-p-top_medium"></div>			
+                        </aura:if>
+                        			
+                        <aura:if isTrue="{!v.lstContacts.length > 0}">			
+                            <h3 class="slds-section__title">			
+                                <button class="slds-button slds-section__title-action slds-float--left" onclick="{!c.hideOrDisplaySection}" data-section="ContactsSecn" >			
+                                    <lightning:icon class="slds-show" aura:id="ContactsSecn" iconName="utility:chevrondown" size="x-small" alternativeText="Show"/>			
+                                    <lightning:icon class="slds-hide" aura:id="ContactsSecn" iconName="utility:chevronright" size="x-small" alternativeText="Hide"/>			
+                                    <div class="slds-m-left--large">Contacts</div>			
+                                </button>			
+                            </h3>			
+                            			
+                            <div class="slds-p-top_x-small"></div>			
+                            			
+                            <div class="slds-show slds-m-around--x-small" aura:id="ContactsSecn">			
+                                			
+                                <div class="slds-text-align_center">			
+                                    <lightning:button label="Previous" onclick="{!c.previous}" class="Contact" name="Back" variant="brand" disabled="{!v.startPageCon == 0}"/>            			
+                					<lightning:button label="Next" onclick="{!c.next}" class="Contact" name="Foreward" variant="brand" disabled="{!v.endPageCon+1 >= v.totalRecordsCon}"/>
+                                </div>			
+                                			
+                                <div class="slds-p-top_x-small"></div>
+                                			
+                                <div class="slds-scrollable_x">			
+                                    			
+                                    <table class="slds-table slds-table--bordered slds-table--cell-buffer">			
+                                        <thead>			
+                                            <tr class="slds-text-title--caps">
+                                                <!--<th class="slds-is-sortable slds-text-title_caps tableHeader" scope="col" onclick="{!c.sortContacts}" data-column="con.FirstName">			
+                                                    <span class="slds-assistive-text">Sort</span>			
+                                                    <span class="slds-truncate" style="cursor: pointer;" title="First Name">First Name  			
+                                                        <aura:if isTrue="{! and(v.sortDirectionCon == 'ASC', v.sortByCon == 'con.FirstName') }">&nbsp;  &#9660;</aura:if>			
+                                                        <aura:if isTrue="{! and(v.sortDirectionCon != 'ASC', v.sortByCon == 'con.FirstName') }">&nbsp;  &#9650;</aura:if>			
+                                                    </span>			
+                                                </th>	-->
+                                                <th class="slds-is-sortable slds-text-title--caps tableHeader" scope="col" onclick="{!c.sortContacts}" data-column="con.LastName">			
+                                                    <span class="slds-assistive-text">Sort</span>			
+                                                    <span class="slds-truncate" style="cursor: pointer;" title="Last Name">Full Name			
+                                                        <aura:if isTrue="{! and(v.sortDirectionCon == 'ASC', v.sortByCon == 'con.LastName') }">&nbsp;  &#9660;</aura:if>			
+                                                        <aura:if isTrue="{! and(v.sortDirectionCon != 'ASC', v.sortByCon == 'con.LastName') }">&nbsp;  &#9650;</aura:if>			
+                                                    </span>			
+                                                </th>			
+                                                <th class="slds-is-sortable slds-text-title--caps tableHeader" scope="col" onclick="{!c.sortContacts}" data-column="con.Title">			
+                                                    <span class="slds-assistive-text">Sort</span>			
+                                                    <span class="slds-truncate" style="cursor: pointer;" title="Title">Title			
+                                                        <aura:if isTrue="{! and(v.sortDirectionCon == 'ASC', v.sortByCon == 'con.Title') }">&nbsp;  &#9660;</aura:if>			
+                                                        <aura:if isTrue="{! and(v.sortDirectionCon != 'ASC', v.sortByCon == 'con.Title') }">&nbsp;  &#9650;</aura:if>			
+                                                    </span>			
+                                                </th>	
+                                                <th class="slds-is-sortable slds-text-title--caps tableHeader" scope="col" onclick="{!c.sortContacts}" data-column="con.Email">			
+                                                    <span class="slds-assistive-text">Sort</span>			
+                                                    <span class="slds-truncate" style="cursor: pointer;" title="Email">Email			
+                                                        <aura:if isTrue="{! and(v.sortDirectionCon == 'ASC', v.sortByCon == 'con.Email') }">&nbsp;  &#9660;</aura:if>			
+                                                        <aura:if isTrue="{! and(v.sortDirectionCon != 'ASC', v.sortByCon == 'con.Email') }">&nbsp;  &#9650;</aura:if>			
+                                                    </span>			
+                                                </th>
+                                                <th class="slds-is-sortable slds-text-title--caps tableHeader" scope="col" onclick="{!c.sortContacts}" data-column="con.Phone">			
+                                                    <span class="slds-assistive-text">Sort</span>			
+                                                    <span class="slds-truncate" style="cursor: pointer;" title="Phone">Phone			
+                                                        <aura:if isTrue="{! and(v.sortDirectionCon == 'ASC', v.sortByCon == 'con.Phone') }">&nbsp;  &#9660;</aura:if>			
+                                                        <aura:if isTrue="{! and(v.sortDirectionCon != 'ASC', v.sortByCon == 'con.Phone') }">&nbsp;  &#9650;</aura:if>			
+                                                    </span>			
+                                                </th>
+                                                <th class="slds-is-sortable slds-text-title--caps tableHeader" scope="col" onclick="{!c.sortContacts}" data-column="con.Account.Owner.Name">			
+                                                    <span class="slds-assistive-text">Sort</span>			
+                                                    <span class="slds-truncate" style="cursor: pointer;" title="Account Owner">Account Owner			
+                                                        <aura:if isTrue="{! and(v.sortDirectionCon == 'ASC', v.sortByCon == 'con.Account.Owner.Name') }">&nbsp;  &#9660;</aura:if>			
+                                                        <aura:if isTrue="{! and(v.sortDirectionCon != 'ASC', v.sortByCon == 'con.Account.Owner.Name') }">&nbsp;  &#9650;</aura:if>			
+                                                    </span>			
+                                                </th>
+                                                <th class="slds-is-sortable slds-text-title--caps tableHeader" scope="col" onclick="{!c.sortContacts}" data-column="con.Account.Name">			
+                                                    <span class="slds-assistive-text">Sort</span>			
+                                                    <span class="slds-truncate" style="cursor: pointer;" title="Account Name">Account Name			
+                                                        <aura:if isTrue="{! and(v.sortDirectionCon == 'ASC', v.sortByCon == 'con.Account.Name') }">&nbsp;  &#9660;</aura:if>			
+                                                        <aura:if isTrue="{! and(v.sortDirectionCon != 'ASC', v.sortByCon == 'con.Account.Name') }">&nbsp;  &#9650;</aura:if>			
+                                                    </span>			
+                                                </th>
+                                                <!--<th class="slds-is-sortable slds-text-title_caps tableHeader" scope="col" onclick="{!c.sortContacts}" data-column="con.Account.AccountNumber_R1__c">			
+                                                    <span class="slds-assistive-text">Sort</span>			
+                                                    <span class="slds-truncate" style="cursor: pointer;" title="Account Name">Account Number			
+                                                        <aura:if isTrue="{! and(v.sortDirectionCon == 'ASC', v.sortByCon == 'con.Account.AccountNumber_R1__c') }">&nbsp;  &#9660;</aura:if>			
+                                                        <aura:if isTrue="{! and(v.sortDirectionCon != 'ASC', v.sortByCon == 'con.Account.AccountNumber_R1__c') }">&nbsp;  &#9650;</aura:if>			
+                                                    </span>			
+                                                </th>-->
+                                                <th class="slds-is-sortable slds-text-title--caps tableHeader" scope="col" onclick="{!c.sortContacts}" data-column="con.MailingCity">			
+                                                    <span class="slds-assistive-text">Sort</span>			
+                                                    <span class="slds-truncate" style="cursor: pointer;" title="Contact Address">Contact Address			
+                                                        <aura:if isTrue="{! and(v.sortDirectionCon == 'ASC', v.sortByCon == 'con.MailingCity') }">&nbsp;  &#9660;</aura:if>			
+                                                        <aura:if isTrue="{! and(v.sortDirectionCon != 'ASC', v.sortByCon == 'con.MailingCity') }">&nbsp;  &#9650;</aura:if>			
+                                                    </span>			
+                                                </th>
+                                            </tr>			
+                                        </thead>			
+                                        			
+                                        <tbody>			
+                                            <aura:iteration items="{!v.lstCurrentPageCons}" var="objContact">  			
+                                                <tr>			
+                                                    <!--<th scope="row">			
+                                                        <div class="slds-truncate" title="{!objContact.con.FirstName}">
+                                                            <a href="{!'/'+objContact.con.Id}" target="_blank">{!objContact.con.FirstName}</a>
+                                                        </div>			
+                                                    </th>	-->
+                                                    <th scope="row">			
+                                                        <div class="slds-truncate" title="{!objContact.con.FirstName+' '+objContact.con.LastName}">
+                                                            <a href="{!'/'+objContact.con.Id}" target="_blank">{!objContact.con.FirstName+' '+objContact.con.LastName}</a>
+                                                        </div>			
+                                                    </th>			
+                                                    <th scope="row">			
+                                                        <div class="slds-truncate" title="{!objContact.con.Title}">{!objContact.con.Title}</div>			
+                                                    </th> 
+                                                    <th scope="row">			
+                                                        <div class="slds-truncate" title="{!objContact.con.Email}">{!objContact.con.Email}</div>			
+                                                    </th> 
+                                                    <th scope="row">			
+                                                        <div class="slds-truncate" title="{!objContact.con.Phone}">{!objContact.con.Phone}</div>			
+                                                    </th> 
+                                                    <th scope="row">			
+                                                        <div class="slds-truncate" title="{!objContact.con.Account.Owner.Name}">
+                                                            <a href="{!'/'+objContact.con.Account.Owner.Id}" target="_blank">{!objContact.con.Account.Owner.Name}</a>
+                                                        </div>			
+                                                    </th>	
+                                                    <th scope="row">
+                                                        <div class="slds-truncate" title="{!objContact.con.Account.Name}">{!objContact.con.Account.Name+'/'+objContact.con.Account.AccountNumber_R1__c}</div>			
+                                                    </th>		
+                                                    <!--<th scope="row">			
+                                                        <div class="slds-truncate" title="{!objContact.con.Account.AccountNumber_R1__c}">{!objContact.con.Account.AccountNumber_R1__c}</div>			
+                                                    </th>	-->
+                                                   	<th scope="row">			
+                                                        <div class="slds-truncate" title="{!objContact.con.MailingCity}">
+                                                            <aura:if isTrue="{!and(objContact.con.MailingCity != null,objContact.con.MailingStateCode != null,objContact.con.MailingCountryCode != null)}">
+                                                                {!objContact.con.MailingCity+' / '+objContact.con.MailingStateCode+' / '+objContact.con.MailingCountryCode}
+                                                                <aura:Set attribute="else">
+                                                                    <aura:if isTrue="{!and(objContact.con.MailingCity == null,objContact.con.MailingStateCode != null,objContact.con.MailingCountryCode != null)}">
+                                                                        {!objContact.con.MailingStateCode+' / '+objContact.con.MailingCountryCode}
+                                                                        <aura:Set attribute="else">
+                                                                            <aura:if isTrue="{!and(objContact.con.MailingCity != null,objContact.con.MailingStateCode == null,objContact.con.MailingCountryCode != null)}">
+                                                                                {!objContact.con.MailingCity+' / '+objContact.con.MailingCountryCode}
+                                                                                <aura:Set attribute="else">
+                                                                                    <aura:if isTrue="{!and(objContact.con.MailingCity != null,objContact.con.MailingStateCode != null,objContact.con.MailingCountryCode == null)}">
+                                                                                        {!objContact.con.MailingCity+' / '+objContact.con.MailingStateCode}
+                                                                                        <aura:Set attribute="else">
+                                                                                            <aura:if isTrue="{!and(objContact.con.MailingCity != null,objContact.con.MailingStateCode == null,objContact.con.MailingCountryCode == null)}">
+                                                                                                {!objContact.con.MailingCity}
+                                                                                                <aura:Set attribute="else">
+                                                                                                    <aura:if isTrue="{!and(objContact.con.MailingCity == null,objContact.con.MailingStateCode != null,objContact.con.MailingCountryCode == null)}">
+                                                                                                        {!objContact.con.MailingStateCode}
+                                                                                                        <aura:Set attribute="else">
+                                                                                                            <aura:if isTrue="{!and(objContact.con.MailingCity == null,objContact.con.MailingStateCode == null,objContact.con.MailingCountryCode != null)}">
+                                                                                                                {!objContact.con.MailingCountryCode}
+                                                                                                            </aura:if>
+                                                                                                        </aura:Set>
+                                                                                                    </aura:if>
+                                                                                                </aura:Set>
+                                                                                            </aura:if>
+                                                                                        </aura:Set>
+                                                                                    </aura:if>
+                                                                                </aura:Set>
+                                                                            </aura:if>
+                                                                        </aura:Set>
+                                                                    </aura:if>
+                                                                </aura:Set>
+                                                            </aura:if>
+                                                        </div>			
+                                                    </th>
+                                                </tr>			
+                                            </aura:iteration>			
+                                        </tbody>			
+                                    </table>			
+                                </div>    			
+                            </div>			
+                        </aura:if>			
+                        <div class="blankSpace"/>			
+                        <aura:set attribute="else">			
+                            <div class="slds-show slds-m-around--x-small">			
+                                No records to display			
+                            </div>			
+                        </aura:set>			
+                	</aura:if>		
+            	</aura:if>		
+            </div>			
+        </div>			
+    </lightning:card>			
+</aura:component>

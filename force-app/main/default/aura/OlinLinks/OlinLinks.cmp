@@ -1,0 +1,12 @@
+<aura:component controller="OLINAppsController" implements="flexipage:availableForAllPageTypes" access="public">
+	
+	<aura:attribute name="intlApps" type="Object" />
+	<aura:handler name="init" value="{!this}" action="{!c.getIntlApps}" />
+    <div class="slds-p-around_small">
+        <aura:iteration items="{!v.intlApps}" var="intlApps">
+            <div class="slds-p-bottom--medium">
+                <a href="{!intlApps.URL__c}" target="_blank">{!intlApps.Name}</a>
+            </div>
+        </aura:iteration>
+    </div>
+</aura:component>

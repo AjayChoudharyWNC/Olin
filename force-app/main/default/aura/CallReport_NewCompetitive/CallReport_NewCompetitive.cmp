@@ -1,0 +1,5 @@
+<aura:component implements="flexipage:availableForAllPageTypes,force:hasRecordId,force:lightningQuickActionWithoutHeader" controller="CallReport_NewCompetitive">
+    <lightning:notificationsLibrary aura:id="notifLib"/>
+      <aura:handler value="this" name="init" action="{!c.doInit}"/>
+  
+</aura:component>

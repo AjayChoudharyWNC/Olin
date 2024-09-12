@@ -1,0 +1,81 @@
+<aura:component controller="ForecastingGridController">
+    <aura:attribute name="forecastKeyForHistory" type="String" />
+    <aura:attribute name="callerRect" type="Object" />
+    <aura:attribute name="historyObject" type="Object" />
+    <aura:attribute name="activeDateMonth" type="Integer" />
+    <aura:attribute name="activeDateYear" type="Integer" />
+    <aura:attribute name="opacity" type="Integer" default="1" />
+    <aura:attribute name="closeMe" type="Object" />
+
+    <aura:attribute name="initialtop" type="Integer" default="0" />
+    <aura:attribute name="initialLeft" type="Integer" default="0" />
+
+    <aura:attribute name="pos1" type="Integer" default="0" />
+    <aura:attribute name="pos2" type="Integer" default="0" />
+    <aura:attribute name="pos3" type="Integer" default="0" />
+    <aura:attribute name="pos4" type="Integer" default="0" />
+
+    <aura:attribute name="dataList" type="List" />
+
+    <aura:handler name="init" value="{!this}" action="{!c.onInit}" />
+    <aura:registerEvent name="pushClose" type="c:SimplusGrid_PushUp"/>
+
+    <div class="{!'opacity_' + v.opacity}">
+        <div style="display: flex;" class="header">
+            <div aura:id="historicalDataHeader" onmousedown="{!c.dragMouseDown}">
+                &nbsp;Historical actuals - last 6 months
+            </div>
+            <div >
+                <lightning:buttonIcon onclick="{!c.toggleOpacity}" iconName="utility:preview"  variant="bare-inverse" title="visibility" alternativeText="Toggle Visibility"/>
+                <lightning:buttonIcon onclick="{!c.runCloseMe}" iconName="utility:close"  variant="bare-inverse" title="close" alternativeText="Close window"/>
+            </div>
+        </div>
+        <div class="body">
+            <aura:if isTrue="{!v.historyObject}">
+                <div class="data">
+                    <div>Sold to:</div> 
+                    <div>
+                        <ui:outputURL value="{!'/one/one.app?#/sObject/'+ v.historyObject.soldTo.Id + '/view'}" target="_blank" label="{!v.historyObject.soldTo.Name}"/>
+                    </div>
+                </div>
+                <div class="data">
+                    <div>Ship to:</div> 
+                    <div>
+                        <ui:outputURL value="{!'/one/one.app?#/sObject/'+ v.historyObject.shipTo.Id + '/view'}" target="_blank" label="{!v.historyObject.shipTo.Name}"/>
+                    </div>
+                </div>
+                <div class="data">
+                    <div>Product:</div> 
+                    <div>
+                        <ui:outputURL value="{!'/one/one.app?#/sObject/'+ v.historyObject.product.Id + '/view'}" target="_blank" label="{!v.historyObject.product.Name}"/>
+                    </div>
+                </div>
+                <br />
+                <div>
+                    <table class="dataTable">
+                            <aura:iteration items="{!v.historyObject.dataListFixed}" var="h">
+                                <tr>
+                                    <td>{!h.dtMonth}</td>
+                                    <td>{!h.val}</td>
+                                </tr>
+                            </aura:iteration>
+                            <tr style="border-bottom: 1px solid black;">
+                                <td colspan="2" style="padding-top: 7px; border-bottom: 1px solid;"/>
+                            </tr>
+                            <tr>
+                                <td style="font-weight: bold;">Total</td>
+                                <td>{!v.historyObject.total}</td>
+                            </tr>
+                            <tr>
+                                <td style="font-weight: bold;">Average</td>
+                                <td><ui:outputNumber value="{!v.historyObject.average}" format="¤#,##0.##"/></td>
+                            </tr>
+                    </table>
+                </div>
+                <aura:set attribute="else">
+                    <center>Loading...</center>
+                </aura:set>
+            </aura:if>
+        </div>
+    </div>
+</aura:component>

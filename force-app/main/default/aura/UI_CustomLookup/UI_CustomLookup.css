@@ -1,0 +1,20 @@
+.THIS .lookupResults {
+    position: absolute;
+    z-index: 800;
+    padding: 4px;
+    background-color: white;
+    border: 1px solid gray;
+    margin-top: 3px;
+    border-color: gainsboro;
+    min-width: 175px;
+    border-radius: 3px;
+}
+.THIS .lookupItem {
+    cursor: pointer;
+}
+.THIS .lookupItem:hover {
+    background-color: gainsboro;
+}
+.THIS .displayInput.slds-input {
+    background-color: white;
+}

@@ -1,0 +1,5 @@
+<aura:component implements="force:lightningQuickAction,force:hasRecordId" >
+    <aura:attribute name="recordId" type="String"/>
+    <ltng:require styles="{!$Resource.IncreasePopUpWidth}"/>
+    <iframe src="{!'/apex/ExternalPDF_VF?id='+v.recordId}" width="1160px" height="550px"/>
+</aura:component>

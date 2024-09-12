@@ -1,0 +1,3 @@
+<apex:page lightningStylesheets="true" standardController="Contact" sidebar="false" showHeader="false" applyHtmlTag="false">
+    <apex:outputText value="DO NOT ENTER PERSONAL INFORMATION for NON-US Contacts.  For a description of data which is considered personal information, please see the 'Personal Privacy Guidelines' in the Olin Documents Library.  (Use search for easy access.)" style="color:red;font-weight:bold;font-size:12px;"/>
+</apex:page>

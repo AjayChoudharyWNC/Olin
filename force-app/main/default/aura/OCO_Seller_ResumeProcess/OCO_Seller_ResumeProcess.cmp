@@ -1,0 +1,69 @@
+<aura:component controller="OCO_SellerController" implements="flexipage:availableForRecordHome,force:hasRecordId,force:lightningQuickActionWithoutHeader">
+    <aura:attribute name="sapRecords" type="List" />
+    <aura:attribute name="selectedShipToAccounts" type="List" default="[]"/>
+    <aura:attribute name="selectedSap" type="String"/>
+    <aura:attribute name="sapType" type="String"/>
+    <aura:attribute name="salesOrg" type="String"/>
+    <aura:attribute name="dueDate" type="Date"/>
+    <aura:attribute name="cusType" type="String"/>
+    <aura:attribute name="showSapScreen" type="boolean"/>
+    <aura:attribute name="showResumeSap" type="boolean"/>
+    <aura:attribute name="showNewSap" type="boolean"/>
+    <aura:attribute name="relatedProducts" type="List"/>
+    <aura:attribute name="estDate" type="date"/>
+    <aura:attribute name="selectedSalesOrg" type="String"/>
+    <aura:attribute name="salesRep" type="String"/>
+    <aura:attribute name="mainAccount" type="Account"/>
+    <aura:attribute name="salesOrgs" type="List"/>
+    <aura:attribute name="showSpinner" type="Boolean"/>
+    <ltng:require styles="{!$Resource.IncPopUpWidthForCreateSAP}"/>
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+    <lightning:quickActionAPI aura:id="quickActionAPI" />
+    <lightning:overlayLibrary aura:id="cmp1"/>  
+    
+    <aura:if isTrue="{!v.showSpinner}">
+    	<lightning:spinner alternativeText="Loading" size="medium" />
+    </aura:if>
+    <form class="slds-form--stacked">
+        <div class="modal-header slds-modal__header slds-size_1-of-1">
+            <h4 class="title slds-text-heading--medium" >Customer Setup</h4>
+        </div>
+        <div class="slds-modal__content   slds-size_1-of-1 slds-is-relative" id="modelB" style="height:500px !important;">
+            <aura:if isTrue="{!not(v.showSapScreen)}">
+                <div class="slds-grid slds-wrap" style="padding-top:5%;padding-left:10%;text-align:center;">
+                    <div class="slds-size_6-of-12 slds-p-around_medium">
+                        <div class="sapButton" onclick="{!c.handleCreateSap}">
+                            <img src="{! $Resource.New_SAP}" class="buttonImg"/>
+                            <span>Create New Customer Setup Form</span>
+                        </div>
+                    </div>
+                    <div class="slds-size_6-of-12 slds-p-around_medium">
+                        <div class="slds-grid--vertical">
+                            <div class="sapButton" onclick="{!c.handleResumeSap}">
+                                <img src="{! $Resource.Update_SAP}" class="buttonImg"/>
+                                <span>Update an existing Customer Setup Form</span>
+                            </div>
+                            <lightning:select label="Customer Setup" required="true" value="{!v.selectedSap}" class="customSelect">
+                                <option value="">--None--</option>
+                                <aura:iteration items="{!v.sapRecords}" var="sap">
+                                    <option value="{!sap.Id}">{!sap.Name} - <lightning:formattedDateTime value="{!sap.CreatedDate}" year="numeric" month="numeric" day="numeric"/> - {!sap.On_boarding_Request_Type__c}</option>
+                                </aura:iteration>
+                            </lightning:select>
+                        </div>
+                    </div>
+                </div>
+                <aura:set attribute="else">
+                    <c:OCO_SellerMain selectedShipToAccounts="{!v.selectedShipToAccounts}" sapType="{!v.sapType}" 
+                                      selectedSalesOrgId="{!v.selectedSalesOrg}"
+                                      formDueDate="{!v.dueDate}" recordId="{!v.recordId}" 
+                                      mainAccount="{!v.mainAccount}" relatedProducts="{!v.relatedProducts}" isProspect="{!if(v.mainAccount.RecordType.Name == 'Prospect', true, false)}"
+                                      salesRepId="{!v.salesRep}" estDate = "{!v.estDate}" salesOrgs ="{!v.salesOrgs}" selectedSapId="{!v.selectedSap}" showNewSap="{!v.showNewSap}" showResumeSap="{!v.showResumeSap}"/>
+                    
+                </aura:set>
+            </aura:if>
+        </div>
+        <div class="modal-footer slds-modal__footer slds-size_1-of-1">
+            <div class="forceChangeRecordTypeFooter"></div>
+        </div> 
+    </form>
+</aura:component>

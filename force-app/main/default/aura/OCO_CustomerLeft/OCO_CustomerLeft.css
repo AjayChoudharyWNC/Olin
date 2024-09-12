@@ -1,0 +1,39 @@
+@media only screen and (max-width: 1138px){
+    .THIS .olinLogo{
+        width:70px !important;
+    }
+    .THIS .mainHeader{
+        font-size:23px !important;
+    }
+}
+.THIS ul {
+    list-style: none;
+}
+
+.THIS ul li.open::before {
+    content: "\2022";
+    color: #008b95;
+    font-size:30px;
+    font-weight: bold;
+    display: inline-block;
+    width: 1em;
+}
+.THIS ul li.submit::before {
+    content: "\2022";
+    color: #bed75f;
+    font-size:30px;
+    font-weight: bold;
+    display: inline-block;
+    width: 1em;
+}
+.THIS ul li.notReq::before {
+    content: "\2022";
+    color: grey;
+    font-size:30px;
+    font-weight: bold;
+    display: inline-block;
+    width: 1em;
+}
+.THIS span[title*="Customer Form"] {
+    font-weight: bold;
+}

@@ -1,0 +1,22 @@
+.THIS .fullWindow {
+    position: absolute;
+    padding: 0;
+    background-color: white;
+    border: 1px solid gainsboro;
+    margin-top: 5px;
+    transform: scale(1);
+    opacity: 1;
+    transition: .2s;    
+    width: 302px;
+    height: 190px;
+    z-index: 35;
+    box-shadow: 0 0 2px 0 rgba(0,0,0,0.3);
+}
+.THIS .fullWindow iframe {
+    height: 255px;
+    border: 0;
+}
+.THIS .fullWindow.hide {
+    transform: scale(0);
+	opacity: 0;
+}

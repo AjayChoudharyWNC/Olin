@@ -1,0 +1,175 @@
+<aura:component controller="SimplusFormulaController" implements="flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:appHostable" access="global" >
+    <aura:attribute name="recordId"                 type="String" />    
+    <aura:attribute name="liked"                    type="Boolean" default="false" />
+    <aura:attribute name="autoGroup"                type="Boolean" default="false" />
+    <aura:attribute name="autoBreak"                type="Boolean" default="false" />
+    <aura:attribute name="definedFormulas"          type="String" />
+    <aura:attribute name="implementation"           type="String" />
+    <aura:attribute name="formulaDefinitions"       type="List" />
+    <aura:attribute name="formulaAttributes"        type="List" />
+    <aura:attribute name="selectedFormulaValue"     type="String" />
+    <aura:attribute name="formulaStructure"         type="String" />
+    <aura:attribute name="formulaDescription"       type="String" />
+    <aura:attribute name="enableInsert"             type="Boolean" default="true"/>
+    <aura:attribute name="messageResult1"           type="String" />
+    <aura:attribute name="messageResult2"           type="String" />
+
+    
+    <aura:attribute name="textAreaContents"         type="String"  default=""/>
+    <aura:attribute name="textAreaContentsList"     type="List"  default=""/>
+    <aura:attribute name="lastTextStartPt"          type="String"  default=""/>
+    <aura:attribute name="lastTextEndPt"            type="String"  default=""/>
+    <aura:attribute name="isOnFocus"                type="String"  default="false"/>
+    <aura:attribute name="errorMessage"             type="String"  />
+    <aura:attribute name="showErrorMessage"         type="Boolean"  default="false"/>
+    
+    <aura:handler name="init" 	value="{!this}" action="{!c.doInit}"/>
+    <div aura:id="formulaContainer" onclick="{!c.closeBuilder}">
+        
+        <div class="textAreaTopControls" style="display: flex;">
+            <div style="padding-top: 5px;">
+                <aura:if isTrue="{!v.liked}">
+                    <div class="slds-badge green">
+                        <lightning:icon iconName="utility:like" alternativeText="Valid" size="x-small" />
+                        Valid
+                    </div>
+                    <aura:set attribute="else">
+                        <lightning:badge label="Needs validation" />
+                    </aura:set>
+                </aura:if>
+            </div>
+            <div style="flex:1;" />
+            <div id="formulaControls" class="formulaControls" >
+                <lightning:button variant="neutral" label="Validate" title="Validate" onclick="{! c.validate }"/>
+                <lightning:button variant="neutral" label="Process" title="Process" onclick="{! c.process }"/> 
+                <lightning:buttonIcon iconName="utility:formula"  size="medium" alternativeText="Formula Builder" onclick="{!c.toggleFormula}"/>
+                <div>
+                    
+                <div class="formulaBuilder" aura:id="formulaBuilder" onclick="{!c.preventPropagation}">
+                    <div class="formulaPointer" />
+                        <div>
+                            <div>
+                                <!-- label class="slds-form-element__label" for="text-input-id-1">Formula Definition</label -->
+                                <lightning:select aura:id="selectedFormula" name="selectedFormula" class="select-auto-width" label="Formula Definition" onchange="{!c.handleOnChange}">
+                                    <option value=""> Choose Formula </option>
+                                    <aura:iteration items="{!v.formulaDefinitions}" var="formula">
+                                        <option value="{!formula.name}">{!formula.name}</option>
+                                    </aura:iteration>
+                                </lightning:select>
+                            </div>
+                        </div>
+                        <aura:if isTrue="{!v.formulaStructure}">
+                            <div class="dynamicFormulaBuilder">
+                                <div style="display: flex;">
+                                    <div class="formulaPreviewDiv">
+                                        <lightning:textarea value="{!v.formulaStructure}" label="Preview" disabled="true" />
+                                    </div>
+                                </div>
+                                <aura:if isTrue="{!v.showErrorMessage}">
+                                    <div>
+                                        <label style="color:red; font-size:10px;"> {!v.errorMessage} </label>
+                                    </div>
+                                </aura:if>
+                                <div class="filler">
+                                    <aura:iteration items="{!v.formulaAttributes}" var="attr">
+                                        <aura:if isTrue="{!attr.isOutput == false || attr.type == 'Picklist'}">
+                                            <div class="formulaItemContainer">
+                                                <!--<div class="slds-box slds-grid slds-gutters">
+                                                <div class="slds-col" style="width:25px;">
+                                                    <span class="slds-icon_container slds-icon-utility-user slds-m-right_x-small" title="{!attr.description}">
+                                                        <lightning:icon iconName="utility:info" size="x-small" />
+                                                    </span>
+                                                </div> 
+                                            </div>-->
+                                                <label class="slds-form-element__label" for="text-input-id-1">{!attr.name}</label>
+                                                <!-- lightning:icon iconName="utility:info" size="xx-small" title="{!attr.description}" / -->
+                                                <lightning:helptext content="{!attr.description}" />
+                                                <aura:if isTrue="{!attr.type == 'String'}">
+                                                    <lightning:input name="{!attr.name}" value="{!attr.entered}" onchange="{!c.handleOnChange}" />
+                                                </aura:if>
+                                                <aura:if isTrue="{!attr.type == 'Picklist'}">
+                                                    <lightning:select aura:id="selectedPicklist" name="{!attr.name}" value="{!attr.entered}" class="select-auto-width" onchange="{!c.handleOnChange}" >
+                                                        <option value=""> Select </option>
+                                                        <aura:iteration items="{!attr.picklistValues}" var="item">
+                                                            <option value="{!item}">{!item}</option>
+                                                        </aura:iteration>
+                                                    </lightning:select> 
+                                                </aura:if>
+                                                <aura:if isTrue="{!attr.type == 'Integer'}">
+                                                    <lightning:input type="number" name="{!attr.name}" value="{!attr.entered}" onchange="{!c.handleOnChange}" />
+                                                </aura:if>
+                                                <aura:if isTrue="{!attr.type == 'Currency'}">
+                                                    <lightning:input type="number" name="{!attr.name}" value="{!attr.entered}" onchange="{!c.handleOnChange}" />
+                                                </aura:if>
+                                                <aura:if isTrue="{!attr.type == 'Boolean'}">
+                                                    <!-- lightning:input type="checkbox" name="{!attr.name}" value="{!attr.entered}" onchange="{!c.handleOnChange}" / -->
+                                                    <ui:inputCheckbox value="{!attr.entered}" label="" change="{!c.handleOnChange}"/>
+                                                </aura:if>
+                                                <aura:if isTrue="{!attr.type == 'Double'}">
+                                                    <lightning:input type="number" name="{!attr.name}" value="{!attr.entered}" onchange="{!c.handleOnChange}" />
+                                                </aura:if>
+                                                <aura:if isTrue="{!attr.type == 'Date'}">
+                                                    <lightning:input type="date" name="{!attr.name}" value="{!attr.entered}" onchange="{!c.handleOnChange}" />
+                                                </aura:if>
+                                            </div>
+                                        </aura:if>
+                                    </aura:iteration>
+                                </div>
+                                <div style="display: flex;">
+                                    <div style="margin-left: 3px;
+                                        flex: 1;
+                                        text-align: right;
+                                        margin-top: 10px;
+                                        margin-bottom: 10px;">
+                                        <lightning:buttonGroup>
+                                            <lightning:buttonIconStateful id="breakLine" class="breakLine" iconName="utility:level_down" selected="{! v.autoBreak }" alternativeText="Break line on start and end" onclick="{!c.autoBreak}" />
+                                            <lightning:buttonIconStateful id="autoGroupButton" class="autoGroupButton" iconName="utility:merge_field" selected="{! v.autoGroup }" alternativeText="Enclose in parenthesis" onclick="{!c.autoGroup}" />
+                                            <lightning:button variant="neutral" label="Insert" title="Insert" onclick="{! c.handleInsert }" disabled="{!v.enableInsert}" />
+                                        </lightning:buttonGroup>
+                                    </div>
+                                </div>
+                                
+                            </div>
+                        </aura:if>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="fullFormulaContainer" style="width: 100%;margin-top: 10px; margin-bottom: 10px;">
+
+            <!-- label class="slds-form-element__label" for="text-input-id-1">Hand enter formula or use drop down fields to compose the formula.</label -->
+            <textarea class="{!v.isOnFocus ? 'slds-textarea' : 'hidden'}" id="formulaValue" value="{!v.textAreaContents}" onmouseup="{!c.getPosition}" onkeyup="{!c.getPositionReset}" onchange="{! c.resetValidation }" onblur="{!c.blurText}"/>
+            <div class="{!v.isOnFocus ? 'hidden' : 'slds-textarea editable'}"  contenteditable="true" onclick="{!c.focusText}" >
+                <aura:iteration items="{!v.textAreaContentsList}" var="t" indexVar="it">
+                    <aura:if isTrue="{!t == ':br:'}">
+                        <br />
+                        <aura:set attribute="else">
+                            <span class="{!and(it ge v.lastTextStartPt, it lt v.lastTextEndPt) ? 'highlight' : ''}">{!t}</span>
+                            <div class="{!(it + 1) eq v.lastTextEndPt ? 'cursor' : ''}" id="cursor" style="display: inline-block;"/>
+                        </aura:set>
+                    </aura:if>
+                </aura:iteration>
+                <aura:if isTrue="{!v.textAreaContentsList.length == 0}">
+                    <div class="cursor" id="cursor2"/>
+                </aura:if>
+            </div>
+            <!-- lightning:textarea name="formulaValue" required="true" aura:id="formulaValue" value="" 
+                                placeholder="Enter formula here" label="Hand enter formula or use drop down fields to compose the formula."
+                                messageWhenValueMissing="A value is required." onchange="{! c.resetValidation }" / -->
+            
+            <div class="textAreaBottomControls" style="display: flex; margin-top: 10px;">
+                <div class="errorMessages" style="flex:1;">
+                    <label style="color:red"> &nbsp; {!v.messageResult1} </label>
+                    <label style="color:rgb(9, 139, 85)"> &nbsp; {!v.messageResult2} </label>
+                </div>
+                <div class="formulaControls" style="width: 200px; text-align: right;">
+                    <lightning:button variant="neutral" label="Save" title="Save" onclick="{! c.save }"/> 
+                </div>
+            </div>
+        </div>
+        
+    </div>
+    
+    
+</aura:component>

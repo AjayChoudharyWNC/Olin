@@ -1,0 +1,14 @@
+<template>
+	<lightning-tabset variant="scoped">
+        <template if:true={showSoldTo}>
+		<lightning-tab label="Sold To Hierarchy" onactive={handleActiveSoldTo}>
+			<c-account-hierarchy-cmp account-type="Sold To" record-id={recordId}></c-account-hierarchy-cmp>
+		</lightning-tab>
+        </template>
+		<template if:true={showShipTo}>
+        <lightning-tab label="Ship To Hierarchy" onactive={handleActiveShipTo}>
+			<c-account-hierarchy-cmp account-type="Ship To" record-id={recordId}></c-account-hierarchy-cmp>
+		</lightning-tab>
+		</template>
+	</lightning-tabset>
+</template>

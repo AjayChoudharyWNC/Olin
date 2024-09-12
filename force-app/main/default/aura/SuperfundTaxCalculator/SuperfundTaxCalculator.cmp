@@ -1,0 +1,69 @@
+<aura:component implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:lightningQuickAction,force:hasRecordId,force:hasSObjectName" access="global" controller="SuperfundTaxCalculator">
+    <aura:attribute name="uomList" type="List"/>
+    <aura:attribute name="selectedUOM" type="Decimal"/>
+    <aura:attribute name="productCharges" type="Product_Charge__c"/>
+    <aura:attribute name="calculatedTax" type="Decimal"/>
+    <aura:attribute name="productPrice" type="Decimal"/>
+    <aura:attribute name="selectedProd" type="String"/>
+    <aura:attribute name="AIP" type="Decimal"/>
+    <aura:attribute name="ProductApiName" type="String"  access="global"/>
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    <aura:method name="handleProductSelected" action="{!c.handleProductSelected}">
+        <aura:attribute name="record" type="sObject"/> 
+    </aura:method>
+    
+    <div class="slds-grid slds-wrap slds-card slds-p-around_medium">
+        <div class="slds-size_1-of-1 ">
+            <div style="font-size:16px">
+                Click <a href="/sfc/servlet.shepherd/version/download/0685G00000n6uau" target="__top" class="slds-text-title_bold">HERE</a> for how to use this calculator.
+            </div>
+                    <div class="slds-p-around_medium slds-form">
+                        <div class="slds-form-element slds-form-element_horizontal">
+                            <label class="slds-form-element__label" for="horizontal-input-id-01">Product</label>
+                            <div class="slds-form-element__control">
+                                <!--c:LC_CustomLookup objectName='Product2' parent="{!this}" fieldPluralName='Name' whereClause="Product_Level__c = 'GMID' AND IsActive = True" iconName='standard:product'/-->
+                                <lightning:recordEditForm objectApiName="Product_Charge__c">
+                                    <lightning:inputField fieldName="Product_GMID_Hidden__c" variant='label-hidden' onchange="{!c.handleProductSelected}" value="{!v.selectedProd}"/>
+                                </lightning:recordEditForm>
+                            </div>
+                        </div>
+                        <div class="slds-form-element slds-form-element_horizontal">
+                            <label class="slds-form-element__label" for="horizontal-input-id-01">Price UOM</label>
+                            <div class="slds-form-element__control">
+                                <lightning:select variant="label-hidden" value="{!v.selectedUOM}" onchange="{!c.handleUOMChange}">
+                                    <aura:iteration items="{!v.uomList}" var="uom">
+                                        <option value="{!uom.Conversion_Factor__c}">{!uom.Quoted_UOM__c}</option>
+                                    </aura:iteration>
+                                </lightning:select>
+                            </div>
+                        </div>
+                        <div class="slds-form-element slds-form-element_horizontal">
+                            <label class="slds-form-element__label" for="horizontal-input-id-01">AIP</label>
+                            <div class="slds-form-element__control">
+                                <lightning:input type="number" formatter="currency" variant="label-hidden" value="{!v.AIP}" aura:id="AIP" step="0.0001" onchange="{!c.handleAIPChange}"></lightning:input>
+                            </div>
+                        </div>
+                        <div class="slds-form-element slds-form-element_horizontal">
+                            <label class="slds-form-element__label" for="horizontal-input-id-01">Product Price</label>
+                            <div class="slds-form-element__control">
+                                <lightning:input type="number" formatter="currency" variant="label-hidden" aura:id="productPrice" step="0.0001" value="{!v.productPrice}" onchange="{!c.handleProductPriceChange}"></lightning:input>
+                            </div>
+                        </div>
+                        <div class="slds-form-element slds-form-element_horizontal">
+                            <label class="slds-form-element__label" for="horizontal-input-id-01">Superfund Tax</label>
+                            <div class="slds-form-element__control">
+                                <ui:outputCurrency value="{!v.calculatedTax}" currencyCode="USD" currencySymbol="$" format="$.0000"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="slds-grid slds-wrap">
+                        <div class="slds-size_12-of-12 slds-text-align_right">
+                            <lightning:button label="Calculate" onclick="{!c.handleCalculateTax}" variant="brand" aura:id="calculateBtn"/>
+                            <lightning:button label="Reset" onclick="{!c.handleResetForm}" variant="brand" />
+                        </div>
+                    </div>
+        </div>
+    </div>
+    
+    
+</aura:component>

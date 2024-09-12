@@ -1,0 +1,385 @@
+<aura:component controller="OCO_CustomerController" implements="flexipage:availableForAllPageTypes,forceCommunity:availableForAllPageTypes" access="global">
+    <aura:attribute name="nodeToShow" type="String" default="Instructions"/>
+    <aura:attribute name="screenName" type="String" default="Instructions"/>
+    <aura:attribute name="sapId" type="String" />
+    <aura:attribute name="nodeId" type="String" default="Instructions"/>
+    <aura:attribute name="sapRecord" type="SAP_Onboarding__c"/>
+    <aura:attribute name="sapNo" type="String" default="Instructions"/>
+    <aura:handler event="c:OCO_CustomerTreeClick" action="{!c.handleTreeNodeClickEvt}"/>
+    <aura:attribute name="showShare" type="boolean"/>
+    <aura:attribute name="appUserRecord" type="Application_User__c" default="{'sobjectType' : 'Application_User__c', 'Shared__c' : true}"/>
+    <aura:attribute name="appUserList" type="List"/>
+    <aura:attribute name="email" type="String"/>
+    <aura:attribute name="currentAppUser" type="String"/>
+    <aura:attribute name="toastColor" type="string" default="#04844b"/>
+    <aura:attribute name="toastIconName" type="string"/>
+    <aura:attribute name="toastMessage" type="string"/>
+    <aura:attribute name="ciDivClass" type="String"/>
+    <aura:attribute name="ddDivClass" type="String"/>
+    <aura:attribute name="caDivClass" type="String"/>
+    <aura:attribute name="psaDivClass" type="String"/>
+    <aura:attribute name="selectedPageLanguage" type="String"/>
+    <aura:attribute name="showHelp" type="boolean"/>
+    <aura:attribute name="vatList" type="List"/>
+    <aura:attribute name="showProfile" type="boolean"/>
+    <aura:attribute name="parent" type="aura.component"/>
+    <aura:attribute name="toastTextColor" type="string" default="white"/>
+    <aura:attribute name="allSectionCompleted" type="boolean"/>
+    <aura:attribute name="isDisabledForProfile" type="boolean"/>
+    <aura:method name="openShareWithColleague" action="{!c.openSharePopup}"/>
+    <aura:attribute name="languageLabelMap" type="Object"/>
+    <aura:attribute name="englishLanguageLabelMap" type="Object"/>
+    <aura:attribute name="languageFileData" type="Object"/>
+    <aura:method name="openToast" action="{!c.openToastMessage}">
+        <aura:attribute name="childToastIconName" type="string"/>
+        <aura:attribute name="childToastMessageId" type="string"/>
+        <aura:attribute name="childToastType" type="string"/>
+    </aura:method>
+    <aura:attribute name="confirmMessage" type="String" default=""/>
+    <aura:attribute name="showConfirmDialog" type="boolean"/>
+    <aura:method name="getSapRecord" action="{!c.fetchSapRecordDetails}"/>
+    <aura:registerEvent name="sectionCompletedEvt" type="c:OCO_SectionCompletedEvt"/>
+    <aura:attribute name="spinner" type="boolean"/>
+    <ltng:require styles="{!$Resource.Style_Font_Awesome}"/>
+    <aura:attribute name="showToast" type="boolean"/>
+    <aura:handler event="c:OCO_CustomerOnboardingShareEvt" action="{!c.handleShareWithColleagueEvt}"/>
+    <aura:if isTrue="{!v.spinner}">
+        <div aura:id="spinnerId" style="position:fixed;" class="slds-spinner_container">
+            <div class="slds-spinner--brand  slds-spinner slds-spinner--large slds-is-relative" role="alert">
+                <span class="slds-assistive-text">{!v.languageLabelMap.PS_45}</span>
+                <div class="slds-spinner__dot-a"></div>
+                <div class="slds-spinner__dot-b"></div>
+            </div>
+        </div>
+    </aura:if>
+    <aura:if isTrue="{!v.showToast}">
+        <div id="toast" class="toastClass" style="{! 'background-color:' + v.toastColor}">
+            <div class="img" style="{! 'background-color:' + v.toastColor}">
+                <lightning:icon iconName="{!v.toastIconName}" size="small" class="successIcon"/>
+            </div>
+            <div class="desc" style="{! 'color:' + v.toastTextColor}" id="toastMessage">{!v.toastMessage}
+            </div>
+        </div>
+    </aura:if>
+    <aura:if isTrue="{!v.showProfile}">
+        <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+            <div class="slds-modal__container">
+                <header class="slds-modal__header">
+                    <lightning:buttonIcon iconName="utility:close"
+                                          onclick="{! c.closeProfile }"
+                                          alternativeText="close"
+                                          variant="bare-inverse"
+                                          class="slds-modal__close"/>
+                    <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate" style="font-weight:bold;">{!v.languageLabelMap.HP_11}</h2>
+                </header>
+                <lightning:recordEditForm objectApiName="Application_User__c" recordId="{!v.currentAppUser}" onsubmit="{!c.handleAppUserProfileSubmit}" onerror="{!c.handleError}" onsuccess="{!c.handleAppUserProfileSuccess}" aura:id="appUserProfileForm">
+                    <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">    
+                    <div class="slds-grid gridCustomPadding slds-wrap">
+                            <div class="slds-large-size_12-of-12 slds-small-size_12-of-12 slds-col ">
+                                <label  class="slds-form-element__label slds-no-flex"><abbr  title="required" class="slds-required">*</abbr>{!v.languageLabelMap.PS_34}</label>   
+                                <lightning:inputField  fieldName="First_Name__c" required="true" variant="label-hidden"/>
+                            </div>
+                            <div class="slds-large-size_1-of-12 slds-small-size_0-of-12"></div>
+                            <div class="slds-large-size_12-of-12 slds-small-size_12-of-12 slds-col ">
+                                <label  class="slds-form-element__label slds-no-flex"><abbr  title="required" class="slds-required">*</abbr>{!v.languageLabelMap.PS_35}</label>       
+                                <lightning:inputField  fieldName="Last_Name__c" required="true" variant="label-hidden"/>
+                            </div>
+                        </div>
+                        <div class="slds-grid gridCustomPadding slds-wrap">
+                            <div class="slds-large-size_12-of-12 slds-small-size_12-of-12 slds-col ">
+                                <label  class="slds-form-element__label slds-no-flex"><abbr  title="required" class="slds-required">*</abbr>{!v.languageLabelMap.PS_36}</label>             
+                                <lightning:inputField  fieldName="Email__c" required="true" disabled="true" variant="label-hidden"/>
+                            </div>
+                            <div class="slds-large-size_1-of-12 slds-small-size_0-of-12"></div>
+                            <div class="slds-large-size_12-of-12 slds-small-size_12-of-12 slds-col slds-p-top_medium slds-grid slds-wrap">
+                                <div class="slds-size_2-of-12">
+                                    <label  class="slds-form-element__label slds-no-flex"><abbr  title="required" class="slds-required">*</abbr>{!v.languageLabelMap.PS_50}</label>    
+                                    <lightning:inputField  fieldName="Country_Code__c"  variant="label-hidden"/>
+                                </div>
+                                <div class="slds-size_10-of-12">
+                                    <label  class="slds-form-element__label slds-no-flex"><abbr  title="required" class="slds-required">*</abbr>{!v.languageLabelMap.PS_37}</label>     
+                                    <lightning:inputField  fieldName="Mobile_Phone__c" maxlength="10" variant="label-hidden"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <footer class="slds-modal__footer">
+                        <lightning:button variant="neutral" 
+                                          label="{!v.languageLabelMap.PS_41}"
+                                          title="Cancel"
+                                          onclick="{! c.closeProfile }"/>
+                        <lightning:button variant="brand" 
+                                          label="{!v.languageLabelMap.PS_42}" 
+                                          title="Save and Close"
+                                          type="submit"
+                                          />
+                    </footer>
+                </lightning:recordEditForm>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </aura:if>
+    <aura:if isTrue="{!v.showShare}">
+        <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+            <div class="slds-modal__container">
+                <header class="slds-modal__header">
+                    <lightning:buttonIcon iconName="utility:close"
+                                          onclick="{! c.closeModel }"
+                                          alternativeText="close"
+                                          variant="bare-inverse"
+                                          class="slds-modal__close"/>
+                    <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate" style="font-weight:bold;">{!v.languageLabelMap.CI_4}</h2>
+                </header>
+                <lightning:recordEditForm objectApiName="Application_User__c" onsubmit="{!c.handleAppUserSubmit}" onerror="{!c.handleError}" onsuccess="{!c.handleAppUserSuccess}" aura:id="appUserForm">
+                    <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                        <div class="slds-size_1-of-1 slds-p-around_small slds-text-align_center">
+                            <b>{!v.languageLabelMap.CI_171}</b>
+                        </div>
+                        <div class="slds-text-align_center">
+                            {!v.languageLabelMap.PS_32}<br/>
+                            {!v.languageLabelMap.PS_33}
+                        </div>
+                        
+                        <div class="subHeader">
+                        </div>
+                        <div class="slds-grid gridCustomPadding slds-wrap">
+                            <div class="slds-large-size_5-of-12 slds-small-size_12-of-12 slds-col ">
+                                <label  class="slds-form-element__label slds-no-flex"><abbr  title="required" class="slds-required">*</abbr>{!v.languageLabelMap.PS_34}</label>    
+                                <lightning:inputField  fieldName="First_Name__c" required="true" value="{!v.appUserRecord.First_Name__c}" variant="label-hidden"/>
+                            </div>
+                            <div class="slds-large-size_1-of-12 slds-small-size_0-of-12"></div>
+                            <div class="slds-large-size_5-of-12 slds-small-size_12-of-12 slds-col ">
+                                <label  class="slds-form-element__label slds-no-flex"><abbr  title="required" class="slds-required">*</abbr>{!v.languageLabelMap.PS_35}</label>    
+                                <lightning:inputField  fieldName="Last_Name__c" required="true" value="{!v.appUserRecord.Last_Name__c}" variant="label-hidden"/>
+                            </div>
+                        </div>
+                        <div class="slds-grid gridCustomPadding slds-wrap">
+                            <div class="slds-large-size_5-of-12 slds-small-size_12-of-12 slds-col ">
+                                <label  class="slds-form-element__label slds-no-flex"><abbr  title="required" class="slds-required">*</abbr>{!v.languageLabelMap.PS_36}</label>      
+                                <lightning:inputField  fieldName="Email__c" required="true" value="{!v.appUserRecord.Email__c}" variant="label-hidden"/>
+                            </div>
+                            <div class="slds-large-size_1-of-12 slds-small-size_0-of-12"></div>
+                            <div class="slds-large-size_5-of-12 slds-small-size_12-of-12 slds-col slds-p-top_medium">
+                                <label  class="slds-form-element__label slds-no-flex">{!v.languageLabelMap.PS_37}</label>     
+                                <lightning:inputField  fieldName="Mobile_Phone__c" value="{!v.appUserRecord.Mobile_Phone__c}" variant="label-hidden"/>
+                            </div>
+                        </div>
+                        <div class="slds-grid gridCustomPadding slds-wrap">
+                            <div class="slds-large-size_5-of-12 slds-small-size_12-of-12 slds-col ">
+                                <label  class="slds-form-element__label slds-no-flex">{!v.languageLabelMap.PS_38}</label>     
+                                <lightning:inputField  fieldName="Title__c" value="{!v.appUserRecord.Title__c}" variant="label-hidden"/>
+                            </div>
+                            <div class="slds-large-size_1-of-12 slds-small-size_0-of-12"></div>
+                            <div class="slds-large-size_5-of-12 slds-small-size_12-of-12 slds-col ">            
+                                 <label  class="slds-form-element__label slds-no-flex">{!v.languageLabelMap.PS_39}</label>           
+                                <lightning:inputField  fieldName="Comment__c" value="{!v.appUserRecord.Comment__c}" variant="label-hidden"/>
+                            </div>
+                        </div>
+                        <div class="slds-hide">
+                            <label  class="slds-form-element__label slds-no-flex"><abbr  title="required" class="slds-required">*</abbr>{!v.languageLabelMap.PS_49}</label>    
+                            <lightning:inputField  fieldName="SAP_Onboarding__c" value="{!v.sapRecord.Id}" variant="label-stacked"/>
+                            <label  class="slds-form-element__label slds-no-flex"><abbr  title="required" class="slds-required">*</abbr>{!v.languageLabelMap.PS_48}</label>     
+                            <lightning:inputField  fieldName="Shared__c" value="{!v.appUserRecord.Shared__c}" variant="label-hidden"/>
+                        </div>
+                        <div class="subHeader">
+                            {!v.languageLabelMap.PS_40} ({!v.appUserList.length})
+                        </div>
+                        <aura:if isTrue="{!v.appUserList.length > 0}">
+                            <div style="height:100px;overflow-y:scroll;">
+                                <table class="slds-table slds-table_cell-buffer slds-table_bordered">
+                                    <thead>
+                                        <tr>
+                                            <th style="width:48px;"></th>
+                                            <th>{!v.languageLabelMap.PS_47}</th>
+                                            <th>{!v.languageLabelMap.PS_38}</th>
+                                            <th style="width:48px;"></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <aura:iteration items="{!v.appUserList}" var="user" indexVar="count">
+                                            <tr >
+                                                <td class="text1 slds-var-p-around_small" style="">
+                                                    <lightning:icon iconName="utility:user" size="x-small" class="shareIcon"/>
+                                                </td>
+                                                <td >{!user.First_Name__c}&nbsp;{!user.Last_Name__c}</td>
+                                                <td >{!user.Title__c}</td>
+                                                <td><!--<lightning:buttonIcon iconName="utility:delete" title="remove share" size="x-small" name="{!user.Id}" onclick="{!c.delteAppUser}"
+                                                                          class="{!if(count>0,'tealIcon','slds-hide')}"/>--></td>
+                                            </tr>
+                                        </aura:iteration>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </aura:if>
+                    </div>
+                    <footer class="slds-modal__footer">
+                        <lightning:button variant="neutral" 
+                                          label="{!v.languageLabelMap.PS_41}"
+                                          title="Cancel"
+                                          onclick="{! c.closeModel }"/>
+                        <lightning:button variant="brand" 
+                                          label="{!v.languageLabelMap.CI_5}" 
+                                          title="Save and Close"
+                                          type="submit"
+                                          />
+                    </footer>
+                </lightning:recordEditForm>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </aura:if>
+    
+    <aura:if isTrue="{!v.showHelp}">
+        <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+            <div class="slds-modal__container">
+                <header class="slds-modal__header">
+                    <lightning:buttonIcon iconName="utility:close"
+                                          onclick="{! c.closeHelp }"
+                                          alternativeText="close"
+                                          variant="bare-inverse"
+                                          class="slds-modal__close"/>
+                    <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate"><b>{!v.languageLabelMap.HP_10}</b></h2>
+                </header>
+                <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                    <div class="slds-grid slds-grid--vertical slds-m-around_medium">
+                        <div class="slds-size_12-of-12">
+                            <p style="font-size:20px;">
+                                <b>{!v.languageLabelMap.HP_26}</b>
+                            </p>
+                            <p>
+                               {!v.languageLabelMap.HP_28}<br/>
+                                <a href="tel:8333703737">(833) 370-3737</a>    -     <a href="mailto:NAACustomerService@olin.com">NAACustomerService@olin.com</a><br/>
+                                
+                                {!v.languageLabelMap.HP_29}<br/>
+                                <a href="tel:8006778335">(800) 677-8335</a>    -     <a href="mailto:DGCustomerService@olin.com">DGCustomerService@olin.com</a>
+                            </p>
+                        </div>
+                        <hr style="color:lightgrey;padding:0;margin:10px;"/>
+                        <div class="slds-size_12-of-12">
+                            <p style="font-size:20px;">
+                                <b>{!v.languageLabelMap.HP_25}</b>
+                            </p>
+                            <p>
+                                {!v.languageLabelMap.HP_24}
+                            </p>
+                        </div>
+                        <hr style="color:lightgrey;padding:0;margin:10px;"/>
+                        <div class="slds-size_12-of-12">
+                            <p style="font-size:20px;">
+                                <b>{!v.languageLabelMap.HP_60}</b>
+                            </p>
+                            <p>
+                               {!v.languageLabelMap.HP_23} 
+                            </p>
+                        </div>
+                        <hr style="color:lightgrey;padding:0;margin:10px;"/>
+                        <div class="slds-size_12-of-12">
+                            <p style="font-size:20px;">
+                                <b>{!v.languageLabelMap.HP_22}</b>
+                            </p>
+                            <p>
+                              {!v.languageLabelMap.HP_21}  
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </aura:if>
+    <aura:if isTrue="{!v.showConfirmDialog}">
+        <div role="dialog" class="slds-modal slds-fade-in-open ">
+            <div class="slds-modal__container">
+                <header class="slds-modal__header">
+                    <h1 class="slds-text-heading--medium">{!v.languageLabelMap.HP_30}</h1>
+                </header>
+                <div class="slds-modal__content slds-p-around--medium">
+                    <center><b>{!v.confirmMessage}</b></center>
+                </div>
+                <footer class="slds-modal__footer">
+                    <lightning:button name='Cancel' label='{!v.languageLabelMap.HP_32}' onclick='{!c.handleConfirmDialog}'/>
+                    <lightning:button variant="brand" name='Submit' label='{!v.languageLabelMap.HP_31}' onclick='{!c.handleConfirmDialog}'/>
+                </footer>
+            </div>
+        </div>
+        <div class="slds-backdrop slds-backdrop--open"></div>            
+    </aura:if>
+    
+    <div class="slds-grid slds-wrap" style="padding:20px;min-height:96vh;background:#fff;margin:4vh 4vh 0 4vh;border-radius:5px;">
+        <aura:if isTrue="{!v.sapNo != ''}">
+            <div class="slds-col slds-size_8-of-8 slds-grid slds-wrap slds-m-bottom_small">
+                <div class="slds-small-size_12-of-12 slds-medium-size_12-of-12 slds-large-size_0-of-12 slds-p-bottom_medium mobileLink">
+                    <lightning:button label="{!v.languageLabelMap.HP_27}" variant="bare" iconName="utility:rows" iconPosition="left" onclick="{!c.openLeftPanel}" class="headerLink"/>
+                    <p>({!v.languageLabelMap.PSA_141})</p>
+                </div>
+                <div class="slds-medium-size_12-of-12 slds-large-size_12-of-12 slds-small-size_12-of-12 slds-text-align_right slds-p-bottom_medium">
+                    <lightning:button label="{!v.languageLabelMap.HP_10}" variant="bare" onclick="{!c.openHelp}" class="slds-m-right_large headerLink"/>
+                    <!--lightning:button label="{!v.languageLabelMap.HP_11}" variant="bare" class="slds-m-right_large headerLink" onclick="{!c.openProfile}"/-->
+                    <lightning:button label="{!v.languageLabelMap.HP_12}" variant="bare" onclick="{!c.doLogout}" class="slds-m-right_large headerLink"/>
+                </div>
+                <aura:if isTrue="{!v.sapNo != 'Instructions'}">
+                    <div class="{! 'slds-col slds-text-align_center '+v.ciDivClass}" style="padding:10px 0;border:2px solid grey;">
+                        <div><i class="fas fa-info-circle" style="margin-right:5px;"></i><b>{!v.languageLabelMap.HP_15}</b></div>
+                        <hr class="statusBoxHr"/>
+                        <div>{!v.sapRecord.Customer_Information_Status__c == 'Customer In Progress' ? v.languageLabelMap.HP_19 : v.languageLabelMap.HP_20}</div>
+                    </div>
+                  <!--  <div class="{! 'slds-col slds-large-size_1-of-4 slds-medium-size_2-of-3 slds-small-size_4-of-4 slds-text-align_center '+v.ddDivClass}" style="padding:10px 0;border:2px solid grey;">
+                        <div><i class="fas fa-file" style="margin-right:5px;"></i><b>{!v.languageLabelMap.HP_16}</b></div>
+                        <hr class="statusBoxHr"/>
+                        <div>{!v.sapRecord.Order_Placement_Status__c == 'Customer In Progress' ? v.languageLabelMap.HP_19 : v.languageLabelMap.HP_20}</div>
+                    </div> -->
+                    <div class="{! 'slds-col slds-text-align_center '+v.caDivClass}" style="padding:10px 0;border:2px solid grey;">
+                        <div><i class="fas fa-landmark" style="margin-right:5px;"></i><b>{!v.languageLabelMap.HP_17}</b></div>
+                        <hr class="statusBoxHr"/>
+                        <div>{!v.sapRecord.Credit_Application_Status__c == 'Customer In Progress' ? v.languageLabelMap.HP_19 : v.languageLabelMap.HP_20}</div>
+                    </div>
+                    <div class="{! 'slds-col slds-text-align_center '+v.psaDivClass}" style="padding:10px 0;border:2px solid grey;">
+                        <div><i class="fas fa-shield-alt" style="margin-right:5px;"></i><b>{!v.languageLabelMap.HP_62}</b></div>
+                        <hr class="statusBoxHr"/>
+                        <div>{!v.sapRecord.Product_Stewardship_Status__c == 'Customer In Progress' ? v.languageLabelMap.HP_19 : v.languageLabelMap.HP_20}</div>
+                    </div>
+                </aura:if>
+            </div>
+            <!--<div class="slds-col slds-large-size_4-of-8 slds-medium-size_8-of-8 slds-small-size_8-of-8">
+                <b><span style="color:#767676;font-size:18px;">Customer Form : {!v.sapNo}</span><br/><span style="color:#a1a1a1;font-size:16px;">{!v.screenName}</span></b>
+            </div>
+            <div class="slds-col slds-large-size_4-of-8 slds-medium-size_8-of-8 slds-small-size_8-of-8 slds-grid slds-wrap slds-text-align_right slds-m-top_small">
+                <div class="slds-col slds-large-size_1-of-1 slds-medium-size_1-of-1 slds-small-size_1-of-1">
+                    <button class="slds-button slds-button_neutral btn" onclick="" disabled="">
+                        <lightning:icon iconName="utility:save" size="x-small" class="shareIcon" style="margin-right:5px;"/>Save Progress
+                    </button>
+                    <button class="slds-button slds-button_neutral btn" onclick="" disabled="">
+                        <lightning:icon iconName="utility:socialshare" size="x-small" class="shareIcon" style="margin-right:5px;"/>Share With Colleague
+                    </button>
+                    <button class="slds-button slds-button_neutral btn" disabled="">
+                        <lightning:icon iconName="utility:success" size="x-small" class="shareIcon" style="margin-right:5px;"/>Submit
+                    </button>
+                </div>
+            </div>-->
+        </aura:if>
+        <aura:if isTrue="{!or(v.nodeToShow == 'Instructions', v.nodeToShow == 'CF')}">
+            <div class="slds-col slds-size_1-of-1 slds-m-top_small" style="min-height: 80vh;"><c:OCO_Customer_Instructions node="{!v.nodeToShow}" sapNo="{!v.sapNo}" allSectionCompleted="{!v.allSectionCompleted}" languageLabelMap="{!v.languageLabelMap}" selectedPageLanguage="{!v.selectedPageLanguage}"/></div>
+        </aura:if>
+        <aura:if isTrue="{!v.nodeToShow == 'CI'}">
+            <div class="slds-col slds-size_1-of-1 slds-m-top_small" style="min-height: 80vh;"><c:OCO_Customer_CI appUserId="{!v.currentAppUser}" parent="{!this}" sapId="{!v.nodeId}" screenName="{!v.screenName}" sapRecord="{!v.sapRecord}" sapNo="{!v.sapNo}" languageLabelMap="{!v.languageLabelMap}" isDisabledForProfile="{!v.isDisabledForProfile}"/></div>
+        </aura:if>
+        <aura:if isTrue="{!v.nodeToShow == 'OP'}">
+            <div class="slds-col slds-size_1-of-1 slds-m-top_small" style="min-height: 80vh;"><c:OCO_Customer_OP appUserId="{!v.currentAppUser}" parent="{!this}" sapId="{!v.nodeId}" sapRecord="{!v.sapRecord}" sapNo="{!v.sapNo}" screenName="{!v.screenName}" languageLabelMap="{!v.languageLabelMap}" isDisabledForProfile="{!v.isDisabledForProfile}"/></div>
+        </aura:if>
+        <aura:if isTrue="{!v.nodeToShow == 'CA'}">
+            <div class="slds-col slds-size_1-of-1 slds-m-top_small" style="min-height: 80vh;"><c:OCO_Customer_CA appUserId="{!v.currentAppUser}" sapId="{!v.nodeId}" sapRecord="{!v.sapRecord}" parent="{!this}" sapNo="{!v.sapNo}" screenName="{!v.screenName}" vatList="{!v.vatList}" aura:id="childCACmp" languageLabelMap="{!v.languageLabelMap}" englishLanguageLabelMap="{!v.englishLanguageLabelMap}" languageFileData="{!v.languageFileData}" isDisabledForProfile="{!v.isDisabledForProfile}"/></div>
+        </aura:if>
+        <aura:if isTrue="{!v.nodeToShow == 'PS'}">
+            <div class="slds-col slds-size_1-of-1 slds-m-top_small" style="min-height: 80vh;"><c:OCO_Customer_PS appUserId="{!v.currentAppUser}" sapId="{!v.nodeId}" aura:id="psCmp" sapRecord="{!v.sapRecord}" parent="{!this}" sapNo="{!v.sapNo}" languageLabelMap="{!v.languageLabelMap}" isDisabledForProfile="{!v.isDisabledForProfile}"/></div>
+        </aura:if>
+        <aura:if isTrue="{!v.nodeToShow == 'OST'}">
+            <div class="slds-col slds-size_1-of-1 slds-m-top_small" style="min-height: 80vh;"><c:OCO_Customer_ST stId="{!v.nodeId}"  sapId="{!v.sapRecord.Id}" sapRecord="{!v.sapRecord}" parent="{!this}" sapNo="{!v.sapNo}" screenName="{!v.screenName}" languageLabelMap="{!v.languageLabelMap}" isDisabledForProfile="{!v.isDisabledForProfile}"/></div>
+        </aura:if>
+        <aura:if isTrue="{!v.nodeToShow == 'OPR'}">
+            <div class="slds-col slds-size_1-of-1 slds-m-top_small" style="min-height: 80vh;"><c:OCO_Customer_PSA prodId="{!v.nodeId}" aura:id="psaCmp"  sapId="{!v.sapRecord.Id}" sapRecord="{!v.sapRecord}" parent="{!this}" sapNo="{!v.sapNo}" screenName="{!v.screenName}" languageLabelMap="{!v.languageLabelMap}" isDisabledForProfile="{!v.isDisabledForProfile}" selectedPageLanguage="{!v.selectedPageLanguage}"/></div>
+        </aura:if>
+        <aura:if isTrue="{!v.nodeToShow == 'PSA'}">
+            <div class="slds-col slds-size_1-of-1 slds-m-top_small" style="min-height: 80vh;"><c:OCO_Customer_PSA prodId="{!v.nodeId}"  sapId="{!v.sapRecord.Id}" sapRecord="{!v.sapRecord}" parent="{!this}" sapNo="{!v.sapNo}" screenName="{!v.screenName}" languageLabelMap="{!v.languageLabelMap}" isDisabledForProfile="{!v.isDisabledForProfile}" selectedPageLanguage="{!v.selectedPageLanguage}"/></div>
+        </aura:if>
+    </div>
+</aura:component>

@@ -1,0 +1,126 @@
+<apex:component access="global" controller="CustomerSetupNotificationOCAV">
+    <style>
+        th{
+        font-weight :bold;
+        padding:5px;
+        }
+        td{
+        padding : 5px;
+        }
+        
+    </style>
+    <apex:attribute name="sapId" type="String" description="This is Sap Id" assignTo="{!sapRecordId}" access="global"/>
+    
+    <div>
+        <span>--- Customer Setup Auto Email Notification ---</span>
+    </div>
+    <div style="margin-top:20px;">
+        <span>Customer Setup Overall Status: {!sapRecord.Status__c}</span>
+    </div>
+    <div style="margin-top:10px;">
+        <span>----------------------</span>
+    </div>
+    <div style="margin-top:10px;">
+        <span>Customer Information Status: {!sapRecord.Customer_Information_Status__c}</span>
+    </div>
+    <div style="margin-top:5px;">
+        <span>Document Delivery Status: {!sapRecord.Order_Placement_Status__c}</span>
+    </div>
+    <div style="margin-top:5px;">
+        <span>Credit Application Status: {!sapRecord.Credit_Application_Status__c}</span>
+    </div>
+    <div style="margin-top:5px;">
+        <span>Product Stewardship Status: {!sapRecord.Product_Stewardship_Status__c}</span>
+    </div>
+    <div style="margin-top:10px;">
+        <span>----------------------</span>
+    </div>
+    <div style="margin-top:10px;">
+        <span>Please use the following link to review: <a href="{!sfBaseUrl+'/'+sapRecordId}">Click Here</a></span>
+    </div>
+    <div style="margin-top:10px;">
+        <span>----------------------</span>
+    </div>
+    <div style="margin-top:10px;">
+        <table width="100%" style="border-collapse:collapse;" border="1">
+            <thead>
+                <th>Sold-To Name</th> 
+                <th>Address</th> 
+                <th>City</th> 
+                <th>State</th> 
+                <th>Zip Code</th> 
+                <th>Country</th> 
+            </thead>
+            <tbody>
+               <tr>
+                    <td>{!sapRecord.Sold_To_Company_Name__c}</td>
+                    <td>{!sapRecord.Sold_To_Street__c} {!sapRecord.Sold_To_Street__c}</td>
+                    <td>{!sapRecord.Sold_To_City__c}</td>
+                    <td>{!sapRecord.Sold_To_State_Province__c}</td>
+                    <td>{!sapRecord.Sold_To_Postal_Code__c}</td>
+                    <td>{!sapRecord.Sold_To_Country__c}</td>
+                </tr>
+
+            </tbody>
+        </table>
+    </div>
+    <br/>
+    <br/>
+    <div style="margin-top:10px;">
+        <apex:repeat value="{!shipToList}" var="shipTo" >
+            <table width="100%" style="border-collapse:collapse;" border="1">
+                <thead>
+                    <th>Ship-To Details</th> 
+                    <th>Address</th> 
+                    <th>City</th> 
+                    <th>State</th> 
+                    <th>Zip Code</th> 
+                    <th colspan="3">Country</th>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>{!shipTo.Ship_To_Company_Name__c}</td>
+                        <td>{!shipTo.Ship_To_Street__c}&nbsp;{!shipTo.Ship_To_Street_2__c}</td>
+                        <td>{!shipTo.Ship_To_City__c}</td>
+                        <td>{!shipTo.Ship_To_State_Province__c}</td>
+                        <td>{!shipTo.Ship_To_Postal_Code__c}</td>
+                        <td colspan="3">{!shipTo.Ship_To_Country__c}</td>
+                    </tr>
+                    <tr><td></td><td></td> <td></td> <td></td><td></td><td colspan="3"></td></tr>
+                </tbody>
+                <tbody>
+                </tbody>
+            </table>
+            <table width="100%" style="border-collapse:collapse;" border="1">
+                <thead>
+                    <tr style="display:{!if(shipTo.Onboarding_Products__r.size > 0, 'table-row', 'none')}">
+                        <th>Business Unit</th> 
+                        <th>Product</th> 
+                        <th>Ship Mode</th> 
+                        <th>UOM</th> 
+                        <th>Volume Period</th> 
+                        <th>Est. Volume</th> 
+                        <th>Shipment Assessment</th>
+                        <th>Site Assessment Needed</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <apex:repeat value="{!shipTo.Onboarding_Products__r}" var="prod" >
+                        <tr>
+                            <td>{!prod.Purchased_Product__r.Product_R1__r.Business_Group__c}</td>
+                            <td>{!prod.Purchased_Product__r.Product_R1__r.Name}</td>
+                            <td>{!prod.New_Customer_Ship_Mode__c}</td>
+                            <td>{!prod.Product_UOM__c}</td>
+                            <td>{!prod.Volume_Period__c}</td>
+                            <td>{!prod.Estimated_Volume__c}</td>
+                            <td>{!prod.Shipment_Questionnaire__c}</td>
+                            <td>{!prod.Is_a_Ship_To_Site_Assessment_Needed__c}</td>
+                        </tr>
+                    </apex:repeat>
+                </tbody>
+            </table>
+            <br/>
+            <br/>
+        </apex:repeat>
+    </div>
+</apex:component>

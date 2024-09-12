@@ -1,0 +1,3 @@
+<aura:component implements="flexipage:availableForAllPageTypes,force:hasRecordId,force:lightningQuickActionWithoutHeader" Controller="Confidentail_NewCompetitive">
+      <aura:handler value="this" name="init" action="{!c.doInit}"/>
+</aura:component>

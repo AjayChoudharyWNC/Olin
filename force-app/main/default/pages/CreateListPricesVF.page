@@ -1,0 +1,34 @@
+<apex:page controller="CreateListPriceController" action="{!createListPricesForQuote}">
+    <apex:pageBlock >
+        <script type="text/javascript">
+            function redirectToPreviousPage(){
+                window.history.back();
+            }
+
+        </script>
+
+        <apex:pageMessages />
+
+        Quote ID: {!$CurrentPage.parameters.quoteId}
+        <apex:pageBlockSection rendered="{!IF(inProgress,true,false)}">
+            <apex:pageBlockSection rendered="{!IF(hasId,false,true)}">
+                Please enter a valid Quote ID For List Prices.
+            </apex:pageBlockSection>
+            <apex:pageBlockSection rendered="{!IF(hasId,true,false)}">
+                Creating List Prices. . . 
+            </apex:pageBlockSection>
+        </apex:pageBlockSection>
+        <apex:pageBlockSection rendered="{!IF(inProgress,false,true)}">
+            <apex:pageBlockSection rendered="{!IF(hasId,false,true)}">
+                Please enter a valid Quote ID For List Prices.
+            </apex:pageBlockSection>
+            <apex:pageBlockSection rendered="{!IF(hasId,true,false)}">
+                List Prices Completed.
+            </apex:pageBlockSection>
+        </apex:pageBlockSection>
+        <br />
+        <apex:form >
+            <apex:commandButton value="Return" onclick="redirectToPreviousPage();"/>
+        </apex:form>
+    </apex:pageBlock>
+</apex:page>

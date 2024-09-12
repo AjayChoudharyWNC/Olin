@@ -1,0 +1,79 @@
+.THIS {
+    z-index: 500;
+    background-color: rgba(0,0,0,.5);
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    padding-top: 15px;
+}
+.THIS h3 {
+    background-color: rgb(255, 255, 255);
+    border-color: rgb(221, 219, 218);
+    font-weight: 700;
+    color: rgb(8, 7, 7);
+    font-size: 10pt;
+    margin-bottom: 10px;
+}
+.THIS .modalClose {
+    width: 75%;
+    max-width: 90%;
+	text-align: right;
+    margin: auto;
+}
+.THIS .modalClose button.slds-button_icon-border {
+    border-color: transparent;
+    color: white;
+}
+.THIS .modal {
+    background-color: white;
+    width: 75%;
+    max-width: 90%;
+    max-height: 500px;
+    padding: 20px;
+    border-radius: 5px;
+    margin: auto;
+}
+.THIS .modal .quoteItem {
+    border-bottom: 1px solid gray;
+    margin-bottom: 15px;
+    padding-bottom: 15px;
+}
+.THIS .modal .quoteItem:last-child {
+    border-bottom: 1px solid transparent;
+}
+.THIS .modalQuoteList {
+    overflow-y: scroll;
+    max-height: 400px;
+}
+
+.THIS .lines {
+    padding: 5px; 
+}
+.THIS .lineItem > div {
+    flex: 1;
+}
+.THIS .lineItem > div:last-child {
+    min-width: 50px;
+    flex: 0;
+    text-align: right;
+}
+.THIS .modalQuoteList::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+    opacity: .5;
+}
+.THIS .modalQuoteList::-webkit-scrollbar-track {
+    background: rgba(241,241,241,.5); 
+}
+.THIS .modalQuoteList::-webkit-scrollbar-thumb {
+    background: rgba(85,85,85,.5);
+    border-radius: 100px;
+}
+.THIS .modalQuoteList::-webkit-scrollbar-thumb:hover {
+    background: rgba(0,0,0,.5);
+}
+.THIS .lines .slds-table td {
+    white-space: initial;
+}

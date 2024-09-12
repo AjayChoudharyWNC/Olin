@@ -1,0 +1,16 @@
+.THIS .subHeader{
+    height: max-content;
+    /* background-color: lightgrey; */
+    padding: 2px;
+    padding-left: 10px;
+    border-radius: 4px;
+    margin-bottom: 15px;
+    margin-top: 10px;
+    border-bottom: 1px solid lightgrey;
+    color: black;
+    font-weight:bold;
+}
+
+.THIS .slds-form-element__icon {
+    display: none !important;
+}

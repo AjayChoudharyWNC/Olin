@@ -1,0 +1,3 @@
+<aura:event type="Application" description="Event template">
+    <aura:attribute type="Object" name="jsonParam" />
+</aura:event>

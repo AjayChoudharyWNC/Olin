@@ -1,0 +1,119 @@
+<aura:component controller="ManageAccountTeamMembersController" implements="flexipage:availableForAllPageTypes,force:hasRecordId,force:lightningQuickActionWithoutHeader" access="global">
+    <aura:attribute name="recordId"                 type="String" />
+    <aura:attribute name="accountTeamMemberList"    type="AccountTeamMember[]" />
+    <aura:attribute name="teamRoleLPicklist"        type="List" />
+    <aura:attribute name="accessLevelPicklist" 	    type="List"     default="[{'label': 'Read/Write', 'value': 'Edit'}, {'label': 'Read Only', 'value': 'Read'}]"/>
+    <aura:attribute name="teamRole"                 type="String" />
+    <aura:attribute name="accountAccess"            type="String" />
+    <aura:attribute name="oppoAccess"               type="String" />
+    <aura:attribute name="selectedAccountTeamMembers" type="List" />
+    <aura:attribute name="entityId"                 type="String" />
+    <aura:attribute name="entityName"               type="String" />
+    <aura:attribute name="saving"               type="Boolean" default="false" />
+    <aura:attribute name="lookupRepaint"               type="Boolean" default="true"/>
+    <aura:attribute type="string" name="origin" /> 
+    <aura:attribute name="teamMemberStage"               type="AccountTeamMember" />
+    <aura:attribute name="hasEdit"               type="Boolean" default="false" />
+    <aura:attribute name="currentUser"               type="User" />
+
+    <aura:handler name="init" 	value="{!this}" action="{!c.doInit}"/>
+
+    <div>
+        <div class="modal-header slds-modal__header slds-size_1-of-1">
+            <h2 class="title slds-text-heading_medium" >Manage Account Team Members</h2>
+        </div>
+        
+        <aura:if isTrue="{!v.saving}">
+            <div role="status" class="slds-spinner slds-spinner_medium">
+                <span class="slds-assistive-text">Loading</span>
+                <div class="slds-spinner__dot-a"></div>
+                <div class="slds-spinner__dot-b"></div>
+            </div>
+            
+            <aura:if isTrue="{!v.origin eq 'related'}">
+                <div class="exampleHolder">
+                    <lightning:spinner alternativeText="Loading" size="medium" />
+                </div>
+            </aura:if>
+            
+            
+            <aura:set attribute="else">
+                <div class="slds-modal__content slds-p-around_x-small slds-size_1-of-1" aura:id="modalbody" id="modalbody" style="height: 280px; overflow-x: auto; overflow-y: scroll;">
+                    <table class="slds-wrap slds-table">
+                        <thead>
+                            <tr>
+                                <th class="slds-text-title_caps" data-column-header="true"></th>
+                                <th class="slds-text-title_caps" data-column-header="true">USER</th>
+                                <th class="slds-text-title_caps" data-column-header="true">TEAM ROLE</th>
+                                <th class="slds-text-title_caps" data-column-header="true">ACCOUNT ACCESS</th>
+                                <th class="slds-text-title_caps" data-column-header="true">OPPORTUNITY ACCESS</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <aura:iteration items="{!v.accountTeamMemberList}" var="lineItem" indexVar="lIndex">
+                                <tr class="slds-hint-parent">
+                                    <td>
+                                        <!-- div class="slds-col">
+                                    <label class="slds-checkbox">
+                                        <input type="checkbox" id="{!lineItem.Id}" onchange="{!c.onClick}"/>
+                                        <span class="slds-checkbox_faux"></span>
+                                    </label>
+                                </div -->
+                                        <lightning:buttonIcon disabled="{! !v.hasEdit}" name="{!lIndex}" iconName="utility:delete" onclick="{! c.lineDelete }" alternativeText="delete" />
+                                    </td>
+                                    <td>{!lineItem.User.Name}</td>
+                                    <td>{!lineItem.TeamMemberRole}</td>
+                                    <td style="text-align: center;">
+                                        <lightning:buttonIconStateful disabled="true" name="{!lIndex}" iconName="utility:knowledge_base" selected="{! lineItem.utilAccount.read }" onclick="{! c.acctRead }" alternativeText="Read" />
+                                        <span style="padding-left: 3px;" />
+                                        <lightning:buttonIconStateful disabled="{! !v.hasEdit}" name="{!lIndex}" iconName="utility:edit" selected="{! lineItem.utilAccount.write }" onclick="{! c.acctWrite }" alternativeText="Write" />
+                                    </td>
+                                    <td style="text-align: center;">
+                                        <lightning:buttonIconStateful disabled="{! !v.hasEdit}" name="{!lIndex}" iconName="utility:knowledge_base" selected="{! lineItem.utilOpp.read }" onclick="{! c.oppRead }" alternativeText="Read" />
+                                        <span style="padding-left: 3px;" />
+                                        <lightning:buttonIconStateful disabled="{! !v.hasEdit}" name="{!lIndex}" iconName="utility:edit" selected="{! lineItem.utilOpp.write }" onclick="{! c.oppWrite }" alternativeText="Write" />
+                                    </td>
+                                </tr>
+                            </aura:iteration>
+                        </tbody>
+                    </table>
+                </div>
+                <aura:if isTrue="{!v.hasEdit}">
+                    <div class="topControl">
+                        <div style="border-top: 1px solid gainsboro;" />
+                        <div style="display: flex;">
+                            <aura:if isTrue="{!v.lookupRepaint}">
+                                <c:UI_CustomLookup fieldLabel="User" srcObject="User" searchFrom="['Name']" pushNewVal="{!c.updateStage}" filter="IsActive = true"/>
+                            </aura:if>
+                            <div style="width: 10px;" />
+                            <lightning:select name="teamRole" onchange="{!c.onChangeTeamRole}" aura:id="selectedTeamRole" label="Role">
+                                <option value=""> --None-- </option>
+                                <aura:iteration items="{!v.teamRoleLPicklist}" var="teamRoles">
+                                    <option value="{!teamRoles}">{!teamRoles}</option>
+                                </aura:iteration>
+                            </lightning:select>                        
+                            <div style="flex: 1;" />
+                            <div style="width: 10px;" />
+                            <div style="padding-top: 23px; text-align: right;">
+                                <label></label>
+                                <lightning:button label="Add" title="Add" onclick="{! c.addUser }"/>
+                            </div>
+                            <div style="padding-top: 23px; text-align: right; margin-left: 3px;">
+                                <lightning:button variant="brand" label="Save" class="slds-button" onclick="{!c.fullSave}" />
+                            </div>
+                            <aura:if isTrue="{!v.origin ne 'related'}">
+                                <div style="padding-top: 23px; text-align: right; margin-left: 3px;">
+                                    <lightning:button variant="brand" label="Cancel" class="slds-button" onclick="{!c.cancelChanges}" />
+                                </div>
+                            </aura:if>
+                        </div>
+                    </div>
+                    <aura:set attribute="else">
+                    	Only a System Administrator, Account Editors or the Account Record Owner can edit Team members...
+                    </aura:set>
+                </aura:if>
+            </aura:set>
+        </aura:if>
+    </div>
+    
+</aura:component>

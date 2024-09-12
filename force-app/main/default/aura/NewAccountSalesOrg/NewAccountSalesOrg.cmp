@@ -1,0 +1,29 @@
+<aura:component implements="force:hasRecordId,force:lightningQuickAction,lightning:actionOverride" controller="NewAccountSalesOrg">
+	<aura:handler name="init" value="this" action="{!c.doInit}"/>
+    <aura:attribute name="parentRecordId" type="String" />
+    
+    <div class="slds-modal__container" style="width: 80%; max-width: 63rem;">
+        <lightning:recordEditForm aura:id="recordEditForm" objectApiName="Account_Sales_Organization__c" onload="{!c.handleCreateLoad}" onsubmit="{!c.handleSubmit}">
+            <div class="slds-modal__header">
+                <h2 class="slds-text-heading--medium">Add New Sales Organization</h2>
+            </div>
+            <div class="slds-modal__content slds-p-around--medium slds-grid slds-wrap ">
+                <div class="slds-grid slds-wrap" style="width:100%;">
+                    <lightning:messages />
+                    <lightning:inputField fieldName="Name" aura:id="nameField" class="slds-hide"/>
+                    <div class="slds-col slds-size_1-of-2">
+                        <lightning:inputField fieldName="Account__c" aura:id="accField" disabled="true"/>
+                    </div>
+                    <div class="slds-col slds-size_1-of-2">
+                        <lightning:inputField fieldName="Sales_Organization__c" aura:id="orgField" required="true"/>
+                    </div>
+                </div>
+            </div>
+            <div class="slds-modal__footer">
+                <lightning:button variant="neutral" label="Cancel" onclick="{!c.onCancel}" />
+                <lightning:button variant="neutral" label="Save &amp; New" onclick="{!c.onSaveNew}" />
+                <lightning:button variant="brand" label="Save" type="submit" />
+            </div>
+        </lightning:recordEditForm>
+    </div> 
+</aura:component>

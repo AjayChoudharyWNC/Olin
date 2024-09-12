@@ -1,0 +1,48 @@
+<apex:component access="global" controller="CustomerSetupNotification">
+    
+    <style>
+        th{
+        font-weight :bold;
+        padding:5px;
+        }
+        td{
+        padding : 5px;
+        }
+        
+    </style>
+    <apex:attribute name="sapId" type="String" description="This is Sap Id" assignTo="{!sapRecordId}" access="global"/>
+    
+    <div>
+        <span>Please be informed that customer ({!sapRecord.Sold_To_Company_Name__c}) has submitted their customer setup form. Please take this opportunity to review the content in Salesforce</span>
+    </div>
+    
+
+    <div style="margin-top:20px;">
+        <span><b>Document Delivery Status:</b> {!sapRecord.Order_Placement_Status__c}</span><br/>
+        <span><b>Type: </b>{!sapRecord.On_boarding_Request_Type__c}</span><br/>
+        <span><b>Sold-To Customer: </b>{!sapRecord.Sold_To_Company_Name__c}</span><br/>
+        <span><b>Link: </b> <a href="{!sfBaseUrl+'/'+sapRecordId}">Click Here</a></span><br/>
+    </div>
+    <div style="margin-top:20px;">
+        <span>Do not reply to this email. This is a system generated email and replies are not monitored.</span>
+    </div>
+    <!--div style="margin-top:10px;">
+        <table width="100%" style="border-collapse:collapse;" border="1">
+            <thead>
+                <th>Sold-To Name</th> 
+                <th>City</th> 
+                <th>State</th> 
+                <th>Country</th> 
+            </thead>
+            <tbody>
+                <tr>
+                    <td>{!sapRecord.Sold_To_Company_Name__c}</td>
+                    <td>{!sapRecord.Sold_To_City__c}</td>
+                    <td>{!sapRecord.Sold_To_State_Province__c}</td>
+                    <td>{!sapRecord.Sold_To_Country__c}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div-->
+    
+</apex:component>

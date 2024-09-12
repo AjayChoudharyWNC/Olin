@@ -1,0 +1,29 @@
+<aura:component>
+
+    <aura:attribute name="columnDef" type="Object" />
+    <aura:attribute name="row" type="Object" />
+    
+    <aura:attribute name="fieldValue" type="String" />
+    <aura:attribute name="refrenceValue" type="String" />
+
+    <aura:attribute name="isReference" type="Boolean" default="false" />
+    <aura:attribute name="isString" type="Boolean" default="false" />
+    <aura:attribute name="isNumber" type="Boolean" default="false" />
+
+    <aura:handler name="init" value="{!this}" action="{!c.onInit}" />
+
+    <td>
+        <aura:if isTrue="{!v.fieldValue}">
+            <aura:if isTrue="{!v.isReference}">
+                <ui:outputURL value="{!'/one/one.app?#/sObject/'+ v.fieldValue + '/view'}" target="_blank" label="{!v.refrenceValue}"/>
+            </aura:if>
+            <aura:if isTrue="{!v.isString}">
+                <td>{!v.fieldValue}</td>
+            </aura:if>
+            <aura:if isTrue="{!v.isNumber}">
+                <ui:outputNumber value="{!v.fieldValue}" format="¤#,##0.####"/>
+            </aura:if>
+        </aura:if>
+    </td>
+
+</aura:component>
